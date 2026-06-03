@@ -34,6 +34,10 @@ Route::middleware(['auth', 'verified', EnsureCompanySelected::class])->group(fun
         require __DIR__.'/sales.php';
     });
 
+    Route::prefix('medic')->name('medic.')->group(function () {
+        require __DIR__.'/medic.php';
+    });
+
     Route::prefix('shared')->name('shared.')->group(function () {
         require __DIR__.'/shared.php';
     });
