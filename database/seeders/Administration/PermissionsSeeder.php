@@ -95,6 +95,21 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'specialties',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Servicios',
+                        'module_slug' => 'services',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Especies',
+                        'module_slug' => 'species',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Doctores',
+                        'module_slug' => 'doctors',
+                        'permissions' => $permissions_crud,
+                    ],
                 ],
             ],
             [

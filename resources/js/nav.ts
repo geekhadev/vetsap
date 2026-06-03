@@ -8,7 +8,9 @@ import {
     LayoutGrid,
     MapPin,
     Package,
+    PawPrint,
     Receipt,
+    Scissors,
     Share2,
     ShoppingCart,
     Stethoscope,
@@ -24,7 +26,10 @@ import { index as systemsIndex } from '@/routes/administration/systems';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
+import { index as doctorsIndex } from '@/routes/medic/doctors';
+import { index as servicesIndex } from '@/routes/medic/services';
 import { index as specialtiesIndex } from '@/routes/medic/specialties';
+import { index as speciesIndex } from '@/routes/medic/species';
 import { index as customersIndex } from '@/routes/sale/customers';
 import { index as siiCafsIndex } from '@/routes/sale/sii-cafs';
 import { index as certificationSiiTicketsIndex } from '@/routes/sale/sii-certification-tickets';
@@ -133,6 +138,24 @@ export const mainNavItems: NavItem[] = [
                 href: specialtiesIndex(),
                 icon: Stethoscope,
                 permission: 'medic.specialties.list',
+            },
+            {
+                title: 'Servicios',
+                href: servicesIndex(),
+                icon: Scissors,
+                permission: 'medic.services.list',
+            },
+            {
+                title: 'Especies',
+                href: speciesIndex(),
+                icon: PawPrint,
+                permission: 'medic.species.list',
+            },
+            {
+                title: 'Doctores',
+                href: doctorsIndex(),
+                icon: UserRound,
+                permission: 'medic.doctors.list',
             },
         ],
     },
