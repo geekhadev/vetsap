@@ -52,6 +52,9 @@ function CompanyForm(props: CompaniesFormPageProps) {
                                 props.siiCertificateDownloadUrl ?? null
                             }
                             siiIntegration={siiIntegration}
+                            siiEconomicActivities={
+                                props.siiEconomicActivities ?? []
+                            }
                         />
                     ) : null}
 

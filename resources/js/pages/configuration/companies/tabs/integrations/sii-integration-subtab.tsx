@@ -1,5 +1,7 @@
 import type { InertiaFormProps } from '@inertiajs/react';
 import { Save } from 'lucide-react';
+import { useMemo } from 'react';
+import { FormCombobox } from '@/components/custom/form-combobox';
 import { FormDatePickerField } from '@/components/custom/form-date-picker-field';
 import { FormFileInput } from '@/components/custom/form-file-input';
 import { FormPasswordInputGroup } from '@/components/custom/form-password-input-group';
@@ -8,18 +10,31 @@ import { FormTextInput } from '@/components/custom/form-text-input';
 import { Separator } from '@/components/ui/separator';
 import type { SiiIntegrationFormData } from '@/pages/configuration/companies/tabs/integrations/sii-integration-keys';
 import { SII_CERTIFICATE_FILE_FIELD } from '@/pages/configuration/companies/tabs/integrations/sii-integration-keys';
+import type { SiiEconomicActivityOption } from '@/pages/configuration/companies/types';
 
 type SiiIntegrationSubtabProps = {
     form: InertiaFormProps<SiiIntegrationFormData>;
     onSubmit: (e: React.FormEvent) => void;
     siiCertificateDownloadUrl?: string | null;
+    siiEconomicActivities: SiiEconomicActivityOption[];
 };
 
 export function SiiIntegrationSubtab({
     form,
     onSubmit,
     siiCertificateDownloadUrl = null,
+    siiEconomicActivities,
 }: SiiIntegrationSubtabProps) {
+    const actecoOptions = useMemo(
+        () =>
+            siiEconomicActivities.map((activity) => ({
+                value: activity.code,
+                label: `${activity.code} — ${activity.description}`,
+                searchText: `${activity.code} ${activity.description}`,
+            })),
+        [siiEconomicActivities],
+    );
+
     return (
         <form onSubmit={onSubmit} className="w-full space-y-6">
             <div>
@@ -119,21 +134,22 @@ export function SiiIntegrationSubtab({
                     }}
                 />
 
-                <FormTextInput
+                <FormCombobox
                     label="Código actividad económica (ACTECO)"
                     required
+                    placeholder="Buscar actividad económica..."
+                    searchPlaceholder="Buscar actividad económica..."
+                    emptyMessage="No se encontraron actividades económicas."
                     error={form.errors.configuration_integrations_sii_acteco}
-                    inputProps={{
-                        id: 'configuration_integrations_sii_acteco',
-                        name: 'configuration_integrations_sii_acteco',
-                        maxLength: 255,
-                        value: form.data.configuration_integrations_sii_acteco,
-                        onChange: (e) =>
-                            form.setData(
-                                'configuration_integrations_sii_acteco',
-                                e.target.value,
-                            ),
-                    }}
+                    options={actecoOptions}
+                    value={form.data.configuration_integrations_sii_acteco}
+                    onValueChange={(next) =>
+                        form.setData(
+                            'configuration_integrations_sii_acteco',
+                            next,
+                        )
+                    }
+                    id="configuration_integrations_sii_acteco"
                 />
 
                 <FormFileInput

@@ -13,17 +13,20 @@ import {
     SII_INTEGRATION_KEY_LIST,
 } from '@/pages/configuration/companies/tabs/integrations/sii-integration-keys';
 import { PlaceholderTabPanel } from '@/pages/configuration/companies/tabs/placeholder-tab-panel';
+import type { SiiEconomicActivityOption } from '@/pages/configuration/companies/types';
 
 type IntegrationsTabPanelProps = {
     companyId: string | null;
     siiCertificateDownloadUrl?: string | null;
     siiIntegration?: Record<string, string>;
+    siiEconomicActivities: SiiEconomicActivityOption[];
 };
 
 export function IntegrationsTabPanel({
     companyId,
     siiCertificateDownloadUrl = null,
     siiIntegration: siiIntegrationProp,
+    siiEconomicActivities,
 }: IntegrationsTabPanelProps) {
     const siiIntegration = useMemo(
         () => normalizeSiiIntegrationProps(siiIntegrationProp ?? {}),
@@ -79,6 +82,7 @@ export function IntegrationsTabPanel({
                         companyId={companyId}
                         siiCertificateDownloadUrl={siiCertificateDownloadUrl}
                         siiIntegration={siiIntegration}
+                        siiEconomicActivities={siiEconomicActivities}
                     />
                 </TabsContent>
                 <TabsContent value="google" className="outline-none">

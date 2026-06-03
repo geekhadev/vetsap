@@ -5,6 +5,7 @@ namespace App\Support\Validation;
 use App\Support\Integration\CompanySiiIntegrationSettingKeys;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\Rule;
 
 final class CompanySiiIntegrationValidationRules
 {
@@ -46,7 +47,11 @@ final class CompanySiiIntegrationValidationRules
             CompanySiiIntegrationSettingKeys::CERTIFICATE_PASSWORD => ['required', 'string', 'max:255'],
             CompanySiiIntegrationSettingKeys::EXCHANGE_EMAIL => ['nullable', 'string', 'email', 'max:255'],
             CompanySiiIntegrationSettingKeys::GIRO => ['required', 'string', 'max:255'],
-            CompanySiiIntegrationSettingKeys::ACTECO => ['required', 'string', 'max:255'],
+            CompanySiiIntegrationSettingKeys::ACTECO => [
+                'required',
+                'string',
+                Rule::exists('shared_sii_economic_activities', 'code'),
+            ],
             CompanySiiIntegrationSettingKeys::RESOLUTION_DATE_TICKETS => ['nullable', 'date'],
             CompanySiiIntegrationSettingKeys::RESOLUTION_NUMBER_TICKETS => ['nullable', 'string', 'max:255'],
             CompanySiiIntegrationSettingKeys::CERTIFICATION_EMAIL_TICKETS => ['nullable', 'string', 'email', 'max:255'],

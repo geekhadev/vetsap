@@ -52,12 +52,20 @@ export type CompanyOfficeListItem = {
     };
 };
 
+export type SiiEconomicActivityOption = {
+    id: number;
+    code: string;
+    description: string;
+};
+
 export type CompaniesFormPageProps = {
     company: CompanyFormRecord | null;
     /** Sucursales secundarias (`is_main = false`) para el tab Sucursales. */
     offices: CompanyOfficeListItem[];
     /** Valores actuales de integración SII (claves `configuration_integrations_sii_*`). */
     siiIntegration?: Record<string, string>;
+    /** Catálogo SII para el selector ACTECO en integraciones. */
+    siiEconomicActivities?: SiiEconomicActivityOption[];
     /** GET interno para descargar el certificado subido (solo si aplica); `null` si no hay archivo gestionado. */
     siiCertificateDownloadUrl?: string | null;
     can: {

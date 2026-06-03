@@ -17,6 +17,7 @@ use App\Http\Requests\Web\StoreClinicWebLogoRequest;
 use App\Http\Requests\Web\UpdateClinicWebSettingsRequest;
 use App\Models\Company;
 use App\Models\CompanyOffice;
+use App\Models\Shared\SiiEconomicActivity;
 use App\Models\User;
 use App\Support\Configuration\CompanyEditRedirect;
 use App\Support\Integration\CompanySiiIntegrationSettingKeys;
@@ -24,6 +25,7 @@ use App\Support\Storage\PublicStorageUrl;
 use App\Support\Web\ClinicWebSettingKeys;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -107,6 +109,9 @@ class CompaniesController extends Controller
             'company' => $this->companyFormProps($company),
             'offices' => $this->companyOfficesFormProps($company, $user, $listOffices),
             'siiIntegration' => $this->siiIntegrationFormProps($company),
+            'siiEconomicActivities' => SiiEconomicActivity::query()
+                ->orderBy('code')
+                ->get(['id', 'code', 'description']),
             'siiCertificateDownloadUrl' => $this->siiCertificateDownloadUrl($company),
             'can' => [
                 'delete' => $user->can('delete', $company)
@@ -158,7 +163,7 @@ class CompaniesController extends Controller
 
     public function storeWebLogo(StoreClinicWebLogoRequest $request, Company $company, StoreClinicWebImageAction $action): RedirectResponse
     {
-        /** @var \Illuminate\Http\UploadedFile $file */
+        /** @var UploadedFile $file */
         $file = $request->file('logo');
         $action->execute($company, ClinicWebSettingKeys::LOGO, $file);
 
