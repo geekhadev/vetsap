@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Sale\CertificationSiiTicketsController;
+use App\Http\Controllers\Sale\CustomersController;
 use App\Http\Controllers\Sale\SiiCafsController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,8 @@ Route::get('sii-certification-tickets/{certificationSiiTicket}/download/{kind}',
     ->whereUuid('certificationSiiTicket')
     ->whereIn('kind', ['caf', 'envio_dte', 'consumo_folios'])
     ->name('sii-certification-tickets.download');
+
+Route::resource('customers', CustomersController::class)->except(['show']);
 
 Route::get('sii-cafs', [SiiCafsController::class, 'index'])
     ->name('sii-cafs.index');

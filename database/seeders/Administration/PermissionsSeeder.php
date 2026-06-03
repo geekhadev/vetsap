@@ -79,6 +79,22 @@ class PermissionsSeeder extends Seeder
                             ['permission_name' => 'Eliminar', 'permission_slug' => 'delete'],
                         ],
                     ],
+                    [
+                        'module_name' => 'Clientes',
+                        'module_slug' => 'customers',
+                        'permissions' => $permissions_crud,
+                    ],
+                ],
+            ],
+            [
+                'system_name' => 'Medicina',
+                'system_slug' => 'medic',
+                'modules' => [
+                    [
+                        'module_name' => 'Especialidades',
+                        'module_slug' => 'specialties',
+                        'permissions' => $permissions_crud,
+                    ],
                 ],
             ],
             [

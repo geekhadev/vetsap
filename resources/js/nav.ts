@@ -11,6 +11,7 @@ import {
     Receipt,
     Share2,
     ShoppingCart,
+    Stethoscope,
     Tags,
     UserRound,
     Users,
@@ -23,14 +24,16 @@ import { index as systemsIndex } from '@/routes/administration/systems';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
+import { index as specialtiesIndex } from '@/routes/medic/specialties';
+import { index as customersIndex } from '@/routes/sale/customers';
 import { index as siiCafsIndex } from '@/routes/sale/sii-cafs';
 import { index as certificationSiiTicketsIndex } from '@/routes/sale/sii-certification-tickets';
 import { index as countriesIndex } from '@/routes/shared/countries';
 import { index as paymentMethodsIndex } from '@/routes/shared/payment-methods';
 import { index as paymentTypesIndex } from '@/routes/shared/payment-types';
-import { index as statesIndex } from '@/routes/shared/states';
 import { index as siiEconomicActivitiesIndex } from '@/routes/shared/sii-economic-activities';
 import { index as siiTaxDocumentTypesIndex } from '@/routes/shared/sii-tax-document-types';
+import { index as statesIndex } from '@/routes/shared/states';
 import type { NavItem } from '@/types';
 
 export const mainNavItems: NavItem[] = [
@@ -102,6 +105,12 @@ export const mainNavItems: NavItem[] = [
         icon: ShoppingCart,
         items: [
             {
+                title: 'Clientes',
+                href: customersIndex(),
+                icon: Users,
+                permission: 'sale.customers.list',
+            },
+            {
                 title: 'SII Cert. Boletas',
                 href: certificationSiiTicketsIndex(),
                 icon: Receipt,
@@ -112,6 +121,18 @@ export const mainNavItems: NavItem[] = [
                 href: siiCafsIndex(),
                 icon: FileType,
                 permission: 'sale.sii-cafs.view',
+            },
+        ],
+    },
+    {
+        title: 'Medicina',
+        icon: Stethoscope,
+        items: [
+            {
+                title: 'Especialidades',
+                href: specialtiesIndex(),
+                icon: Stethoscope,
+                permission: 'medic.specialties.list',
             },
         ],
     },

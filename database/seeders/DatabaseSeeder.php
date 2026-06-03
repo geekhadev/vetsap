@@ -6,6 +6,8 @@ use App\Enums\UserType;
 use App\Models\User;
 use Database\Seeders\Administration\PermissionsSeeder;
 use Database\Seeders\Configuration\CompaniesSeeder;
+use Database\Seeders\Medic\SpecialtiesSeeder;
+use Database\Seeders\Sale\CustomersSeeder;
 use Database\Seeders\Shared\CountriesSeeder;
 use Database\Seeders\Shared\PaymentMethodsSeeder;
 use Database\Seeders\Shared\PaymentTypesSeeder;
@@ -31,6 +33,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call(PermissionsSeeder::class);
         $this->call(CompaniesSeeder::class);
+        $this->call(CustomersSeeder::class);
+        $this->call(SpecialtiesSeeder::class);
         $this->call(CountriesSeeder::class);
         $this->call(StatesSeeder::class);
         $this->call(PaymentTypesSeeder::class);
