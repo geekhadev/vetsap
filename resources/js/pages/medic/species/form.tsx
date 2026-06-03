@@ -14,10 +14,7 @@ type SpeciesFormProps = {
     entity: Species | null;
 };
 
-type SpeciesFormFields = Pick<
-    Species,
-    'name' | 'is_active' | 'sort_order'
->;
+type SpeciesFormFields = Pick<Species, 'name' | 'is_active'>;
 
 export function SpeciesForm({ open, onOpenChange, entity }: SpeciesFormProps) {
     const { isEdit, formProps, headTitle, description } = useSpeciesForm(entity);
@@ -50,21 +47,6 @@ export function SpeciesForm({ open, onOpenChange, entity }: SpeciesFormProps) {
                         defaultChecked={entity?.is_active ?? true}
                         error={errors.is_active}
                     />
-
-                    {isEdit ? (
-                        <FormTextInput
-                            label="Orden"
-                            placeholder="0"
-                            error={errors.sort_order}
-                            inputProps={{
-                                id: 'species-sort_order',
-                                name: 'sort_order',
-                                type: 'number',
-                                min: 0,
-                                defaultValue: String(entity?.sort_order ?? 0),
-                            }}
-                        />
-                    ) : null}
 
                     <DialogFooter className="gap-2 sm:justify-end">
                         <Button

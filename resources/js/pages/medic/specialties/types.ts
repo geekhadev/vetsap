@@ -6,9 +6,7 @@ export type Specialty = {
     company_id: string;
     name: string;
     description: string | null;
-    icon: string | null;
     is_active: boolean;
-    sort_order: number;
     active_services_count: number;
     created_at: string;
     updated_at: string;

@@ -13,7 +13,6 @@ class SpecialtyStoreRequest extends FormRequest
     {
         $this->merge(SpecialtyPayloadValidationRules::mergeNormalizedNullableFields([
             'description' => $this->input('description'),
-            'icon' => $this->input('icon'),
         ]));
     }
 
@@ -55,7 +54,7 @@ class SpecialtyStoreRequest extends FormRequest
     }
 
     /**
-     * @return array{company_id: string, name: string, description: string|null, icon: string|null, is_active: bool}
+     * @return array{company_id: string, name: string, description: string|null, is_active: bool}
      */
     public function specialtyPayload(): array
     {

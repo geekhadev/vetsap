@@ -34,7 +34,7 @@ class SpecialtyListRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'sort' => $this->input('sort', 'sort_order'),
+            'sort' => $this->input('sort', 'name'),
             'direction' => $this->input('direction', 'asc'),
         ]);
 

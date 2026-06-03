@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'company_id',
     'name',
     'is_active',
-    'sort_order',
 ])]
 class Species extends Model
 {
@@ -23,7 +22,6 @@ class Species extends Model
 
     public const SORTABLE_COLUMNS = [
         'name',
-        'sort_order',
         'is_active',
         'created_at',
     ];
@@ -105,7 +103,6 @@ class Species extends Model
     {
         return [
             'is_active' => 'boolean',
-            'sort_order' => 'integer',
         ];
     }
 }

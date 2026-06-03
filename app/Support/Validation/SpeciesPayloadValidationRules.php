@@ -38,7 +38,6 @@ final class SpeciesPayloadValidationRules
                     ->ignore($speciesId),
             ],
             'is_active' => ['required', 'boolean'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
         ];
     }
 
@@ -55,19 +54,13 @@ final class SpeciesPayloadValidationRules
     }
 
     /**
-     * @return array{name: string, is_active: bool, sort_order?: int}
+     * @return array{name: string, is_active: bool}
      */
     public static function updatePayload(array $validated): array
     {
-        $payload = [
+        return [
             'name' => (string) $validated['name'],
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
         ];
-
-        if (array_key_exists('sort_order', $validated) && $validated['sort_order'] !== null) {
-            $payload['sort_order'] = (int) $validated['sort_order'];
-        }
-
-        return $payload;
     }
 }

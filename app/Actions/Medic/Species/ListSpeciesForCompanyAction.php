@@ -14,7 +14,7 @@ final class ListSpeciesForCompanyAction
     {
         $sort = in_array($filters['sort'], Species::SORTABLE_COLUMNS, true)
             ? $filters['sort']
-            : 'sort_order';
+            : 'name';
         $direction = ($filters['direction'] ?? 'asc') === 'asc' ? 'asc' : 'desc';
         $perPage = (int) ($filters['per_page'] ?? 20);
 
@@ -23,9 +23,6 @@ final class ListSpeciesForCompanyAction
             ->filterIsActive($filters['is_active'] ?? null)
             ->search($filters['search'] ?? null)
             ->orderByColumn($sort, $direction)
-            ->when($sort === 'sort_order', function ($query) use ($direction): void {
-                $query->orderBy('name', $direction === 'asc' ? 'asc' : 'desc');
-            })
             ->paginate($perPage)
             ->withQueryString();
     }

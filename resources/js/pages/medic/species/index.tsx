@@ -46,14 +46,6 @@ function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
     const columns = useMemo<TabledataColumn<Species>[]>(
         () => [
             {
-                key: 'sort_order',
-                label: 'Orden',
-                sortable: true,
-                hideable: false,
-                headerClassName: 'w-0',
-                render: (row) => row.sort_order,
-            },
-            {
                 key: 'name',
                 label: 'Nombre',
                 sortable: true,

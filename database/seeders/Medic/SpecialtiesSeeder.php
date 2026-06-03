@@ -23,7 +23,7 @@ class SpecialtiesSeeder extends Seeder
         ];
 
         Company::query()->each(function (Company $company) use ($specialties): void {
-            foreach ($specialties as $index => $name) {
+            foreach ($specialties as $name) {
                 Specialty::query()->firstOrCreate(
                     [
                         'company_id' => $company->id,
@@ -31,7 +31,6 @@ class SpecialtiesSeeder extends Seeder
                     ],
                     [
                         'is_active' => true,
-                        'sort_order' => $index + 1,
                     ],
                 );
             }

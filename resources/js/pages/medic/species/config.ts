@@ -25,7 +25,7 @@ const PAGE = {
     searchPlaceholder: 'Buscar por nombre…',
 } as const;
 
-const ORDER = { sort: 'sort_order', direction: 'asc' } as const;
+const ORDER = { sort: 'name', direction: 'asc' } as const;
 
 export const CONFIG_TABLEDATA = {
     storageKey: PAGE.storageKey,

@@ -14,9 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'company_id',
     'name',
     'description',
-    'icon',
     'is_active',
-    'sort_order',
 ])]
 class Specialty extends Model
 {
@@ -26,7 +24,6 @@ class Specialty extends Model
 
     public const SORTABLE_COLUMNS = [
         'name',
-        'sort_order',
         'is_active',
         'created_at',
     ];
@@ -116,7 +113,6 @@ class Specialty extends Model
     {
         return [
             'is_active' => 'boolean',
-            'sort_order' => 'integer',
         ];
     }
 }

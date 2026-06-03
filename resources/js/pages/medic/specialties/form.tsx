@@ -15,13 +15,10 @@ type SpecialtyFormProps = {
     entity: Specialty | null;
 };
 
-type SpecialtyFormFields = Pick<
-    Specialty,
-    'name' | 'description' | 'icon' | 'is_active' | 'sort_order'
->;
+type SpecialtyFormFields = Pick<Specialty, 'name' | 'description' | 'is_active'>;
 
 export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps) {
-    const { isEdit, formProps, headTitle, description } = useSpecialtyForm(entity);
+    const { formProps, headTitle, description } = useSpecialtyForm(entity);
 
     return (
         <InertiaFormDialog<SpecialtyFormFields>
@@ -60,38 +57,11 @@ export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps
                         }}
                     />
 
-                    <FormTextInput
-                        label="Ícono"
-                        placeholder="Nombre de ícono Lucide o emoji"
-                        error={errors.icon}
-                        inputProps={{
-                            id: 'specialty-icon',
-                            name: 'icon',
-                            maxLength: 100,
-                            defaultValue: entity?.icon ?? '',
-                        }}
-                    />
-
                     <SpecialtyActiveSwitch
                         defaultChecked={entity?.is_active ?? true}
                         hasActiveServices={(entity?.active_services_count ?? 0) > 0}
                         error={errors.is_active}
                     />
-
-                    {isEdit ? (
-                        <FormTextInput
-                            label="Orden"
-                            placeholder="0"
-                            error={errors.sort_order}
-                            inputProps={{
-                                id: 'specialty-sort_order',
-                                name: 'sort_order',
-                                type: 'number',
-                                min: 0,
-                                defaultValue: String(entity?.sort_order ?? 0),
-                            }}
-                        />
-                    ) : null}
 
                     <DialogFooter className="gap-2 sm:justify-end">
                         <Button
@@ -106,7 +76,7 @@ export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps
                             type="submit"
                             loading={processing}
                             icon={<Save />}
-                            label={isEdit ? 'Guardar cambios' : 'Guardar'}
+                            label={entity ? 'Guardar cambios' : 'Guardar'}
                             labelLoading="Guardando…"
                             containerClassName="w-auto"
                         />

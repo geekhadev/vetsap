@@ -46,14 +46,6 @@ function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
     const columns = useMemo<TabledataColumn<Specialty>[]>(
         () => [
             {
-                key: 'sort_order',
-                label: 'Orden',
-                sortable: true,
-                hideable: false,
-                headerClassName: 'w-0',
-                render: (row) => row.sort_order,
-            },
-            {
                 key: 'name',
                 label: 'Nombre',
                 sortable: true,
@@ -64,12 +56,6 @@ function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
                 label: 'Descripción',
                 sortable: false,
                 render: (row) => row.description ?? '—',
-            },
-            {
-                key: 'icon',
-                label: 'Ícono',
-                sortable: false,
-                render: (row) => row.icon ?? '—',
             },
             {
                 key: 'is_active',

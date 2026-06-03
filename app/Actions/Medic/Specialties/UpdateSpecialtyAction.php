@@ -8,7 +8,7 @@ use Illuminate\Validation\ValidationException;
 final class UpdateSpecialtyAction
 {
     /**
-     * @param  array{name: string, description: string|null, icon: string|null, is_active: bool, sort_order?: int}  $data
+     * @param  array{name: string, description: string|null, is_active: bool}  $data
      */
     public function execute(Specialty $specialty, array $data): Specialty
     {

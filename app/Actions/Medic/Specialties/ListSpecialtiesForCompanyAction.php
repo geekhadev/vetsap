@@ -14,7 +14,7 @@ final class ListSpecialtiesForCompanyAction
     {
         $sort = in_array($filters['sort'], Specialty::SORTABLE_COLUMNS, true)
             ? $filters['sort']
-            : 'sort_order';
+            : 'name';
         $direction = ($filters['direction'] ?? 'asc') === 'asc' ? 'asc' : 'desc';
         $perPage = (int) ($filters['per_page'] ?? 20);
 

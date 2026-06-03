@@ -18,11 +18,9 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->string('name');
             $table->boolean('is_active')->default(true);
-            $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
 
             $table->unique(['company_id', 'name'], 'medic_species_company_name_unique');
-            $table->index(['company_id', 'sort_order'], 'medic_species_company_sort_idx');
             $table->index('is_active', 'medic_species_is_active_idx');
         });
     }

@@ -30,7 +30,7 @@ class SpeciesUpdateRequest extends FormRequest
     }
 
     /**
-     * @return array{name: string, is_active: bool, sort_order?: int}
+     * @return array{name: string, is_active: bool}
      */
     public function speciesPayload(): array
     {

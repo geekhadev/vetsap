@@ -7,7 +7,7 @@ use App\Models\Medic\Species;
 final class UpdateSpeciesAction
 {
     /**
-     * @param  array{name: string, is_active: bool, sort_order?: int}  $data
+     * @param  array{name: string, is_active: bool}  $data
      */
     public function execute(Species $species, array $data): Species
     {
