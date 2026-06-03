@@ -33,6 +33,16 @@ import { destroy, index as rolesIndex, store, sync } from '@/routes/configuratio
 
 const AUTOSAVE_MS = 280;
 
+function roleDeleteBlockedTitle(assignedUsersCount: number): string {
+    if (assignedUsersCount <= 0) {
+        return '';
+    }
+
+    return assignedUsersCount === 1
+        ? 'No se puede eliminar: 1 usuario asignado. Reasígnelos antes de eliminar el rol.'
+        : `No se puede eliminar: ${assignedUsersCount} usuarios asignados. Reasígnelos antes de eliminar el rol.`;
+}
+
 function cloneRoles(roles: MatrixRole[]): MatrixRole[] {
     return roles.map((r) => ({
         ...r,
@@ -388,6 +398,12 @@ function RolesMatrixPage() {
     }, [draftRoleName]);
 
     const removeRoleColumn = useCallback((role: MatrixRole) => {
+        const assignedCount = role.assigned_users_count ?? 0;
+
+        if (assignedCount > 0) {
+            return;
+        }
+
         const message = role.is_public
             ? `¿Eliminar el rol global «${role.name}»? Esto afecta a todas las empresas.`
             : `¿Eliminar el rol «${role.name}»?`;
@@ -579,7 +595,14 @@ function RolesMatrixPage() {
                                     Permiso
                                 </th>
                                 {visibleRoleColumns.map(
-                                    ({ role, matrixIndex }) => (
+                                    ({ role, matrixIndex }) => {
+                                    const assignedCount =
+                                        role.assigned_users_count ?? 0;
+                                    const canDeleteRole = assignedCount === 0;
+                                    const deleteBlockedTitle =
+                                        roleDeleteBlockedTitle(assignedCount);
+
+                                    return (
                                     <th
                                         key={role.id}
                                         className={cn(
@@ -607,17 +630,32 @@ function RolesMatrixPage() {
                                                 type="button"
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-7 w-7 shrink-0 rounded-none border-l border-input text-destructive hover:bg-destructive/10 hover:text-destructive dark:border-input"
+                                                disabled={!canDeleteRole}
+                                                title={
+                                                    canDeleteRole
+                                                        ? undefined
+                                                        : deleteBlockedTitle
+                                                }
+                                                className={cn(
+                                                    'h-7 w-7 shrink-0 rounded-none border-l border-input text-destructive hover:bg-destructive/10 hover:text-destructive dark:border-input',
+                                                    !canDeleteRole &&
+                                                        'pointer-events-auto cursor-not-allowed opacity-40 hover:bg-transparent',
+                                                )}
                                                 onClick={() =>
                                                     removeRoleColumn(role)
                                                 }
-                                                aria-label={`Eliminar rol ${role.name}`}
+                                                aria-label={
+                                                    canDeleteRole
+                                                        ? `Eliminar rol ${role.name}`
+                                                        : `No se puede eliminar el rol ${role.name}: ${assignedCount} usuario(s) asignado(s)`
+                                                }
                                             >
                                                 <Trash2 className="size-3" />
                                             </Button>
                                         </div>
                                     </th>
-                                ))}
+                                    );
+                                })}
                                 {draftHeader}
                             </tr>
                         </thead>

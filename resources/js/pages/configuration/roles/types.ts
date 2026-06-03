@@ -23,6 +23,7 @@ export type MatrixRole = {
     name: string;
     is_public?: boolean;
     permission_ids: string[];
+    assigned_users_count?: number;
 };
 
 export type RolesMatrixPageProps = {

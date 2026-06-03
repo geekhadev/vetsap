@@ -15,6 +15,7 @@ class ListRolesForMatrixAction
     {
         return Role::query()
             ->with('permissions')
+            ->withCount(['userCompanyRoles as assigned_users_count'])
             ->where(function (Builder $query) use ($companyId, $includePublicGlobalRoles): void {
                 $query->where(function (Builder $q) use ($companyId): void {
                     $q->forCompany($companyId)->private();

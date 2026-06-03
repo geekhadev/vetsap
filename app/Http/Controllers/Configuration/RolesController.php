@@ -8,6 +8,7 @@ use App\Actions\Configuration\Roles\DeleteRoleAction;
 use App\Actions\Configuration\Roles\ListRolesForMatrixAction;
 use App\Actions\Configuration\Roles\SyncRolesMatrixAction;
 use App\Enums\UserType;
+use App\Exceptions\RoleHasUsersException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Configuration\StoreRoleColumnRequest;
 use App\Http\Requests\Configuration\SyncRolesMatrixRequest;
@@ -47,6 +48,7 @@ class RolesController extends Controller
             'name' => $role->name,
             'is_public' => $role->is_public,
             'permission_ids' => $role->permissions->pluck('id')->values()->all(),
+            'assigned_users_count' => (int) $role->assigned_users_count,
         ])->values()->all();
 
         return Inertia::render('configuration/roles/index', [
@@ -111,7 +113,13 @@ class RolesController extends Controller
 
         $this->ensureRoleBelongsToUserCompany($request, $role);
 
-        $action->execute($role);
+        try {
+            $action->execute($role);
+        } catch (RoleHasUsersException $e) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $e->getMessage()]);
+
+            return back();
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Rol eliminado.']);
 

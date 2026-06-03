@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignUuid('company_id')->constrained('configuration_companies')->cascadeOnDelete();
-            $table->foreignUuid('role_id')->constrained('configuration_roles')->cascadeOnDelete();
+            $table->foreignUuid('role_id')->constrained('configuration_roles')->restrictOnDelete();
             $table->timestamps();
 
             $table->unique(['user_id', 'company_id', 'role_id']);

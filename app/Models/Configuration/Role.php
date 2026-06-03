@@ -4,6 +4,7 @@ namespace App\Models\Configuration;
 
 use App\Models\Administration\Permission;
 use App\Models\Company;
+use App\Models\UserCompanyRole;
 use Database\Factories\Configuration\RoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['name', 'is_public', 'company_id'])]
 class Role extends Model
@@ -133,6 +135,14 @@ class Role extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * @return HasMany<UserCompanyRole, $this>
+     */
+    public function userCompanyRoles(): HasMany
+    {
+        return $this->hasMany(UserCompanyRole::class, 'role_id');
     }
 
     /**
