@@ -6,9 +6,10 @@ use App\Enums\CompanyDocumentType;
 use App\Models\Configuration\Role;
 use App\Models\Sale\CertificationSiiTicket;
 use App\Models\Sale\SiiCaf;
-use Database\Factories\CompanyFactory;
 use App\Models\Web\ClinicWebSetting;
+use Database\Factories\CompanyFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +36,25 @@ class Company extends Model
     use HasFactory, HasUuids;
 
     protected $table = 'configuration_companies';
+
+    /**
+     * Empresas donde el usuario tiene rol Owner en `user_company_roles`.
+     *
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
+     */
+    public function scopeOwnedBy(Builder $query, User $user): Builder
+    {
+        $ownerRoleId = Role::query()->systemOwner()->value('id');
+
+        if ($ownerRoleId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas('userRoles', fn (Builder $roleQuery) => $roleQuery
+            ->where('user_id', $user->id)
+            ->where('role_id', $ownerRoleId));
+    }
 
     /**
      * @return HasMany<UserCompanyRole, $this>
