@@ -1,6 +1,7 @@
 /** Empresa activa persistida en sesión (backend `company_selected`). */
 export type CompanySelectedSession = {
     id: string;
+    slug?: string;
     document_type: string | null;
     document_number: string | null;
     name: string;

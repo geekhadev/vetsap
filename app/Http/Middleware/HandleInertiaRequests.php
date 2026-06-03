@@ -54,6 +54,7 @@ class HandleInertiaRequests extends Middleware
             $selectableCompanies = $list
                 ->map(fn (Company $company): array => [
                     'id' => $company->id,
+                    'slug' => $company->slug,
                     'name' => $company->name,
                     'alias' => $company->alias,
                     'document_type' => $company->document_type?->value,
@@ -63,6 +64,18 @@ class HandleInertiaRequests extends Middleware
                 ->all();
             $showCompanySwitcher = $list->count() > 1;
             $companySelected = $request->session()->get('company_selected');
+
+            if (is_array($companySelected) && is_string($companySelected['id'] ?? null) && $companySelected['id'] !== '') {
+                $slug = $companySelected['slug'] ?? null;
+
+                if (! is_string($slug) || $slug === '') {
+                    $match = $list->firstWhere('id', $companySelected['id']);
+
+                    if ($match instanceof Company) {
+                        $companySelected['slug'] = $match->slug;
+                    }
+                }
+            }
         }
 
         return [

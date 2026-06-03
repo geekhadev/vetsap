@@ -55,6 +55,7 @@ class SetSelectedCompanyAction
     {
         return [
             'id' => $company->id,
+            'slug' => $company->slug,
             'document_type' => $company->document_type->value,
             'document_number' => $company->document_number,
             'name' => $company->name,
