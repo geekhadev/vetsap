@@ -52,10 +52,10 @@ final class CompanySiiIntegrationValidationRules
                 'string',
                 Rule::exists('shared_sii_economic_activities', 'code'),
             ],
-            CompanySiiIntegrationSettingKeys::RESOLUTION_DATE_TICKETS => ['nullable', 'date'],
+            CompanySiiIntegrationSettingKeys::RESOLUTION_DATE_TICKETS => ['nullable', 'date', 'before_or_equal:today'],
             CompanySiiIntegrationSettingKeys::RESOLUTION_NUMBER_TICKETS => ['nullable', 'string', 'max:255'],
             CompanySiiIntegrationSettingKeys::CERTIFICATION_EMAIL_TICKETS => ['nullable', 'string', 'email', 'max:255'],
-            CompanySiiIntegrationSettingKeys::RESOLUTION_DATE_INVOICES => ['nullable', 'date'],
+            CompanySiiIntegrationSettingKeys::RESOLUTION_DATE_INVOICES => ['nullable', 'date', 'before_or_equal:today'],
             CompanySiiIntegrationSettingKeys::RESOLUTION_NUMBER_INVOICES => ['nullable', 'string', 'max:255'],
             CompanySiiIntegrationSettingKeys::CERTIFICATION_EMAIL_INVOICES => ['nullable', 'string', 'email', 'max:255'],
         ];
