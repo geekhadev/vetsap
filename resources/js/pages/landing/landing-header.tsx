@@ -15,6 +15,7 @@ const navLinks = [
     { title: 'Producto', href: '#producto', id: 'producto' },
     { title: 'Funcionalidades', href: '#modulos', id: 'modulos' },
     { title: 'Precios', href: '#precios', id: 'precios' },
+    { title: 'FAQ', href: '#faq', id: 'faq' },
 ] as const;
 
 export function LandingHeader({ canRegister }: LandingSectionProps) {

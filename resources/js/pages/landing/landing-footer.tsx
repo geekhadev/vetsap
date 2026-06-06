@@ -4,6 +4,7 @@ const navLinks = [
     { title: 'Producto', href: '#producto' },
     { title: 'Funcionalidades', href: '#modulos' },
     { title: 'Precios', href: '#precios' },
+    { title: 'FAQ', href: '#faq' },
 ];
 
 export function LandingFooter() {

@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { LandingCta } from '@/pages/landing/landing-cta';
+import { LandingFaq } from '@/pages/landing/landing-faq';
 import { LandingFeatures } from '@/pages/landing/landing-features';
 import { LandingFooter } from '@/pages/landing/landing-footer';
 import { LandingHeader } from '@/pages/landing/landing-header';
@@ -45,6 +46,9 @@ export default function LandingIndex({
                 </LandingSection>
                 <LandingSection tone="muted">
                     <LandingPricing canRegister={canRegister} />
+                </LandingSection>
+                <LandingSection tone="white">
+                    <LandingFaq />
                 </LandingSection>
                 <LandingSection tone="white">
                     <LandingCta canRegister={canRegister} />
