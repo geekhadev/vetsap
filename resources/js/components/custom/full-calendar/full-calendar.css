@@ -293,8 +293,22 @@
     border-width: 0;
 }
 
+/* La capa de eventos no bloquea slots vacíos; solo los harness capturan clics */
+.vetsap-full-calendar .fc-timegrid-col-events {
+    pointer-events: none;
+    z-index: 3;
+}
+
 .vetsap-full-calendar .fc-timegrid-event-harness {
     margin-inline: 0;
+    pointer-events: auto;
+}
+
+.vetsap-full-calendar .fc-timegrid-event-harness .fc-timegrid-event,
+.vetsap-full-calendar .fc-daygrid-event-harness .fc-daygrid-event {
+    height: 100%;
+    pointer-events: auto;
+    width: 100%;
 }
 
 .vetsap-full-calendar .fc-event-main {
@@ -426,6 +440,12 @@
     cursor: pointer;
 }
 
-.vetsap-full-calendar.is-slot-selectable .fc-event:not(.holiday-blocked) {
+/* Citas clicables: FC renderiza <a> sin href y en timeGrid el hover cae en el harness */
+.vetsap-full-calendar .is-appointment-event,
+.vetsap-full-calendar .is-appointment-event .fc-event-main,
+.vetsap-full-calendar .is-appointment-event .fc-custom-event,
+.vetsap-full-calendar .fc-timegrid-event-harness:has(.is-appointment-event),
+.vetsap-full-calendar .fc-daygrid-event-harness:has(.is-appointment-event),
+.vetsap-full-calendar .fc-list-event.is-appointment-event {
     cursor: pointer;
 }

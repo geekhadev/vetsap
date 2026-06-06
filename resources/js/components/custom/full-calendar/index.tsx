@@ -1,4 +1,10 @@
-import type { DayHeaderContentArg, EventClickArg, EventContentArg, DateSpanApi } from '@fullcalendar/core';
+import type {
+    DayHeaderContentArg,
+    EventClickArg,
+    EventContentArg,
+    EventMountArg,
+    DateSpanApi,
+} from '@fullcalendar/core';
 import esLocale from '@fullcalendar/core/locales/es';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import type { DateClickArg } from '@fullcalendar/interaction';
@@ -7,7 +13,7 @@ import listPlugin from '@fullcalendar/list';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { ChevronLeft, ChevronRight, CirclePlus } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState  } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {CSSProperties} from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -46,6 +52,71 @@ const CALENDAR_VIEWS: CalendarViewOption[] = [
     { id: 'listWeek', label: 'Lista' },
 ];
 
+const APPOINTMENT_ID_DATA_ATTRIBUTE = 'data-appointment-id';
+
+function findAppointmentIdInElement(element: Element | null): string | null {
+    if (!element) {
+        return null;
+    }
+
+    const marked = element.closest(`[${APPOINTMENT_ID_DATA_ATTRIBUTE}]`);
+
+    if (marked) {
+        return marked.getAttribute(APPOINTMENT_ID_DATA_ATTRIBUTE);
+    }
+
+    const eventEl = element.closest(
+        '.fc-event:not(.fc-bg-event), .fc-list-event',
+    );
+
+    if (eventEl) {
+        return eventEl.getAttribute(APPOINTMENT_ID_DATA_ATTRIBUTE);
+    }
+
+    const harness = element.closest(
+        '.fc-timegrid-event-harness, .fc-daygrid-event-harness',
+    );
+
+    if (harness) {
+        const appointmentEvent = harness.querySelector(
+            '.fc-event:not(.fc-bg-event)',
+        );
+
+        return appointmentEvent?.getAttribute(APPOINTMENT_ID_DATA_ATTRIBUTE) ?? null;
+    }
+
+    return null;
+}
+
+function resolveAppointmentIdFromPointerEvent(
+    event: MouseEvent | PointerEvent,
+): string | null {
+    const { clientX, clientY } = event;
+
+    if (typeof document.elementsFromPoint === 'function') {
+        for (const element of document.elementsFromPoint(clientX, clientY)) {
+            const appointmentId = findAppointmentIdInElement(element);
+
+            if (appointmentId) {
+                return appointmentId;
+            }
+        }
+    }
+
+    const hit = document.elementFromPoint(clientX, clientY);
+    const fromHit = findAppointmentIdInElement(hit);
+
+    if (fromHit) {
+        return fromHit;
+    }
+
+    if (event.target instanceof Element) {
+        return findAppointmentIdInElement(event.target);
+    }
+
+    return null;
+}
+
 function renderEventContent(arg: EventContentArg) {
     if (arg.event.extendedProps.isHoliday) {
         const holidayName = arg.event.extendedProps.holidayName as string;
@@ -70,6 +141,7 @@ function renderEventContent(arg: EventContentArg) {
     return (
         <div
             className={cn('fc-custom-event', cancelled && 'is-cancelled')}
+            data-appointment-id={String(arg.event.id)}
         >
             <div className="fc-custom-event-title">{arg.event.title}</div>
             {showSubtitle ? (
@@ -88,6 +160,10 @@ export function VetsapFullCalendar({
     onAppointmentClick,
 }: FullCalendarProps) {
     const calendarRef = useRef<FullCalendar>(null);
+    const calendarRootRef = useRef<HTMLDivElement>(null);
+    const timeGridEventClickCleanups = useRef(
+        new WeakMap<HTMLElement, () => void>(),
+    );
     const [activeView, setActiveView] = useState<CalendarViewId>('threeDay');
     const initialScrollTime = useMemo(() => resolveCalendarScrollTime(), []);
 
@@ -125,6 +201,7 @@ export function VetsapFullCalendar({
                 start: event.start,
                 end: event.end,
                 classNames: [
+                    'is-appointment-event',
                     ...appointmentStatusCalendarEventClasses(event.statusColor),
                     ...(event.cancelled ? ['is-cancelled'] : []),
                 ],
@@ -194,18 +271,54 @@ export function VetsapFullCalendar({
         [holidayDates],
     );
 
-    const handleDateClick = useCallback(
-        (arg: DateClickArg) => {
-            if (!canCreate || !onNewAppointment) {
+    const handleAppointmentPointerUp = useCallback(
+        (event: PointerEvent) => {
+            if (!onAppointmentClick) {
                 return;
             }
 
-            const target = arg.jsEvent.target;
+            const appointmentId = resolveAppointmentIdFromPointerEvent(event);
 
-            if (
-                target instanceof Element &&
-                target.closest('.fc-event:not(.fc-bg-event)')
-            ) {
+            if (!appointmentId) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            onAppointmentClick(appointmentId);
+        },
+        [onAppointmentClick],
+    );
+
+    useEffect(() => {
+        const root = calendarRootRef.current;
+
+        if (!root || !onAppointmentClick) {
+            return;
+        }
+
+        root.addEventListener('pointerup', handleAppointmentPointerUp, true);
+
+        return () => {
+            root.removeEventListener(
+                'pointerup',
+                handleAppointmentPointerUp,
+                true,
+            );
+        };
+    }, [handleAppointmentPointerUp, onAppointmentClick]);
+
+    const handleDateClick = useCallback(
+        (arg: DateClickArg) => {
+            const appointmentId = resolveAppointmentIdFromPointerEvent(
+                arg.jsEvent,
+            );
+
+            if (appointmentId) {
+                return;
+            }
+
+            if (!canCreate || !onNewAppointment) {
                 return;
             }
 
@@ -230,10 +343,63 @@ export function VetsapFullCalendar({
 
             arg.jsEvent.preventDefault();
             arg.jsEvent.stopPropagation();
-            onAppointmentClick(arg.event.id);
+            onAppointmentClick(String(arg.event.id));
         },
         [onAppointmentClick],
     );
+
+    const handleEventDidMount = useCallback(
+        (arg: EventMountArg) => {
+            if (arg.event.extendedProps.isHoliday || !arg.event.id) {
+                return;
+            }
+
+            const appointmentId = String(arg.event.id);
+
+            arg.el.setAttribute(APPOINTMENT_ID_DATA_ATTRIBUTE, appointmentId);
+            arg.el.style.cursor = 'pointer';
+
+            const harness = arg.el.closest(
+                '.fc-timegrid-event-harness, .fc-daygrid-event-harness',
+            );
+
+            if (harness instanceof HTMLElement) {
+                harness.setAttribute(APPOINTMENT_ID_DATA_ATTRIBUTE, appointmentId);
+                harness.style.cursor = 'pointer';
+            }
+
+            const viewType = arg.view.type;
+
+            if (!viewType.includes('timeGrid') && viewType !== 'threeDay') {
+                return;
+            }
+
+            if (!onAppointmentClick) {
+                return;
+            }
+
+            const handleTimeGridClick = (mouseEvent: MouseEvent) => {
+                mouseEvent.preventDefault();
+                mouseEvent.stopPropagation();
+                onAppointmentClick(appointmentId);
+            };
+
+            arg.el.addEventListener('click', handleTimeGridClick);
+            timeGridEventClickCleanups.current.set(arg.el, () => {
+                arg.el.removeEventListener('click', handleTimeGridClick);
+            });
+        },
+        [onAppointmentClick],
+    );
+
+    const handleEventWillUnmount = useCallback((arg: EventMountArg) => {
+        const cleanup = timeGridEventClickCleanups.current.get(arg.el);
+
+        if (cleanup) {
+            cleanup();
+            timeGridEventClickCleanups.current.delete(arg.el);
+        }
+    }, []);
 
     const handleNewAppointmentClick = useCallback(() => {
         onNewAppointment?.();
@@ -339,7 +505,10 @@ export function VetsapFullCalendar({
                 ) : null}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-hidden px-4 pt-3 pb-4">
+            <div
+                ref={calendarRootRef}
+                className="min-h-0 flex-1 overflow-hidden px-4 pt-3 pb-4"
+            >
                 <FullCalendar
                     ref={calendarRef}
                     plugins={[
@@ -370,6 +539,8 @@ export function VetsapFullCalendar({
                     eventMinHeight={40}
                     events={events}
                     eventContent={renderEventContent}
+                    eventDidMount={handleEventDidMount}
+                    eventWillUnmount={handleEventWillUnmount}
                     dayHeaderContent={dayHeaderContent}
                     dayHeaderClassNames={dayHeaderClassNames}
                     dayCellClassNames={dayCellClassNames}
