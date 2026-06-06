@@ -89,7 +89,7 @@ export function buildTabledataIsActiveStatusColumn<T extends { is_active: boolea
     return {
         key: 'is_active',
         label: 'Estado',
-        sortable: true,
+        sortable: false,
         headerClassName: TABLEDATA_STATUS_COLUMN_CLASS,
         className: TABLEDATA_STATUS_COLUMN_CLASS,
         render: (row) => (
@@ -134,7 +134,7 @@ export function buildTabledataWebVisibilityColumn<
     return {
         key: 'use_web',
         label: 'Web',
-        sortable: true,
+        sortable: false,
         headerClassName: TABLEDATA_STATUS_COLUMN_CLASS,
         className: TABLEDATA_STATUS_COLUMN_CLASS,
         render: (row) => <WebVisibilityBadge visible={row.use_web} />,
