@@ -1,6 +1,7 @@
 import {
     Boxes,
     Building2,
+    CalendarDays,
     ClipboardList,
     FileType,
     Globe,
@@ -25,6 +26,7 @@ import { dashboard } from '@/routes';
 import { index as modulesIndex } from '@/routes/administration/modules';
 import { index as permissionsIndex } from '@/routes/administration/permissions';
 import { index as systemsIndex } from '@/routes/administration/systems';
+import { index as calendarIndex } from '@/routes/agenda/calendar';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
@@ -192,6 +194,18 @@ export const mainNavItems: NavItem[] = [
                 href: patientsIndex(),
                 icon: PawPrint,
                 permission: 'medic.patients.list',
+            },
+        ],
+    },
+    {
+        title: 'Agenda',
+        icon: CalendarDays,
+        items: [
+            {
+                title: 'Calendario',
+                href: calendarIndex(),
+                icon: CalendarDays,
+                permission: 'agenda.calendar.list',
             },
         ],
     },

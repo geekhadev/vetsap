@@ -139,6 +139,17 @@ class PermissionsSeeder extends Seeder
                 ],
             ],
             [
+                'system_name' => 'Agenda',
+                'system_slug' => 'agenda',
+                'modules' => [
+                    [
+                        'module_name' => 'Calendario',
+                        'module_slug' => 'calendar',
+                        'permissions' => $permissions_crud,
+                    ],
+                ],
+            ],
+            [
                 'system_name' => 'Compartido',
                 'system_slug' => 'shared',
                 'modules' => [

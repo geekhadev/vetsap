@@ -42,6 +42,10 @@ Route::middleware(['auth', 'verified', EnsureCompanySelected::class])->group(fun
         require __DIR__.'/store.php';
     });
 
+    Route::prefix('agenda')->name('agenda.')->group(function () {
+        require __DIR__.'/agenda.php';
+    });
+
     Route::prefix('shared')->name('shared.')->group(function () {
         require __DIR__.'/shared.php';
     });
