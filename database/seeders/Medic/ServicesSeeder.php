@@ -49,7 +49,7 @@ class ServicesSeeder extends Seeder
                             'price' => $row['price'],
                             'duration_minutes' => $row['duration_minutes'],
                             'is_active' => true,
-                            'is_public_booking' => false,
+                            'use_web' => false,
                         ],
                     );
                 }

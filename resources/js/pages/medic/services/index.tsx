@@ -22,7 +22,7 @@ import {
     formatDuration,
     formatIsActive,
     formatPrice,
-    formatPublicBooking,
+    formatUseWeb,
 } from '@/pages/medic/services/types';
 import type { Service, ServiceListFilters, ServicesIndexFiltersDraftFull } from '@/pages/medic/services/types';
 
@@ -60,14 +60,14 @@ function ServicesIndex() {
             },
             buildTabledataIsActiveStatusColumn<Service>({ formatIsActive }),
             {
-                key: 'is_public_booking',
+                key: 'use_web',
                 label: 'Citas web',
                 sortable: true,
                 render: (row) => (
                     <Badge
-                        variant={row.is_public_booking ? 'default' : 'secondary'}
+                        variant={row.use_web ? 'default' : 'secondary'}
                     >
-                        {formatPublicBooking(row.is_public_booking)}
+                        {formatUseWeb(row.use_web)}
                     </Badge>
                 ),
             },

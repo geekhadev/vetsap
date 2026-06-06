@@ -24,7 +24,7 @@ return new class extends Migration
             $table->decimal('price', 12, 0)->nullable();
             $table->unsignedInteger('duration_minutes')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->boolean('is_public_booking')->default(false);
+            $table->boolean('use_web')->default(false);
             $table->timestamps();
 
             $table->unique(['company_id', 'name'], 'medic_services_company_name_unique');

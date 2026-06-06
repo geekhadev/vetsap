@@ -6,7 +6,7 @@ import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
 import { useServiceForm } from '@/pages/medic/services/hooks/use-form';
-import { ServicePublicBookingSwitch } from '@/pages/medic/services/service-public-booking-switch';
+import { ServiceUseWebSwitch } from '@/pages/medic/services/service-use-web-switch';
 import type { Service, SpecialtyOption } from '@/pages/medic/services/types';
 
 type ServiceFormProps = {
@@ -24,7 +24,7 @@ type ServiceFormFields = Pick<
     | 'price'
     | 'duration_minutes'
     | 'is_active'
-    | 'is_public_booking'
+    | 'use_web'
 >;
 
 export function ServiceForm({
@@ -137,9 +137,9 @@ export function ServiceForm({
                         description="Disponible para uso interno y asignación en el sistema."
                     />
 
-                    <ServicePublicBookingSwitch
-                        defaultChecked={entity?.is_public_booking ?? false}
-                        error={errors.is_public_booking}
+                    <ServiceUseWebSwitch
+                        defaultChecked={entity?.use_web ?? false}
+                        error={errors.use_web}
                     />
 
                     <FormDialogFooter

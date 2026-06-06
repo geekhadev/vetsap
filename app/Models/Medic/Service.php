@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'price',
     'duration_minutes',
     'is_active',
-    'is_public_booking',
+    'use_web',
 ])]
 class Service extends Model
 {
@@ -32,7 +32,7 @@ class Service extends Model
         'price',
         'duration_minutes',
         'is_active',
-        'is_public_booking',
+        'use_web',
         'created_at',
     ];
 
@@ -74,7 +74,7 @@ class Service extends Model
             'price' => 'decimal:0',
             'duration_minutes' => 'integer',
             'is_active' => 'boolean',
-            'is_public_booking' => 'boolean',
+            'use_web' => 'boolean',
         ];
     }
 }

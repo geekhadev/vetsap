@@ -25,7 +25,7 @@ export type Service = {
     price: string | null;
     duration_minutes: number | null;
     is_active: boolean;
-    is_public_booking: boolean;
+    use_web: boolean;
     specialty?: ServiceSpecialtyRef;
     created_at: string;
     updated_at: string;
@@ -62,7 +62,7 @@ export function formatIsActive(value: boolean): string {
     return formatIsActiveBase(value, 'm');
 }
 
-export function formatPublicBooking(value: boolean): string {
+export function formatUseWeb(value: boolean): string {
     return value ? 'Sí' : 'No';
 }
 

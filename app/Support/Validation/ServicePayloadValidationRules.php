@@ -30,7 +30,7 @@ final class ServicePayloadValidationRules
             'price' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
             'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
             'is_active' => ['required', 'boolean'],
-            'is_public_booking' => ['required', 'boolean'],
+            'use_web' => ['required', 'boolean'],
         ];
     }
 
@@ -58,7 +58,7 @@ final class ServicePayloadValidationRules
             'price' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
             'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
             'is_active' => ['required', 'boolean'],
-            'is_public_booking' => ['required', 'boolean'],
+            'use_web' => ['required', 'boolean'],
         ];
     }
 
@@ -88,7 +88,7 @@ final class ServicePayloadValidationRules
      *     price: string|null,
      *     duration_minutes: int|null,
      *     is_active: bool,
-     *     is_public_booking: bool
+     *     use_web: bool
      * }
      */
     public static function storePayload(string $companyId, array $validated): array
@@ -101,7 +101,7 @@ final class ServicePayloadValidationRules
             'price' => self::normalizePrice($validated['price'] ?? null),
             'duration_minutes' => self::normalizeDuration($validated['duration_minutes'] ?? null),
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
-            'is_public_booking' => filter_var($validated['is_public_booking'], FILTER_VALIDATE_BOOLEAN),
+            'use_web' => filter_var($validated['use_web'], FILTER_VALIDATE_BOOLEAN),
         ];
     }
 
@@ -113,7 +113,7 @@ final class ServicePayloadValidationRules
      *     price: string|null,
      *     duration_minutes: int|null,
      *     is_active: bool,
-     *     is_public_booking: bool
+     *     use_web: bool
      * }
      */
     public static function updatePayload(array $validated): array
@@ -125,7 +125,7 @@ final class ServicePayloadValidationRules
             'price' => self::normalizePrice($validated['price'] ?? null),
             'duration_minutes' => self::normalizeDuration($validated['duration_minutes'] ?? null),
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
-            'is_public_booking' => filter_var($validated['is_public_booking'], FILTER_VALIDATE_BOOLEAN),
+            'use_web' => filter_var($validated['use_web'], FILTER_VALIDATE_BOOLEAN),
         ];
     }
 
