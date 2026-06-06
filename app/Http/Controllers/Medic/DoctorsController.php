@@ -15,10 +15,7 @@ use App\Http\Requests\Medic\DoctorUpdateRequest;
 use App\Models\Company;
 use App\Models\Medic\Doctor;
 use App\Models\Medic\Service;
-use App\Models\Medic\Specialty;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -47,24 +44,12 @@ class DoctorsController extends Controller
         return Inertia::render('medic/doctors/index', [
             'data' => $data,
             'filters' => $request->filtersForFrontend(),
-            'specialties' => $company instanceof Company
-                ? Specialty::query()
-                    ->forCompany($company->id)
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'is_active'])
-                : [],
             'services' => $company instanceof Company
                 ? Service::query()
                     ->forCompany($company->id)
                     ->where('is_active', true)
                     ->orderBy('name')
                     ->get(['id', 'name', 'duration_minutes', 'specialty_id'])
-                : [],
-            'users' => $company instanceof Company
-                ? User::query()
-                    ->whereHas('companyRoles', fn ($q) => $q->where('company_id', $company->id))
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'email'])
                 : [],
             'can' => [
                 'create' => $user?->can('create', Doctor::class) ?? false,
@@ -87,7 +72,7 @@ class DoctorsController extends Controller
 
         $company = $request->selectedCompany();
         if (! $company instanceof Company) {
-            return back()->withErrors(['name' => 'Debes seleccionar una empresa para crear doctores.']);
+            return back()->withErrors(['first_name' => 'Debes seleccionar una empresa para crear doctores.']);
         }
 
         $action->execute($request->doctorPayload());
@@ -143,16 +128,5 @@ class DoctorsController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Doctor eliminado.']);
 
         return to_route('medic.doctors.index');
-    }
-
-    private function resolveCompany(Request $request): ?Company
-    {
-        $id = data_get($request->session()->get('company_selected'), 'id');
-
-        if (! is_string($id) || $id === '') {
-            return null;
-        }
-
-        return Company::query()->find($id);
     }
 }
