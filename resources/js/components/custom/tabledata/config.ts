@@ -52,7 +52,11 @@ export const TABLEDATA_LIST_SHELL_SEARCH_WRAPPER_CLASS = 'max-w-48 flex-1';
 export const TABLEDATA_LIST_SHELL_TABLE_BLOCK_CLASS = 'flex flex-col gap-4';
 
 export const TABLEDATA_LIST_SHELL_SCROLL_CONTAINER_CLASS =
-    'h-[calc(100vh-215px)] overflow-auto rounded-b-xl bg-card';
+    'h-[calc(100vh-215px)] overflow-auto rounded-xl border border-border bg-card';
+
+export const TABLEDATA_CELL_PADDING_X_CLASS = 'px-4';
+
+export const TABLEDATA_CELL_PADDING_X_COMPACT_CLASS = 'px-3';
 
 // ---------------------------------------------------------------------------
 // TabledataSearch

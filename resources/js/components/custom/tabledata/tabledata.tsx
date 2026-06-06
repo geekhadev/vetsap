@@ -3,6 +3,8 @@ import { ChevronDown, ChevronUp, ChevronsUpDown, Columns3 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import type { MouseEvent, ReactNode } from 'react';
 import {
+    TABLEDATA_CELL_PADDING_X_CLASS,
+    TABLEDATA_CELL_PADDING_X_COMPACT_CLASS,
     TABLEDATA_COLUMN_VISIBILITY_MENU_TITLE,
     TABLEDATA_COLUMN_VISIBILITY_TRIGGER_LABEL,
     TABLEDATA_EMPTY_MESSAGE_DEFAULT,
@@ -169,11 +171,14 @@ export function Tabledata<T>({
 
     const colSpan = visibleColumns.length;
     const isCompact = density === 'compact';
+    const cellPaddingXClass = isCompact
+        ? TABLEDATA_CELL_PADDING_X_COMPACT_CLASS
+        : TABLEDATA_CELL_PADDING_X_CLASS;
     const densityHeadClass = isCompact
-        ? 'h-auto min-h-7 px-1.5 py-1.5 text-xs leading-tight sm:text-sm'
+        ? 'h-auto min-h-7 py-1.5 text-xs leading-tight sm:text-sm'
         : undefined;
     const densityCellClass = isCompact
-        ? 'px-1.5 py-1 text-sm leading-snug'
+        ? 'py-1 text-sm leading-snug'
         : undefined;
     const sortLinkIconClass = isCompact ? 'size-3.5 shrink-0' : 'size-4 shrink-0';
 
@@ -233,7 +238,8 @@ export function Tabledata<T>({
                                 <TableHead
                                     key={col.key}
                                     className={cn(
-                                        'sticky top-0 z-10 bg-blue-50 shadow-sm dark:bg-blue-950/40',
+                                        'sticky top-0 z-10 bg-card shadow-sm',
+                                        cellPaddingXClass,
                                         col.headerClassName,
                                         densityHeadClass,
                                     )}
@@ -319,6 +325,7 @@ export function Tabledata<T>({
                                     <TableCell
                                         key={col.key}
                                         className={cn(
+                                            cellPaddingXClass,
                                             col.className,
                                             densityCellClass,
                                         )}
