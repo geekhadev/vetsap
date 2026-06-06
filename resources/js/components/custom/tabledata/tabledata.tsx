@@ -178,7 +178,7 @@ export function Tabledata<T>({
         ? 'h-auto min-h-7 py-1.5 text-xs leading-tight sm:text-sm'
         : undefined;
     const densityCellClass = isCompact
-        ? 'py-1 text-sm leading-snug'
+        ? 'py-1 text-sm leading-snug h-[36.9px]'
         : undefined;
     const sortLinkIconClass = isCompact ? 'size-3.5 shrink-0' : 'size-4 shrink-0';
 
@@ -328,6 +328,7 @@ export function Tabledata<T>({
                                             cellPaddingXClass,
                                             col.className,
                                             densityCellClass,
+                                            // 'h-[36.9px]',
                                         )}
                                     >
                                         {col.render !== undefined

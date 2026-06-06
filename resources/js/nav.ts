@@ -14,6 +14,8 @@ import {
     Share2,
     ShoppingCart,
     Stethoscope,
+    Tag,
+    Warehouse,
     Tags,
     UserRound,
     Users,
@@ -39,6 +41,9 @@ import { index as paymentTypesIndex } from '@/routes/shared/payment-types';
 import { index as siiEconomicActivitiesIndex } from '@/routes/shared/sii-economic-activities';
 import { index as siiTaxDocumentTypesIndex } from '@/routes/shared/sii-tax-document-types';
 import { index as statesIndex } from '@/routes/shared/states';
+import { index as productCategoriesIndex } from '@/routes/store/product-categories';
+import { index as productTypesIndex } from '@/routes/store/product-types';
+import { index as productsIndex } from '@/routes/store/products';
 import type { NavItem } from '@/types';
 
 export const mainNavItems: NavItem[] = [
@@ -126,6 +131,30 @@ export const mainNavItems: NavItem[] = [
                 href: siiCafsIndex(),
                 icon: FileType,
                 permission: 'sale.sii-cafs.view',
+            },
+        ],
+    },
+    {
+        title: 'Almacén',
+        icon: Warehouse,
+        items: [
+            {
+                title: 'Tipos de productos',
+                href: productTypesIndex(),
+                icon: Tag,
+                permission: 'store.product-types.list',
+            },
+            {
+                title: 'Categorías de productos',
+                href: productCategoriesIndex(),
+                icon: Tags,
+                permission: 'store.product-categories.list',
+            },
+            {
+                title: 'Productos',
+                href: productsIndex(),
+                icon: Package,
+                permission: 'store.products.list',
             },
         ],
     },

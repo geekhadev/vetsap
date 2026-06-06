@@ -87,6 +87,27 @@ class PermissionsSeeder extends Seeder
                 ],
             ],
             [
+                'system_name' => 'Almacén',
+                'system_slug' => 'store',
+                'modules' => [
+                    [
+                        'module_name' => 'Tipos de productos',
+                        'module_slug' => 'product-types',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Categorías de productos',
+                        'module_slug' => 'product-categories',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Productos',
+                        'module_slug' => 'products',
+                        'permissions' => $permissions_crud,
+                    ],
+                ],
+            ],
+            [
                 'system_name' => 'Medicina',
                 'system_slug' => 'medic',
                 'modules' => [
