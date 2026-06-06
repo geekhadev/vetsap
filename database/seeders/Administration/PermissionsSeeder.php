@@ -147,6 +147,16 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'calendar',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Días feriados',
+                        'module_slug' => 'holidays',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Estados de cita',
+                        'module_slug' => 'appointment-statuses',
+                        'permissions' => $permissions_crud,
+                    ],
                 ],
             ],
             [

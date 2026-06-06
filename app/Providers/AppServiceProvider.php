@@ -7,7 +7,9 @@ use App\Http\Responses\RegisterResponse;
 use App\Models\Administration\Module;
 use App\Models\Administration\Permission;
 use App\Models\Administration\System;
+use App\Models\Agenda\AppointmentStatus;
 use App\Models\Agenda\Calendar;
+use App\Models\Agenda\Holiday;
 use App\Models\Company;
 use App\Models\CompanyOffice;
 use App\Models\Configuration\Role;
@@ -31,7 +33,9 @@ use App\Models\Store\ProductType;
 use App\Policies\Administration\ModulesPolicy;
 use App\Policies\Administration\PermissionsPolicy;
 use App\Policies\Administration\SystemPolicy;
+use App\Policies\Agenda\AppointmentStatusPolicy;
 use App\Policies\Agenda\CalendarPolicy;
+use App\Policies\Agenda\HolidayPolicy;
 use App\Policies\Configuration\CompaniesPolicy;
 use App\Policies\Configuration\CompanyOfficesPolicy;
 use App\Policies\Configuration\RolesPolicy;
@@ -105,7 +109,9 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        Gate::policy(AppointmentStatus::class, AppointmentStatusPolicy::class);
         Gate::policy(Calendar::class, CalendarPolicy::class);
+        Gate::policy(Holiday::class, HolidayPolicy::class);
         Gate::policy(Company::class, CompaniesPolicy::class);
         Gate::policy(CompanyOffice::class, CompanyOfficesPolicy::class);
         Gate::policy(Module::class, ModulesPolicy::class);

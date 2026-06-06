@@ -2,11 +2,13 @@ import {
     Boxes,
     Building2,
     CalendarDays,
+    CalendarOff,
     ClipboardList,
     FileType,
     Globe,
     KeyRound,
     LayoutGrid,
+    ListChecks,
     MapPin,
     Package,
     PawPrint,
@@ -26,7 +28,9 @@ import { dashboard } from '@/routes';
 import { index as modulesIndex } from '@/routes/administration/modules';
 import { index as permissionsIndex } from '@/routes/administration/permissions';
 import { index as systemsIndex } from '@/routes/administration/systems';
+import { index as appointmentStatusesIndex } from '@/routes/agenda/appointment-statuses';
 import { index as calendarIndex } from '@/routes/agenda/calendar';
+import { index as holidaysIndex } from '@/routes/agenda/holidays';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
@@ -206,6 +210,18 @@ export const mainNavItems: NavItem[] = [
                 href: calendarIndex(),
                 icon: CalendarDays,
                 permission: 'agenda.calendar.list',
+            },
+            {
+                title: 'Días feriados',
+                href: holidaysIndex(),
+                icon: CalendarOff,
+                permission: 'agenda.holidays.list',
+            },
+            {
+                title: 'Estados de cita',
+                href: appointmentStatusesIndex(),
+                icon: ListChecks,
+                permission: 'agenda.appointment-statuses.list',
             },
         ],
     },
