@@ -105,14 +105,17 @@ export function FormCombobox({
                         aria-controls={`${baseId}-listbox`}
                         data-empty={value.trim() === ''}
                         className={cn(
-                            'h-9 w-full justify-between px-3 font-normal data-[empty=true]:text-muted-foreground',
+                            'h-9 w-full min-w-0 justify-between overflow-hidden px-3 font-normal data-[empty=true]:text-muted-foreground',
                             triggerClassName,
                         )}
                         aria-required={required ? true : undefined}
                         aria-invalid={hasError ? true : undefined}
                         aria-describedby={ariaDescribedBy}
                     >
-                        <span className="min-w-0 truncate text-left">
+                        <span
+                            className="min-w-0 flex-1 truncate text-left"
+                            title={triggerLabel}
+                        >
                             {triggerLabel}
                         </span>
                         <ChevronDownIcon
