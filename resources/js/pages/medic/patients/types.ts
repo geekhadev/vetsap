@@ -1,3 +1,5 @@
+import type { PatientSexValue } from '@/components/custom/patient-sex-badge';
+import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge';
 import type { TabledataListStandardDraft } from '@/components/custom/tabledata';
 import {
     formatIsActive as formatIsActiveBase,
@@ -5,7 +7,7 @@ import {
 } from '@/types/active-record';
 import type { PaginatedListFilters } from '@/types/list-filters';
 
-export type PatientSexValue = 'male' | 'female' | 'unknown';
+export type { PatientSexValue } from '@/components/custom/patient-sex-badge';
 
 export type PatientSpeciesRef = {
     id: string;
@@ -88,9 +90,7 @@ export function formatIsActive(value: boolean): string {
 }
 
 export function formatSex(value: PatientSexValue): string {
-    const option = SEX_OPTIONS.find((item) => item.id === value);
-
-    return option?.label ?? value;
+    return formatPatientSexLabel(value);
 }
 
 export function formatSterilized(value: boolean): string {
@@ -99,6 +99,28 @@ export function formatSterilized(value: boolean): string {
 
 export function formatCustomerLabel(customer: PatientCustomerRef): string {
     return `${customer.name} (${customer.document_number})`;
+}
+
+export function formatSpeciesAndBreed(
+    species: PatientSpeciesRef | null | undefined,
+    breed: string | null,
+): string {
+    const speciesName = species?.name?.trim() ?? '';
+    const breedName = breed?.trim() ?? '';
+
+    if (speciesName === '' && breedName === '') {
+        return '—';
+    }
+
+    if (speciesName === '') {
+        return breedName;
+    }
+
+    if (breedName === '') {
+        return speciesName;
+    }
+
+    return `${speciesName} · ${breedName}`;
 }
 
 export function hasCustomerPatientsConfigured(

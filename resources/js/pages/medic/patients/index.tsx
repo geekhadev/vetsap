@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react';
 import { CirclePlus } from 'lucide-react';
 import { useMemo } from 'react';
+import { PatientRecordBadge } from '@/components/custom/patient-record-badge';
+import { PatientSexBadge } from '@/components/custom/patient-sex-badge';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
@@ -17,12 +19,13 @@ import type { PatientsIndexPageProps } from '@/pages/medic/patients/config';
 import { PatientsIndexFilters } from '@/pages/medic/patients/filters';
 import { PatientForm } from '@/pages/medic/patients/form';
 import { usePatientsIndex } from '@/pages/medic/patients/hooks/use-index';
-import { formatSex } from '@/pages/medic/patients/types';
-import type {
-    Patient,
-    PatientListFilters,
-    PatientsIndexFiltersDraftFull,
+import {
+    formatSpeciesAndBreed
+    
+    
+    
 } from '@/pages/medic/patients/types';
+import type {Patient, PatientListFilters, PatientsIndexFiltersDraftFull} from '@/pages/medic/patients/types';
 
 function PatientsIndex({
     can,
@@ -40,6 +43,9 @@ function PatientsIndex({
                 label: 'Ficha',
                 sortable: true,
                 hideable: false,
+                render: (row) => (
+                    <PatientRecordBadge recordNumber={row.record_number} />
+                ),
             },
             {
                 key: 'name',
@@ -54,22 +60,16 @@ function PatientsIndex({
                 render: (row) => row.customer?.name ?? '—',
             },
             {
-                key: 'species',
-                label: 'Especie',
+                key: 'species_breed',
+                label: 'Especie / Raza',
                 sortable: false,
-                render: (row) => row.species?.name ?? '—',
-            },
-            {
-                key: 'breed',
-                label: 'Raza',
-                sortable: false,
-                render: (row) => row.breed ?? '—',
+                render: (row) => formatSpeciesAndBreed(row.species, row.breed),
             },
             {
                 key: 'sex',
                 label: 'Sexo',
                 sortable: false,
-                render: (row) => formatSex(row.sex),
+                render: (row) => <PatientSexBadge sex={row.sex} />,
             },
             buildTabledataIsActiveStatusColumn<Patient>({ gender: 'm' }),
             buildTabledataCrudActionsColumn<Patient>({

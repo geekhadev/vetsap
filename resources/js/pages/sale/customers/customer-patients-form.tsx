@@ -1,6 +1,8 @@
 import { router } from '@inertiajs/react';
 import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { PatientRecordBadge } from '@/components/custom/patient-record-badge';
+import { PatientSexBadge } from '@/components/custom/patient-sex-badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -10,8 +12,12 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { PatientForm } from '@/pages/medic/patients/form';
-import { formatSex } from '@/pages/medic/patients/types';
-import type { Patient, SpeciesOption } from '@/pages/medic/patients/types';
+import {
+    formatSpeciesAndBreed
+    
+    
+} from '@/pages/medic/patients/types';
+import type {Patient, SpeciesOption} from '@/pages/medic/patients/types';
 import type { Customer } from '@/pages/sale/customers/types';
 import { destroy } from '@/routes/medic/patients';
 
@@ -120,8 +126,7 @@ export function CustomerPatientsForm({
                                         <tr>
                                             <th className="px-3 py-2 font-medium">Ficha</th>
                                             <th className="px-3 py-2 font-medium">Nombre</th>
-                                            <th className="px-3 py-2 font-medium">Especie</th>
-                                            <th className="px-3 py-2 font-medium">Raza</th>
+                                            <th className="px-3 py-2 font-medium">Especie / Raza</th>
                                             <th className="px-3 py-2 font-medium">Sexo</th>
                                             <th className="px-3 py-2 font-medium text-right">
                                                 Acciones
@@ -131,13 +136,21 @@ export function CustomerPatientsForm({
                                     <tbody>
                                         {patients.map((patient) => (
                                             <tr key={patient.id} className="border-t">
-                                                <td className="px-3 py-2">{patient.record_number}</td>
+                                                <td className="px-3 py-2">
+                                                    <PatientRecordBadge
+                                                        recordNumber={patient.record_number}
+                                                    />
+                                                </td>
                                                 <td className="px-3 py-2">{patient.name}</td>
                                                 <td className="px-3 py-2">
-                                                    {patient.species?.name ?? '—'}
+                                                    {formatSpeciesAndBreed(
+                                                        patient.species,
+                                                        patient.breed,
+                                                    )}
                                                 </td>
-                                                <td className="px-3 py-2">{patient.breed ?? '—'}</td>
-                                                <td className="px-3 py-2">{formatSex(patient.sex)}</td>
+                                                <td className="px-3 py-2">
+                                                    <PatientSexBadge sex={patient.sex} />
+                                                </td>
                                                 <td className="px-3 py-2">
                                                     <div className="flex justify-end gap-1">
                                                         {can.update ? (
