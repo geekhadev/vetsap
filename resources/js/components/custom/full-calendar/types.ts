@@ -26,6 +26,13 @@ export type CalendarEventColorClass =
     | 'event-blue'
     | 'event-yellow';
 
+export type CalendarHoliday = {
+    id: string;
+    name: string;
+    date: string;
+};
+
 export type FullCalendarProps = {
     className?: string;
+    holidays?: CalendarHoliday[];
 };

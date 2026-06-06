@@ -9,6 +9,8 @@
     --fc-list-event-hover-bg-color: var(--accent);
     --fc-header-bg: color-mix(in oklch, var(--muted) 55%, var(--card));
     --fc-weekend-bg: oklch(0.985 0.018 95);
+    --fc-holiday-bg: color-mix(in oklch, var(--muted) 45%, var(--card));
+    --fc-holiday-stripe: color-mix(in oklch, var(--muted) 65%, transparent);
     --fc-event-gap: 0.25rem;
     --fc-event-inset: 0.3125rem;
 
@@ -22,6 +24,98 @@
 .dark .vetsap-full-calendar {
     --fc-header-bg: color-mix(in oklch, var(--muted) 80%, var(--card));
     --fc-weekend-bg: color-mix(in oklch, oklch(0.92 0.03 95) 12%, var(--card));
+    --fc-holiday-bg: color-mix(in oklch, var(--muted) 55%, var(--card));
+    --fc-holiday-stripe: color-mix(in oklch, var(--muted) 75%, transparent);
+}
+
+/* Días feriados */
+.vetsap-full-calendar .fc-bg-event.holiday-blocked {
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--fc-holiday-bg),
+        var(--fc-holiday-bg) 6px,
+        var(--fc-holiday-stripe) 6px,
+        var(--fc-holiday-stripe) 12px
+    );
+    opacity: 1;
+}
+
+.vetsap-full-calendar .fc-bg-event.holiday-blocked .fc-event-main {
+    height: auto;
+    overflow: visible;
+    padding: 0.5rem 0.625rem;
+}
+
+.vetsap-full-calendar .fc-holiday-label {
+    color: var(--muted-foreground);
+    font-size: 12pt;
+    font-weight: 600;
+    line-height: 1.25;
+    pointer-events: none;
+    position: sticky;
+    text-align: center;
+    top: 15%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    z-index: 1;
+}
+
+.vetsap-full-calendar .fc-timegrid-col-bg .fc-bg-event {
+    align-items: flex-start;
+    display: flex;
+    justify-content: center;
+}
+
+.vetsap-full-calendar .fc-daygrid-day-bg .fc-bg-event {
+    align-items: flex-start;
+    display: flex;
+    justify-content: center;
+}
+
+.vetsap-full-calendar .fc-holiday-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    line-height: 1.2;
+}
+
+.vetsap-full-calendar .fc-holiday-header-date {
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+}
+
+.vetsap-full-calendar .fc-holiday-header-name {
+    color: var(--muted-foreground);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.2;
+    text-transform: none;
+}
+
+.vetsap-full-calendar .fc-col-header-cell.is-holiday-header {
+    background: var(--fc-holiday-bg);
+}
+
+.vetsap-full-calendar .fc-col-header-cell.is-holiday-header .fc-col-header-cell-cushion {
+    color: var(--muted-foreground);
+}
+
+.vetsap-full-calendar .fc-daygrid-day.is-holiday-day {
+    background: var(--fc-holiday-bg);
+}
+
+.vetsap-full-calendar .fc-timegrid-col.is-holiday-column {
+    background: var(--fc-holiday-bg);
+}
+
+.vetsap-full-calendar .fc-timegrid-col.fc-day-sat.is-holiday-column,
+.vetsap-full-calendar .fc-timegrid-col.fc-day-sun.is-holiday-column,
+.vetsap-full-calendar .fc-daygrid-day.fc-day-sat.is-holiday-day,
+.vetsap-full-calendar .fc-daygrid-day.fc-day-sun.is-holiday-day {
+    background: var(--fc-holiday-bg);
 }
 
 .vetsap-full-calendar .fc {

@@ -1,4 +1,4 @@
-import type { EventContentArg } from '@fullcalendar/core';
+import type { DayHeaderContentArg, EventContentArg, DateSpanApi } from '@fullcalendar/core';
 import esLocale from '@fullcalendar/core/locales/es';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -21,6 +21,14 @@ import {
     resolveCalendarScrollTime,
     viewIncludesToday,
 } from './config';
+import {
+    buildHolidayBackgroundEvents,
+    buildHolidayByDateMap,
+    buildHolidayDateSet,
+    filterEventsExcludingHolidays,
+    isCalendarHolidayDate,
+    toCalendarDateKey,
+} from './holidays';
 import { CALENDAR_DEMO_EVENTS } from './mock-events';
 import type {
     CalendarViewId,
@@ -37,6 +45,14 @@ const CALENDAR_VIEWS: CalendarViewOption[] = [
 ];
 
 function renderEventContent(arg: EventContentArg) {
+    if (arg.event.extendedProps.isHoliday) {
+        const holidayName = arg.event.extendedProps.holidayName as string;
+
+        return (
+            <div className="fc-holiday-label">{holidayName}</div>
+        );
+    }
+
     const subtitle = arg.event.extendedProps.subtitle as string | undefined;
     const cancelled = Boolean(arg.event.extendedProps.cancelled);
     const durationMs =
@@ -61,10 +77,51 @@ function renderEventContent(arg: EventContentArg) {
     );
 }
 
-export function VetsapFullCalendar({ className }: FullCalendarProps) {
+export function VetsapFullCalendar({
+    className,
+    holidays = [],
+}: FullCalendarProps) {
     const calendarRef = useRef<FullCalendar>(null);
     const [activeView, setActiveView] = useState<CalendarViewId>('threeDay');
     const initialScrollTime = useMemo(() => resolveCalendarScrollTime(), []);
+
+    const holidayDates = useMemo(
+        () => buildHolidayDateSet(holidays),
+        [holidays],
+    );
+
+    const holidaysByDate = useMemo(
+        () => buildHolidayByDateMap(holidays),
+        [holidays],
+    );
+
+    const holidayBackgroundEvents = useMemo(
+        () => buildHolidayBackgroundEvents(holidays),
+        [holidays],
+    );
+
+    const appointmentEvents = useMemo(
+        () =>
+            filterEventsExcludingHolidays(CALENDAR_DEMO_EVENTS, holidayDates).map(
+                (event) => ({
+                    id: event.id,
+                    title: event.title,
+                    start: event.start,
+                    end: event.end,
+                    classNames: [
+                        event.colorClass,
+                        ...(event.cancelled
+                            ? ['is-cancelled', 'event-completed']
+                            : []),
+                    ],
+                    extendedProps: {
+                        subtitle: event.subtitle,
+                        cancelled: event.cancelled ?? false,
+                    },
+                }),
+            ),
+        [holidayDates],
+    );
 
     const scrollToNow = useCallback(() => {
         const api = calendarRef.current?.getApi();
@@ -79,22 +136,48 @@ export function VetsapFullCalendar({ className }: FullCalendarProps) {
     }, []);
 
     const events = useMemo(
-        () =>
-            CALENDAR_DEMO_EVENTS.map((event) => ({
-                id: event.id,
-                title: event.title,
-                start: event.start,
-                end: event.end,
-                classNames: [
-                    event.colorClass,
-                    ...(event.cancelled ? ['is-cancelled', 'event-completed'] : []),
-                ],
-                extendedProps: {
-                    subtitle: event.subtitle,
-                    cancelled: event.cancelled ?? false,
-                },
-            })),
-        [],
+        () => [...holidayBackgroundEvents, ...appointmentEvents],
+        [holidayBackgroundEvents, appointmentEvents],
+    );
+
+    const dayHeaderContent = useCallback(
+        (arg: DayHeaderContentArg) => {
+            const holiday = holidaysByDate.get(toCalendarDateKey(arg.date));
+
+            if (!holiday) {
+                return arg.text;
+            }
+
+            return (
+                <div className="fc-holiday-header">
+                    <span className="fc-holiday-header-date">{arg.text}</span>
+                    <span className="fc-holiday-header-name">{holiday.name}</span>
+                </div>
+            );
+        },
+        [holidaysByDate],
+    );
+
+    const dayHeaderClassNames = useCallback(
+        (arg: { date: Date }) =>
+            isCalendarHolidayDate(arg.date, holidayDates)
+                ? ['is-holiday-header']
+                : [],
+        [holidayDates],
+    );
+
+    const dayCellClassNames = useCallback(
+        (arg: { date: Date }) =>
+            isCalendarHolidayDate(arg.date, holidayDates)
+                ? ['is-holiday-day']
+                : [],
+        [holidayDates],
+    );
+
+    const selectAllow = useCallback(
+        (selectInfo: DateSpanApi) =>
+            !isCalendarHolidayDate(selectInfo.start, holidayDates),
+        [holidayDates],
     );
 
     const handlePrev = useCallback(() => {
@@ -217,6 +300,10 @@ export function VetsapFullCalendar({ className }: FullCalendarProps) {
                     eventMinHeight={40}
                     events={events}
                     eventContent={renderEventContent}
+                    dayHeaderContent={dayHeaderContent}
+                    dayHeaderClassNames={dayHeaderClassNames}
+                    dayCellClassNames={dayCellClassNames}
+                    selectAllow={selectAllow}
                     views={{
                         timeGridWeek: {
                             ...CALENDAR_TIMEGRID_VIEW_OPTIONS,
