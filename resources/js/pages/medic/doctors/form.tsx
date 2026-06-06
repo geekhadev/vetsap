@@ -51,34 +51,6 @@ export function DoctorForm({ open, onOpenChange, entity }: DoctorFormProps) {
             {({ processing, errors }) => (
                 <>
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <FormTextInput
-                            label="Nombres"
-                            placeholder='Ej. "María"'
-                            required
-                            error={errors.first_name}
-                            inputProps={{
-                                id: 'doctor-first_name',
-                                name: 'first_name',
-                                maxLength: 255,
-                                defaultValue: entity?.first_name ?? '',
-                            }}
-                        />
-
-                        <FormTextInput
-                            label="Apellidos"
-                            placeholder='Ej. "González Pérez"'
-                            required
-                            error={errors.last_name}
-                            inputProps={{
-                                id: 'doctor-last_name',
-                                name: 'last_name',
-                                maxLength: 255,
-                                defaultValue: entity?.last_name ?? '',
-                            }}
-                        />
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
                         <FormSelect
                             label="Tipo de documento"
                             required={!isEdit}
@@ -104,6 +76,34 @@ export function DoctorForm({ open, onOpenChange, entity }: DoctorFormProps) {
                                 maxLength: 20,
                                 defaultValue: entity?.document_number ?? '',
                                 disabled: isEdit,
+                            }}
+                        />
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <FormTextInput
+                            label="Nombres"
+                            placeholder='Ej. "María"'
+                            required
+                            error={errors.first_name}
+                            inputProps={{
+                                id: 'doctor-first_name',
+                                name: 'first_name',
+                                maxLength: 255,
+                                defaultValue: entity?.first_name ?? '',
+                            }}
+                        />
+
+                        <FormTextInput
+                            label="Apellidos"
+                            placeholder='Ej. "González Pérez"'
+                            required
+                            error={errors.last_name}
+                            inputProps={{
+                                id: 'doctor-last_name',
+                                name: 'last_name',
+                                maxLength: 255,
+                                defaultValue: entity?.last_name ?? '',
                             }}
                         />
                     </div>

@@ -6,7 +6,7 @@ export function useCustomerForm(entity: Customer | null) {
     const isEdit = entity !== null;
     const headTitle = isEdit ? 'Editar cliente' : 'Nuevo cliente';
     const description = isEdit
-        ? 'Modifica los datos de contacto del cliente. El documento no se puede cambiar.'
+        ? 'Modifica al cliente. El documento no se puede cambiar.'
         : 'Completa los datos de identificación y contacto del cliente.';
 
     const formProps = useMemo(() => {

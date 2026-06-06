@@ -12,20 +12,13 @@ class CustomersSeeder extends Seeder
     public function run(): void
     {
         $rutCustomers = [
-            ['name' => 'PETLOVE SPA', 'document_number' => '76123456-7', 'email' => 'contacto@petlove.cl'],
-            ['name' => 'VETERINARIA NORTE LTDA', 'document_number' => '77234567-8', 'email' => 'info@veterinarianorte.cl'],
-            ['name' => 'ANIMAL CARE SPA', 'document_number' => '78345678-9', 'email' => 'hola@animalcare.cl'],
-            ['name' => 'CLINICA PATITAS SPA', 'document_number' => '79456789-0', 'email' => 'admin@patitas.cl'],
-            ['name' => 'MASCOTAS FELICES LTDA', 'document_number' => '80567890-1', 'email' => 'ventas@mascotasfelices.cl'],
-            ['name' => 'CONSUMIDOR FINAL SPA', 'document_number' => '81678901-2', 'email' => 'consumidor@example.cl'],
+            ['name' => 'Juan Marcano Pinto', 'document_number' => '76123456-7', 'email' => 'juan.marcano@gmail.com'],
+            ['name' => 'María Pinto Marcano', 'document_number' => '76123451-7', 'email' => 'maria.pinto@gmail.com'],
+            ['name' => 'Pedro José Luna Pinto', 'document_number' => '76123426-7', 'email' => 'pedro.luna@gmail.com'],
+            ['name' => 'Ana María González Pinto', 'document_number' => '76133456-7', 'email' => 'ana.gonzalez@gmail.com'],
         ];
 
-        $pasaporteCustomers = [
-            ['name' => 'JOHN SMITH', 'document_number' => 'AB1234567', 'email' => 'john.smith@example.com'],
-            ['name' => 'MARIA GARCIA', 'document_number' => 'XY9876543', 'email' => 'maria.garcia@example.com'],
-        ];
-
-        Company::query()->each(function (Company $company) use ($rutCustomers, $pasaporteCustomers): void {
+        Company::query()->each(function (Company $company) use ($rutCustomers): void {
             foreach ($rutCustomers as $row) {
                 Customer::query()->firstOrCreate(
                     [
@@ -41,23 +34,6 @@ class CustomersSeeder extends Seeder
                     ],
                 );
             }
-
-            foreach ($pasaporteCustomers as $row) {
-                Customer::query()->firstOrCreate(
-                    [
-                        'company_id' => $company->id,
-                        'document_type' => CustomerDocumentType::Pasaporte,
-                        'document_number' => $row['document_number'],
-                    ],
-                    [
-                        'name' => $row['name'],
-                        'email' => $row['email'],
-                        'phone' => '+56987654321',
-                        'address' => 'Calle Secundaria 200',
-                    ],
-                );
-            }
-
         });
     }
 }

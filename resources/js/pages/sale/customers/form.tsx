@@ -36,19 +36,6 @@ export function CustomerForm({ open, onOpenChange, entity }: CustomerFormProps) 
         >
             {({ processing, errors }) => (
                 <>
-                    <FormTextInput
-                        label="Nombre"
-                        placeholder="Razón social o nombre completo"
-                        required
-                        error={errors.name}
-                        inputProps={{
-                            id: 'customer-name',
-                            name: 'name',
-                            maxLength: 255,
-                            defaultValue: entity?.name ?? '',
-                        }}
-                    />
-
                     <div className="grid gap-4 sm:grid-cols-2">
                         <FormSelect
                             label="Tipo de documento"
@@ -80,15 +67,15 @@ export function CustomerForm({ open, onOpenChange, entity }: CustomerFormProps) 
                     </div>
 
                     <FormTextInput
-                        label="Email"
-                        placeholder="correo@ejemplo.cl"
-                        error={errors.email}
+                        label="Nombre"
+                        placeholder="Razón social o nombre completo"
+                        required
+                        error={errors.name}
                         inputProps={{
-                            id: 'customer-email',
-                            name: 'email',
-                            type: 'email',
+                            id: 'customer-name',
+                            name: 'name',
                             maxLength: 255,
-                            defaultValue: entity?.email ?? '',
+                            defaultValue: entity?.name ?? '',
                         }}
                     />
 
@@ -106,17 +93,30 @@ export function CustomerForm({ open, onOpenChange, entity }: CustomerFormProps) 
                         />
 
                         <FormTextInput
-                            label="Dirección"
-                            placeholder="Dirección fiscal"
-                            error={errors.address}
+                            label="Email"
+                            placeholder="correo@ejemplo.cl"
+                            error={errors.email}
                             inputProps={{
-                                id: 'customer-address',
-                                name: 'address',
-                                maxLength: 500,
-                                defaultValue: entity?.address ?? '',
+                                id: 'customer-email',
+                                name: 'email',
+                                type: 'email',
+                                maxLength: 255,
+                                defaultValue: entity?.email ?? '',
                             }}
                         />
                     </div>
+
+                    <FormTextInput
+                        label="Dirección"
+                        placeholder="Dirección fiscal"
+                        error={errors.address}
+                        inputProps={{
+                            id: 'customer-address',
+                            name: 'address',
+                            maxLength: 500,
+                            defaultValue: entity?.address ?? '',
+                        }}
+                    />
 
                     <FormDialogFooter
                         onCancel={() => onOpenChange(false)}
