@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Concerns;
 
-use App\Enums\UserType;
 use App\Models\Company;
 use App\Support\SelectedCompanySession;
 
@@ -22,23 +21,5 @@ trait InteractsWithSelectedCompanyRequest
         }
 
         return Company::query()->find($id);
-    }
-
-    public function wantsGlobalRecord(): bool
-    {
-        return $this->user()?->type === UserType::Root
-            && filter_var($this->input('is_global'), FILTER_VALIDATE_BOOLEAN);
-    }
-
-    /**
-     * Empresa destino del registro: null si es global (root + is_global), si no la de sesión.
-     */
-    public function resolvedCompanyId(): ?string
-    {
-        if ($this->wantsGlobalRecord()) {
-            return null;
-        }
-
-        return $this->selectedCompanyId();
     }
 }

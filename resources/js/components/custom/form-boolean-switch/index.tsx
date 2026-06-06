@@ -22,6 +22,7 @@ export type FormBooleanSwitchProps = {
     switchClassName?: string;
     description?: string;
     confirmUncheck?: FormBooleanSwitchConfirmUncheck;
+    disabled?: boolean;
 };
 
 /**
@@ -39,6 +40,7 @@ export function FormBooleanSwitch({
     switchClassName,
     description,
     confirmUncheck,
+    disabled = false,
 }: FormBooleanSwitchProps) {
     const baseId = useId();
     const controlId = id ?? `${baseId}-${name}`;
@@ -75,6 +77,7 @@ export function FormBooleanSwitch({
                         checked={checked}
                         onCheckedChange={handleCheckedChange}
                         className={switchClassName}
+                        disabled={disabled}
                         aria-invalid={hasError ? true : undefined}
                         aria-describedby={
                             hasError ? errorMessageId : undefined

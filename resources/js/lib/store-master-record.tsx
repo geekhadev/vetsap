@@ -1,41 +1,30 @@
 import type { ReactNode } from 'react';
 import { GlobalRecordBadge } from '@/components/custom/global-record-badge';
+import type { GlobalRecordCan, GlobalRecordRow } from '@/lib/global-record';
+import {
+    canDeleteGlobalRecordRow,
+    canModifyGlobalRecordRow,
+    isGlobalRecord,
+} from '@/lib/global-record';
 
-export type StoreMasterRecordRow = {
-    company_id: string | null;
-};
+export type StoreMasterRecordRow = GlobalRecordRow;
 
-export type StoreMasterRecordCan = {
-    update: boolean;
-    delete: boolean;
-};
+export type StoreMasterRecordCan = GlobalRecordCan;
 
-export function isGlobalRecord(row: StoreMasterRecordRow): boolean {
-    return row.company_id === null;
-}
+export { isGlobalRecord };
 
 export function canModifyStoreMasterRow(
     row: StoreMasterRecordRow,
-    can: StoreMasterRecordCan,
-    isRoot: boolean,
+    can: Pick<StoreMasterRecordCan, 'update'>,
 ): boolean {
-    if (isGlobalRecord(row)) {
-        return isRoot && can.update;
-    }
-
-    return can.update;
+    return canModifyGlobalRecordRow(row, can);
 }
 
 export function canDeleteStoreMasterRow(
     row: StoreMasterRecordRow,
-    can: StoreMasterRecordCan,
-    isRoot: boolean,
+    can: Pick<StoreMasterRecordCan, 'delete'>,
 ): boolean {
-    if (isGlobalRecord(row)) {
-        return isRoot && can.delete;
-    }
-
-    return can.delete;
+    return canDeleteGlobalRecordRow(row, can);
 }
 
 export function renderMasterRecordName(
