@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { CirclePlus } from 'lucide-react';
 import { useMemo } from 'react';
+import { DocumentBadge } from '@/components/custom/document-badge';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
@@ -16,7 +17,6 @@ import type { CustomersIndexPageProps } from '@/pages/sale/customers/config';
 import { CustomersIndexFilters } from '@/pages/sale/customers/filters';
 import { CustomerForm } from '@/pages/sale/customers/form';
 import { useCustomersIndex } from '@/pages/sale/customers/hooks/use-index';
-import { formatDocumentType } from '@/pages/sale/customers/types';
 import type {
     Customer,
     CustomerListFilters,
@@ -37,16 +37,15 @@ function CustomersIndex({ can }: Pick<CustomersIndexPageProps, 'can'>) {
                 hideable: false,
             },
             {
-                key: 'document_type',
-                label: 'Tipo doc.',
-                sortable: true,
-                render: (row) => formatDocumentType(row.document_type),
-            },
-            {
                 key: 'document_number',
                 label: 'Documento',
                 sortable: true,
-                render: (row) => row.document_number,
+                render: (row) => (
+                    <DocumentBadge
+                        documentType={row.document_type}
+                        documentNumber={row.document_number}
+                    />
+                ),
             },
             {
                 key: 'email',

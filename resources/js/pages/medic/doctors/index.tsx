@@ -7,6 +7,7 @@ import {
     TrashIcon,
 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
+import { DocumentBadge } from '@/components/custom/document-badge';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
@@ -28,7 +29,6 @@ import { DoctorForm } from '@/pages/medic/doctors/form';
 import { useDoctorsIndex } from '@/pages/medic/doctors/hooks/use-index';
 import {
     formatDoctorName,
-    formatDocumentType,
     hasDoctorScheduleConfigured,
     hasDoctorServicesConfigured,
 } from '@/pages/medic/doctors/types';
@@ -88,12 +88,10 @@ function DoctorsIndex() {
                 label: 'Documento',
                 sortable: false,
                 render: (row) => (
-                    <span>
-                        {formatDocumentType(row.document_type)}{' '}
-                        <span className="text-muted-foreground">
-                            {row.document_number}
-                        </span>
-                    </span>
+                    <DocumentBadge
+                        documentType={row.document_type}
+                        documentNumber={row.document_number}
+                    />
                 ),
             },
             buildTabledataConfiguredStatusColumn<Doctor>({

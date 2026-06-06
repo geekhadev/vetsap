@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { Building2, CirclePlus, Mail, MapPin, Phone } from 'lucide-react';
+import { DocumentBadge } from '@/components/custom/document-badge';
 import { FormLinkButton } from '@/components/custom/form-link-button';
 import {
     Card,
@@ -33,12 +34,10 @@ function CompanyCard({ company: c }: { company: CompanyListItem }) {
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-                <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="font-medium text-foreground">
-                        {c.document_type}
-                    </span>
-                    <span>{c.document_number}</span>
-                </div>
+                <DocumentBadge
+                    documentType={c.document_type}
+                    documentNumber={c.document_number}
+                />
                 {c.email ? (
                     <div className="flex items-start gap-2">
                         <Mail className="text-muted-foreground mt-0.5 size-4 shrink-0" />

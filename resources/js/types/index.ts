@@ -11,6 +11,10 @@ export {
     formatConfiguredStatus,
     formatWebVisibility,
 } from './table-status-columns';
+export {
+    formatIdentityDocument,
+    formatIdentityDocumentType,
+} from './identity-document';
 export type { ActiveRecordGender, IsActiveFilterOption } from './active-record';
 export type * from './navigation';
 export { flattenNavItemsToLeaves, isNavParent } from './navigation';
