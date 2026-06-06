@@ -47,5 +47,9 @@ export type FullCalendarProps = {
     holidays?: CalendarHoliday[];
     appointments?: CalendarAppointmentEvent[];
     canCreate?: boolean;
-    onNewAppointment?: () => void;
+    onNewAppointment?: (defaults?: {
+        appointmentDate: string;
+        startsAtTime: string;
+    }) => void;
+    onAppointmentClick?: (appointmentId: string) => void;
 };

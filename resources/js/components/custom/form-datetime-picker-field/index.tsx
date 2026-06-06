@@ -152,7 +152,7 @@ export function FormDateTimePickerField({
                         variant="outline"
                         data-empty={!triggerLabel}
                         className={cn(
-                            'h-9 w-full justify-start px-3 font-normal data-[empty=true]:text-muted-foreground',
+                            'h-9 w-full min-w-0 justify-start gap-2 px-3 font-normal data-[empty=true]:text-muted-foreground',
                             triggerClassName,
                         )}
                         aria-required={required ? true : undefined}
@@ -161,9 +161,13 @@ export function FormDateTimePickerField({
                     >
                         <CalendarClock aria-hidden className="size-4 shrink-0" />
                         {triggerLabel ? (
-                            <span>{triggerLabel}</span>
+                            <span className="min-w-0 truncate text-left">
+                                {triggerLabel}
+                            </span>
                         ) : (
-                            <span>{placeholder}</span>
+                            <span className="min-w-0 truncate text-left">
+                                {placeholder}
+                            </span>
                         )}
                     </Button>
                 </PopoverTrigger>

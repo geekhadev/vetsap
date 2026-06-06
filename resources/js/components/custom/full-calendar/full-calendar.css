@@ -1,3 +1,5 @@
+@reference "../../../../css/app.css";
+
 .vetsap-full-calendar {
     --fc-border-color: color-mix(in oklch, var(--border) 70%, transparent);
     --fc-page-bg-color: var(--card);
@@ -215,6 +217,82 @@
     padding: 0;
 }
 
+.vetsap-full-calendar .fc-event[class*='event-status-'] {
+    --fc-event-bg-color: transparent !important;
+    --fc-event-border-color: transparent !important;
+    background-image: none !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+}
+
+.vetsap-full-calendar .fc-event.event-status-slate {
+    @apply border-slate-200/90 bg-slate-50 text-slate-600 dark:border-slate-700/60 dark:bg-slate-900/45 dark:text-slate-400;
+}
+
+.vetsap-full-calendar .fc-event.event-status-blue {
+    @apply border-blue-200/90 bg-blue-50 text-blue-800 dark:border-blue-900/35 dark:bg-blue-950/45 dark:text-blue-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-sky {
+    @apply border-sky-200/90 bg-sky-50 text-sky-800 dark:border-sky-900/35 dark:bg-sky-950/45 dark:text-sky-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-cyan {
+    @apply border-cyan-200/90 bg-cyan-50 text-cyan-800 dark:border-cyan-900/35 dark:bg-cyan-950/45 dark:text-cyan-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-teal {
+    @apply border-teal-200/90 bg-teal-50 text-teal-800 dark:border-teal-900/35 dark:bg-teal-950/45 dark:text-teal-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-green {
+    @apply border-green-200/90 bg-green-50 text-green-800 dark:border-green-900/35 dark:bg-green-950/45 dark:text-green-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-emerald {
+    @apply border-emerald-200/90 bg-emerald-50 text-emerald-800 dark:border-emerald-900/35 dark:bg-emerald-950/45 dark:text-emerald-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-lime {
+    @apply border-lime-200/90 bg-lime-50 text-lime-800 dark:border-lime-900/35 dark:bg-lime-950/45 dark:text-lime-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-amber {
+    @apply border-amber-200/90 bg-amber-50 text-amber-800 dark:border-amber-900/35 dark:bg-amber-950/45 dark:text-amber-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-orange {
+    @apply border-orange-200/90 bg-orange-50 text-orange-800 dark:border-orange-900/35 dark:bg-orange-950/45 dark:text-orange-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-rose {
+    @apply border-rose-200/90 bg-rose-50 text-rose-800 dark:border-rose-900/35 dark:bg-rose-950/45 dark:text-rose-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-pink {
+    @apply border-pink-200/90 bg-pink-50 text-pink-900 dark:border-pink-900/35 dark:bg-pink-950/45 dark:text-pink-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-purple {
+    @apply border-purple-200/90 bg-purple-50 text-purple-800 dark:border-purple-900/35 dark:bg-purple-950/45 dark:text-purple-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-violet {
+    @apply border-violet-200/90 bg-violet-50 text-violet-800 dark:border-violet-900/35 dark:bg-violet-950/45 dark:text-violet-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-indigo {
+    @apply border-indigo-200/90 bg-indigo-50 text-indigo-800 dark:border-indigo-900/35 dark:bg-indigo-950/45 dark:text-indigo-200;
+}
+
+.vetsap-full-calendar .fc-event.event-status-red {
+    @apply border-red-200/90 bg-red-50 text-red-800 dark:border-red-900/35 dark:bg-red-950/45 dark:text-red-200;
+}
+
+.vetsap-full-calendar .fc-list-event[class*='event-status-'] .fc-list-event-dot {
+    border-width: 0;
+}
+
 .vetsap-full-calendar .fc-timegrid-event-harness {
     margin-inline: 0;
 }
@@ -264,10 +342,8 @@
     white-space: nowrap;
 }
 
-.vetsap-full-calendar .fc-event.is-cancelled,
-.vetsap-full-calendar .fc-event.event-completed {
-    background-color: color-mix(in oklch, var(--muted) 70%, var(--card)) !important;
-    opacity: 0.72;
+.vetsap-full-calendar .fc-event.is-cancelled {
+    opacity: 0.65;
 }
 
 .vetsap-full-calendar .fc-custom-event.is-cancelled {
@@ -278,44 +354,13 @@
     opacity: 0.75;
 }
 
-.vetsap-full-calendar .fc-event.event-green {
-    background-color: oklch(0.949 0.044 142.542);
+.vetsap-full-calendar .fc-event[class*='event-status-'] .fc-event-main {
+    color: inherit;
 }
 
-.vetsap-full-calendar .fc-event.event-pink {
-    background-color: oklch(0.944 0.032 13.428);
-}
-
-.vetsap-full-calendar .fc-event.event-purple {
-    background-color: oklch(0.946 0.034 305.504);
-}
-
-.vetsap-full-calendar .fc-event.event-blue {
-    background-color: oklch(0.946 0.028 254.624);
-}
-
-.vetsap-full-calendar .fc-event.event-yellow {
-    background-color: oklch(0.967 0.048 95);
-}
-
-.dark .vetsap-full-calendar .fc-event.event-green {
-    background-color: color-mix(in oklch, oklch(0.723 0.191 142.542) 22%, var(--card));
-}
-
-.dark .vetsap-full-calendar .fc-event.event-pink {
-    background-color: color-mix(in oklch, oklch(0.712 0.194 13.428) 20%, var(--card));
-}
-
-.dark .vetsap-full-calendar .fc-event.event-purple {
-    background-color: color-mix(in oklch, oklch(0.714 0.203 305.504) 20%, var(--card));
-}
-
-.dark .vetsap-full-calendar .fc-event.event-blue {
-    background-color: color-mix(in oklch, oklch(0.714 0.143 254.624) 20%, var(--card));
-}
-
-.dark .vetsap-full-calendar .fc-event.event-yellow {
-    background-color: color-mix(in oklch, oklch(0.828 0.189 84.429) 18%, var(--card));
+.vetsap-full-calendar .fc-event[class*='event-status-'] .fc-custom-event-subtitle {
+    color: inherit;
+    opacity: 0.82;
 }
 
 /* Vista mes */
@@ -373,4 +418,14 @@
     border-color: var(--fc-now-indicator-color);
     border-width: 6px 0 6px 7px;
     margin-top: -6px;
+}
+
+/* Click en bloques horarios para nueva cita */
+.vetsap-full-calendar.is-slot-selectable .fc-timegrid-slot,
+.vetsap-full-calendar.is-slot-selectable .fc-daygrid-day:not(.is-holiday-day) {
+    cursor: pointer;
+}
+
+.vetsap-full-calendar.is-slot-selectable .fc-event:not(.holiday-blocked) {
+    cursor: pointer;
 }

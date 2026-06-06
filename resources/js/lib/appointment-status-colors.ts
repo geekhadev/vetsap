@@ -77,34 +77,41 @@ export function isAppointmentStatusColorValue(
     return (APPOINTMENT_STATUS_COLORS as readonly string[]).includes(value);
 }
 
-const APPOINTMENT_STATUS_CALENDAR_CLASS: Record<
+export function resolveAppointmentStatusColor(
+    color: string,
+): AppointmentStatusColorValue {
+    return isAppointmentStatusColorValue(color) ? color : 'slate';
+}
+
+/** Clase del evento en calendario, alineada al color del estado (estilos en full-calendar.css). */
+export function appointmentStatusCalendarEventClasses(
+    color: string,
+): string[] {
+    return [`event-status-${resolveAppointmentStatusColor(color)}`];
+}
+
+const APPOINTMENT_STATUS_DOT_CLASS: Record<
     AppointmentStatusColorValue,
     string
 > = {
-    slate: 'event-blue',
-    blue: 'event-blue',
-    sky: 'event-blue',
-    cyan: 'event-blue',
-    teal: 'event-green',
-    green: 'event-green',
-    emerald: 'event-green',
-    lime: 'event-yellow',
-    amber: 'event-yellow',
-    orange: 'event-yellow',
-    rose: 'event-pink',
-    pink: 'event-pink',
-    purple: 'event-purple',
-    violet: 'event-purple',
-    indigo: 'event-purple',
-    red: 'event-pink',
+    slate: 'bg-slate-500',
+    blue: 'bg-blue-500',
+    sky: 'bg-sky-500',
+    cyan: 'bg-cyan-500',
+    teal: 'bg-teal-500',
+    green: 'bg-green-500',
+    emerald: 'bg-emerald-500',
+    lime: 'bg-lime-500',
+    amber: 'bg-amber-500',
+    orange: 'bg-orange-500',
+    rose: 'bg-rose-500',
+    pink: 'bg-pink-500',
+    purple: 'bg-purple-500',
+    violet: 'bg-violet-500',
+    indigo: 'bg-indigo-500',
+    red: 'bg-red-500',
 };
 
-export function appointmentStatusColorToCalendarClass(
-    color: string,
-): string {
-    if (isAppointmentStatusColorValue(color)) {
-        return APPOINTMENT_STATUS_CALENDAR_CLASS[color];
-    }
-
-    return 'event-blue';
+export function appointmentStatusColorToDotClass(color: string): string {
+    return APPOINTMENT_STATUS_DOT_CLASS[resolveAppointmentStatusColor(color)];
 }

@@ -72,3 +72,69 @@ export function viewIncludesToday(activeStart: Date, activeEnd: Date): boolean {
 
     return now >= activeStart && now < activeEnd;
 }
+
+export type CalendarSlotDefaults = {
+    appointmentDate: string;
+    startsAtTime: string;
+};
+
+function formatCalendarDate(date: Date): string {
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0'),
+    ].join('-');
+}
+
+function formatCalendarTime(hours: number, minutes: number): string {
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+function isSameCalendarDay(first: Date, second: Date): boolean {
+    return (
+        first.getFullYear() === second.getFullYear() &&
+        first.getMonth() === second.getMonth() &&
+        first.getDate() === second.getDate()
+    );
+}
+
+function roundMinutesToSlot(totalMinutes: number): number {
+    return (
+        Math.round(totalMinutes / CALENDAR_SLOT_DURATION_MINUTES) *
+        CALENDAR_SLOT_DURATION_MINUTES
+    );
+}
+
+/** Convierte un click en el calendario en valores por defecto para el formulario de cita. */
+export function buildSlotDefaultsFromDate(
+    date: Date,
+    referenceDate: Date = new Date(),
+): CalendarSlotDefaults {
+    const appointmentDate = formatCalendarDate(date);
+
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+
+    if (hours === 0 && minutes === 0) {
+        if (isSameCalendarDay(date, referenceDate)) {
+            const totalMinutes =
+                referenceDate.getHours() * 60 + referenceDate.getMinutes();
+            const roundedMinutes = roundMinutesToSlot(totalMinutes);
+
+            hours = Math.floor(roundedMinutes / 60) % 24;
+            minutes = roundedMinutes % 60;
+        } else {
+            [hours, minutes] = CALENDAR_SLOT_MIN_TIME.split(':').map(Number);
+        }
+    } else {
+        const roundedMinutes = roundMinutesToSlot(hours * 60 + minutes);
+
+        hours = Math.floor(roundedMinutes / 60) % 24;
+        minutes = roundedMinutes % 60;
+    }
+
+    return {
+        appointmentDate,
+        startsAtTime: formatCalendarTime(hours, minutes),
+    };
+}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Agenda;
 
 use App\Actions\Agenda\Appointments\BuildAppointmentFormOptionsAction;
 use App\Actions\Agenda\Appointments\ListAppointmentsForCalendarAction;
+use App\Actions\Agenda\AppointmentStatuses\ListActiveAppointmentStatusesForCalendarAction;
 use App\Actions\Agenda\Holidays\ListActiveHolidaysForCalendarAction;
 use App\Http\Controllers\Controller;
 use App\Models\Agenda\Appointment;
@@ -20,6 +21,7 @@ class CalendarController extends Controller
         ListActiveHolidaysForCalendarAction $listActiveHolidays,
         ListAppointmentsForCalendarAction $listAppointments,
         BuildAppointmentFormOptionsAction $buildFormOptions,
+        ListActiveAppointmentStatusesForCalendarAction $listAppointmentStatuses,
     ): Response {
         $this->authorize('viewAny', Calendar::class);
 
@@ -41,8 +43,13 @@ class CalendarController extends Controller
                     'patients' => [],
                     'offices' => [],
                 ],
+            'appointmentStatuses' => $company instanceof Company
+                ? $listAppointmentStatuses->execute($company->id)
+                : [],
             'can' => [
                 'create' => $user?->can('create', Appointment::class) ?? false,
+                'view' => $user?->can('viewAny', Appointment::class) ?? false,
+                'update' => $user?->can('updateAny', Appointment::class) ?? false,
             ],
         ]);
     }

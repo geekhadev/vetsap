@@ -115,6 +115,7 @@ export function AppointmentForm({
             formKey={`create-${defaults.appointmentDate}-${defaults.startsAtTime}`}
             inertiaForm={{ ...formProps }}
             contentClassName="sm:max-w-lg"
+            formClassName="space-y-4"
         >
             {({ processing, errors }) => (
                 <>
@@ -192,7 +193,7 @@ export function AppointmentForm({
                     />
 
                     {selectedService ? (
-                        <InfoBadge className="-mt-4">
+                        <InfoBadge>
                             Duración:{' '}
                             {selectedService.duration_minutes ?? '—'} min
                             {selectedService.price
@@ -202,59 +203,64 @@ export function AppointmentForm({
                     ) : null}
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <FormCombobox
-                            label="Doctor"
-                            required
-                            placeholder={
-                                formState.serviceId === ''
-                                    ? 'Selecciona un servicio primero'
-                                    : 'Buscar doctor…'
-                            }
-                            searchPlaceholder="Buscar doctor…"
-                            emptyMessage={
-                                formState.serviceId === ''
-                                    ? 'Selecciona un servicio.'
-                                    : 'Ningún doctor presta este servicio.'
-                            }
-                            options={doctorOptions}
-                            value={resolvedDoctorId}
-                            onValueChange={(doctorId) =>
-                                setFormState((current) => ({
-                                    ...current,
-                                    doctorId,
-                                }))
-                            }
-                            error={errors.doctor_id}
-                            id="appointment-doctor_id"
-                        />
+                        <div className="min-w-0">
+                            <FormCombobox
+                                label="Doctor"
+                                required
+                                placeholder={
+                                    formState.serviceId === ''
+                                        ? 'Selecciona un servicio primero'
+                                        : 'Buscar doctor…'
+                                }
+                                searchPlaceholder="Buscar doctor…"
+                                emptyMessage={
+                                    formState.serviceId === ''
+                                        ? 'Selecciona un servicio.'
+                                        : 'Ningún doctor presta este servicio.'
+                                }
+                                options={doctorOptions}
+                                value={resolvedDoctorId}
+                                onValueChange={(doctorId) =>
+                                    setFormState((current) => ({
+                                        ...current,
+                                        doctorId,
+                                    }))
+                                }
+                                error={errors.doctor_id}
+                                id="appointment-doctor_id"
+                            />
+                        </div>
 
-                        <FormDateTimePickerField
-                            label="Fecha y hora"
-                            required
-                            value={{
-                                date: formState.appointmentDate,
-                                time: formState.startsAtTime,
-                            }}
-                            onChange={({ date, time }) =>
-                                setFormState((current) => ({
-                                    ...current,
-                                    appointmentDate: date,
-                                    startsAtTime: time,
-                                }))
-                            }
-                            minuteStep={CALENDAR_SLOT_DURATION_MINUTES}
-                            error={
-                                errors.appointment_date ?? errors.starts_at_time
-                            }
-                            id="appointment-scheduled-at"
-                            disabled={(date) =>
-                                isBefore(
-                                    startOfDay(date),
-                                    startOfDay(new Date()),
-                                )
-                            }
-                            popoverContentClassName="z-[100]"
-                        />
+                        <div className="min-w-0">
+                            <FormDateTimePickerField
+                                label="Fecha y hora"
+                                required
+                                value={{
+                                    date: formState.appointmentDate,
+                                    time: formState.startsAtTime,
+                                }}
+                                onChange={({ date, time }) =>
+                                    setFormState((current) => ({
+                                        ...current,
+                                        appointmentDate: date,
+                                        startsAtTime: time,
+                                    }))
+                                }
+                                minuteStep={CALENDAR_SLOT_DURATION_MINUTES}
+                                error={
+                                    errors.appointment_date ??
+                                    errors.starts_at_time
+                                }
+                                id="appointment-scheduled-at"
+                                disabled={(date) =>
+                                    isBefore(
+                                        startOfDay(date),
+                                        startOfDay(new Date()),
+                                    )
+                                }
+                                popoverContentClassName="z-[100]"
+                            />
+                        </div>
                     </div>
 
                     {officeOptions.length > 1 ? (

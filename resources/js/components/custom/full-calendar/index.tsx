@@ -1,6 +1,7 @@
-import type { DayHeaderContentArg, EventContentArg, DateSpanApi } from '@fullcalendar/core';
+import type { DayHeaderContentArg, EventClickArg, EventContentArg, DateSpanApi } from '@fullcalendar/core';
 import esLocale from '@fullcalendar/core/locales/es';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import type { DateClickArg } from '@fullcalendar/interaction';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import FullCalendar from '@fullcalendar/react';
@@ -10,9 +11,10 @@ import { useCallback, useMemo, useRef, useState  } from 'react';
 import type {CSSProperties} from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { appointmentStatusColorToCalendarClass } from '@/lib/appointment-status-colors';
+import { appointmentStatusCalendarEventClasses } from '@/lib/appointment-status-colors';
 import { cn } from '@/lib/utils';
 import {
+    buildSlotDefaultsFromDate,
     CALENDAR_DEFAULT_EVENT_DURATION,
     CALENDAR_SLOT_DURATION_MINUTES,
     CALENDAR_SLOT_HEIGHT,
@@ -83,6 +85,7 @@ export function VetsapFullCalendar({
     appointments = [],
     canCreate = false,
     onNewAppointment,
+    onAppointmentClick,
 }: FullCalendarProps) {
     const calendarRef = useRef<FullCalendar>(null);
     const [activeView, setActiveView] = useState<CalendarViewId>('threeDay');
@@ -112,9 +115,7 @@ export function VetsapFullCalendar({
                     subtitle: event.subtitle,
                     start: event.start,
                     end: event.end,
-                    colorClass: appointmentStatusColorToCalendarClass(
-                        event.status_color,
-                    ),
+                    statusColor: event.status_color,
                     cancelled: event.cancelled ?? false,
                 })),
                 holidayDates,
@@ -124,14 +125,13 @@ export function VetsapFullCalendar({
                 start: event.start,
                 end: event.end,
                 classNames: [
-                    event.colorClass,
-                    ...(event.cancelled
-                        ? ['is-cancelled', 'event-completed']
-                        : []),
+                    ...appointmentStatusCalendarEventClasses(event.statusColor),
+                    ...(event.cancelled ? ['is-cancelled'] : []),
                 ],
                 extendedProps: {
                     subtitle: event.subtitle,
                     cancelled: event.cancelled ?? false,
+                    statusColor: event.statusColor,
                 },
             })),
         [appointments, holidayDates],
@@ -194,6 +194,51 @@ export function VetsapFullCalendar({
         [holidayDates],
     );
 
+    const handleDateClick = useCallback(
+        (arg: DateClickArg) => {
+            if (!canCreate || !onNewAppointment) {
+                return;
+            }
+
+            const target = arg.jsEvent.target;
+
+            if (
+                target instanceof Element &&
+                target.closest('.fc-event:not(.fc-bg-event)')
+            ) {
+                return;
+            }
+
+            if (isCalendarHolidayDate(arg.date, holidayDates)) {
+                return;
+            }
+
+            onNewAppointment(buildSlotDefaultsFromDate(arg.date));
+        },
+        [canCreate, holidayDates, onNewAppointment],
+    );
+
+    const handleEventClick = useCallback(
+        (arg: EventClickArg) => {
+            if (arg.event.extendedProps.isHoliday) {
+                return;
+            }
+
+            if (!onAppointmentClick) {
+                return;
+            }
+
+            arg.jsEvent.preventDefault();
+            arg.jsEvent.stopPropagation();
+            onAppointmentClick(arg.event.id);
+        },
+        [onAppointmentClick],
+    );
+
+    const handleNewAppointmentClick = useCallback(() => {
+        onNewAppointment?.();
+    }, [onNewAppointment]);
+
     const handlePrev = useCallback(() => {
         calendarRef.current?.getApi().prev();
     }, []);
@@ -218,7 +263,11 @@ export function VetsapFullCalendar({
 
     return (
         <div
-            className={cn('vetsap-full-calendar', className)}
+            className={cn(
+                'vetsap-full-calendar',
+                (canCreate || onAppointmentClick) && 'is-slot-selectable',
+                className,
+            )}
             style={
                 {
                     '--fc-slot-height': CALENDAR_SLOT_HEIGHT,
@@ -282,7 +331,7 @@ export function VetsapFullCalendar({
                         type="button"
                         size="sm"
                         className="shrink-0"
-                        onClick={onNewAppointment}
+                        onClick={handleNewAppointmentClick}
                     >
                         <CirclePlus className="size-4" />
                         Nueva cita
@@ -325,6 +374,8 @@ export function VetsapFullCalendar({
                     dayHeaderClassNames={dayHeaderClassNames}
                     dayCellClassNames={dayCellClassNames}
                     selectAllow={selectAllow}
+                    dateClick={canCreate ? handleDateClick : undefined}
+                    eventClick={onAppointmentClick ? handleEventClick : undefined}
                     views={{
                         timeGridWeek: {
                             ...CALENDAR_TIMEGRID_VIEW_OPTIONS,

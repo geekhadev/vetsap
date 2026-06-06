@@ -3,15 +3,26 @@
 namespace App\Http\Controllers\Agenda;
 
 use App\Actions\Agenda\Appointments\CreateAppointmentAction;
+use App\Actions\Agenda\Appointments\ShowAppointmentAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Agenda\AppointmentStoreRequest;
 use App\Models\Agenda\Appointment;
 use App\Models\Company;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 
 class AppointmentsController extends Controller
 {
+    public function show(
+        Appointment $appointment,
+        ShowAppointmentAction $action,
+    ): JsonResponse {
+        $this->authorize('view', $appointment);
+
+        return response()->json($action->execute($appointment));
+    }
+
     public function store(
         AppointmentStoreRequest $request,
         CreateAppointmentAction $action,

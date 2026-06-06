@@ -44,12 +44,66 @@ export type AppointmentFormOptions = {
 
 export type CalendarIndexCan = {
     create: boolean;
+    view: boolean;
+    update: boolean;
+};
+
+export type AppointmentStatusOption = {
+    id: string;
+    name: string;
+    color: string;
+};
+
+export type AppointmentDetailPatient = {
+    id: string;
+    name: string;
+    record_number: string;
+    microchip_number: string;
+    sex: 'male' | 'female' | 'unknown';
+    birth_date: string | null;
+    age_years: number | null;
+    weight_kg: string | null;
+    colors: string;
+    blood_type: string;
+    species_name: string | null;
+};
+
+export type AppointmentDetailCustomer = {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    address: string;
+    document_number: string;
+};
+
+export type AppointmentDetailStatus = {
+    id: string;
+    name: string;
+    color: string;
+    is_terminal: boolean;
+};
+
+export type AppointmentDetail = {
+    id: string;
+    starts_at: string;
+    ends_at: string;
+    duration_minutes: number;
+    price: string | null;
+    notes: string | null;
+    status: AppointmentDetailStatus;
+    patient: AppointmentDetailPatient;
+    customer: AppointmentDetailCustomer;
+    doctor: { id: string; label: string };
+    service: { id: string; name: string };
+    office: { id: string; name: string } | null;
 };
 
 export type CalendarIndexPageProps = {
     holidays: CalendarHoliday[];
     appointments: CalendarAppointmentEvent[];
     formOptions: AppointmentFormOptions;
+    appointmentStatuses: AppointmentStatusOption[];
     can: CalendarIndexCan;
 };
 
