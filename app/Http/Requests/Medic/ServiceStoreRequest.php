@@ -2,13 +2,15 @@
 
 namespace App\Http\Requests\Medic;
 
-use App\Models\Company;
+use App\Http\Requests\Concerns\InteractsWithSelectedCompanyRequest;
 use App\Support\Validation\ServicePayloadValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ServiceStoreRequest extends FormRequest
 {
+    use InteractsWithSelectedCompanyRequest;
+
     protected function prepareForValidation(): void
     {
         $this->merge(ServicePayloadValidationRules::mergeNormalizedNullableFields([
@@ -35,24 +37,6 @@ class ServiceStoreRequest extends FormRequest
         }
 
         return ServicePayloadValidationRules::storeRules($companyId);
-    }
-
-    public function selectedCompanyId(): ?string
-    {
-        $id = data_get($this->session()->get('company_selected'), 'id');
-
-        return is_string($id) && $id !== '' ? $id : null;
-    }
-
-    public function selectedCompany(): ?Company
-    {
-        $id = $this->selectedCompanyId();
-
-        if ($id === null) {
-            return null;
-        }
-
-        return Company::query()->find($id);
     }
 
     /**

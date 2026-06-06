@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Sale;
 
 use App\Enums\CompanyDocumentType;
-use App\Models\Company;
+use App\Http\Requests\Concerns\InteractsWithSelectedCompanyRequest;
 use App\Models\Sale\CertificationSiiTicket;
 use App\Support\Sale\ChileRut;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -13,6 +13,8 @@ use InvalidArgumentException;
 
 class CertificationSiiTicketsRequest extends FormRequest
 {
+    use InteractsWithSelectedCompanyRequest;
+
     public function authorize(): bool
     {
         return true;
@@ -101,16 +103,5 @@ class CertificationSiiTicketsRequest extends FormRequest
     public function parsedCaf(): array
     {
         return caf_xml_to_nodes($this->cafXml());
-    }
-
-    public function selectedCompany(): ?Company
-    {
-        $id = data_get($this->session()->get('company_selected'), 'id');
-
-        if (! is_string($id) || $id === '') {
-            return null;
-        }
-
-        return Company::query()->find($id);
     }
 }

@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests\Sale;
 
-use App\Models\Company;
+use App\Http\Requests\Concerns\InteractsWithSelectedCompanyRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SiiCafUploadRequest extends FormRequest
 {
+    use InteractsWithSelectedCompanyRequest;
+
     public function authorize(): bool
     {
         return true;
@@ -21,17 +23,6 @@ class SiiCafUploadRequest extends FormRequest
         return [
             'xml_file' => ['required', 'file', 'mimetypes:text/xml,application/xml', 'max:512'],
         ];
-    }
-
-    public function selectedCompany(): ?Company
-    {
-        $id = data_get($this->session()->get('company_selected'), 'id');
-
-        if (! is_string($id) || $id === '') {
-            return null;
-        }
-
-        return Company::query()->find($id);
     }
 
     public function xmlFileContents(): string
