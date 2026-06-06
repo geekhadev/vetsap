@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\UserType;
 use App\Models\User;
 use Database\Seeders\Administration\PermissionsSeeder;
+use Database\Seeders\Agenda\AppointmentStatusesSeeder;
 use Database\Seeders\Configuration\CompaniesSeeder;
 use Database\Seeders\Medic\DoctorsSeeder;
 use Database\Seeders\Medic\ServicesSeeder;
@@ -38,6 +39,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(PermissionsSeeder::class);
+        $this->call(AppointmentStatusesSeeder::class);
         $this->call(CompaniesSeeder::class);
         $this->call(CustomersSeeder::class);
         $this->call(SpecialtiesSeeder::class);
