@@ -6,6 +6,7 @@ use App\Enums\UserType;
 use App\Models\User;
 use Database\Seeders\Administration\PermissionsSeeder;
 use Database\Seeders\Configuration\CompaniesSeeder;
+use Database\Seeders\Medic\DoctorsSeeder;
 use Database\Seeders\Medic\ServicesSeeder;
 use Database\Seeders\Medic\SpecialtiesSeeder;
 use Database\Seeders\Medic\SpeciesSeeder;
@@ -42,6 +43,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SpecialtiesSeeder::class);
         $this->call(ServicesSeeder::class);
         $this->call(SpeciesSeeder::class);
+        $this->call(DoctorsSeeder::class);
         $this->call(ProductTypesSeeder::class);
         $this->call(ProductCategoriesSeeder::class);
         $this->call(ProductsSeeder::class);
