@@ -189,7 +189,7 @@ export default function SiiCafsIndex() {
             },
             {
                 key: 'actions',
-                label: 'Acciones',
+                label: '',
                 hideable: false,
                 headerClassName: 'w-0 text-right',
                 render: (row) => (

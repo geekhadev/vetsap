@@ -110,7 +110,7 @@ function DoctorsIndex() {
             buildTabledataIsActiveStatusColumn<Doctor>(),
             {
                 key: 'actions',
-                label: 'Acciones',
+                label: '',
                 sortable: false,
                 hideable: false,
                 headerClassName: 'w-0 text-right',

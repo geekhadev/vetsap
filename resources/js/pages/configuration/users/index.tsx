@@ -58,7 +58,7 @@ function UsersIndex() {
     const columns = useMemo<TabledataColumn<UserListRow>[]>(() => {
         const actionsColumn: TabledataColumn<UserListRow> = {
             key: 'actions',
-            label: 'Acciones',
+            label: '',
             hideable: false,
             headerClassName: 'w-0 text-right',
             render: (row) => {

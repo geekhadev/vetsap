@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -8,7 +9,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Trash2 } from 'lucide-react';
 import type { CompanyRoleAssignmentRow } from '@/pages/configuration/users/company-roles-dialog.types';
 
 export type CompanyRolesAssignmentsTableProps = {
@@ -34,7 +34,7 @@ export function CompanyRolesAssignmentsTable({
                             <TableHead>Empresa</TableHead>
                             <TableHead>Rol</TableHead>
                             <TableHead className="w-0 text-right">
-                                <span className="sr-only">Acciones</span>
+                                <span className="sr-only"></span>
                             </TableHead>
                         </TableRow>
                     </TableHeader>
