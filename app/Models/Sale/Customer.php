@@ -3,6 +3,7 @@
 namespace App\Models\Sale;
 
 use App\Enums\Sale\CustomerDocumentType;
+use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
 use App\Models\Medic\Patient;
@@ -51,6 +52,14 @@ class Customer extends Model
     public function patients(): HasMany
     {
         return $this->hasMany(Patient::class, 'customer_id');
+    }
+
+    /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'customer_id');
     }
 
     /**

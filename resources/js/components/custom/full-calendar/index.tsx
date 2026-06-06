@@ -10,6 +10,7 @@ import { useCallback, useMemo, useRef, useState  } from 'react';
 import type {CSSProperties} from 'react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { appointmentStatusColorToCalendarClass } from '@/lib/appointment-status-colors';
 import { cn } from '@/lib/utils';
 import {
     CALENDAR_DEFAULT_EVENT_DURATION,
@@ -29,7 +30,6 @@ import {
     isCalendarHolidayDate,
     toCalendarDateKey,
 } from './holidays';
-import { CALENDAR_DEMO_EVENTS } from './mock-events';
 import type {
     CalendarViewId,
     CalendarViewOption,
@@ -80,6 +80,9 @@ function renderEventContent(arg: EventContentArg) {
 export function VetsapFullCalendar({
     className,
     holidays = [],
+    appointments = [],
+    canCreate = false,
+    onNewAppointment,
 }: FullCalendarProps) {
     const calendarRef = useRef<FullCalendar>(null);
     const [activeView, setActiveView] = useState<CalendarViewId>('threeDay');
@@ -102,25 +105,36 @@ export function VetsapFullCalendar({
 
     const appointmentEvents = useMemo(
         () =>
-            filterEventsExcludingHolidays(CALENDAR_DEMO_EVENTS, holidayDates).map(
-                (event) => ({
+            filterEventsExcludingHolidays(
+                appointments.map((event) => ({
                     id: event.id,
                     title: event.title,
+                    subtitle: event.subtitle,
                     start: event.start,
                     end: event.end,
-                    classNames: [
-                        event.colorClass,
-                        ...(event.cancelled
-                            ? ['is-cancelled', 'event-completed']
-                            : []),
-                    ],
-                    extendedProps: {
-                        subtitle: event.subtitle,
-                        cancelled: event.cancelled ?? false,
-                    },
-                }),
-            ),
-        [holidayDates],
+                    colorClass: appointmentStatusColorToCalendarClass(
+                        event.status_color,
+                    ),
+                    cancelled: event.cancelled ?? false,
+                })),
+                holidayDates,
+            ).map((event) => ({
+                id: event.id,
+                title: event.title,
+                start: event.start,
+                end: event.end,
+                classNames: [
+                    event.colorClass,
+                    ...(event.cancelled
+                        ? ['is-cancelled', 'event-completed']
+                        : []),
+                ],
+                extendedProps: {
+                    subtitle: event.subtitle,
+                    cancelled: event.cancelled ?? false,
+                },
+            })),
+        [appointments, holidayDates],
     );
 
     const scrollToNow = useCallback(() => {
@@ -263,10 +277,17 @@ export function VetsapFullCalendar({
                     ))}
                 </ToggleGroup>
 
-                <Button type="button" size="sm" className="shrink-0">
-                    <CirclePlus className="size-4" />
-                    Nueva cita
-                </Button>
+                {canCreate ? (
+                    <Button
+                        type="button"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={onNewAppointment}
+                    >
+                        <CirclePlus className="size-4" />
+                        Nueva cita
+                    </Button>
+                ) : null}
             </div>
 
             <div className="min-h-0 flex-1 overflow-hidden px-4 pt-3 pb-4">

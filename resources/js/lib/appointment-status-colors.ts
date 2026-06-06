@@ -76,3 +76,35 @@ export function isAppointmentStatusColorValue(
 ): value is AppointmentStatusColorValue {
     return (APPOINTMENT_STATUS_COLORS as readonly string[]).includes(value);
 }
+
+const APPOINTMENT_STATUS_CALENDAR_CLASS: Record<
+    AppointmentStatusColorValue,
+    string
+> = {
+    slate: 'event-blue',
+    blue: 'event-blue',
+    sky: 'event-blue',
+    cyan: 'event-blue',
+    teal: 'event-green',
+    green: 'event-green',
+    emerald: 'event-green',
+    lime: 'event-yellow',
+    amber: 'event-yellow',
+    orange: 'event-yellow',
+    rose: 'event-pink',
+    pink: 'event-pink',
+    purple: 'event-purple',
+    violet: 'event-purple',
+    indigo: 'event-purple',
+    red: 'event-pink',
+};
+
+export function appointmentStatusColorToCalendarClass(
+    color: string,
+): string {
+    if (isAppointmentStatusColorValue(color)) {
+        return APPOINTMENT_STATUS_CALENDAR_CLASS[color];
+    }
+
+    return 'event-blue';
+}

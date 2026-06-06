@@ -3,6 +3,7 @@
 namespace App\Models\Medic;
 
 use App\Enums\Medic\PatientSex;
+use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
 use App\Models\Sale\Customer;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'company_id',
@@ -63,6 +65,14 @@ class Patient extends Model
     public function species(): BelongsTo
     {
         return $this->belongsTo(Species::class, 'species_id');
+    }
+
+    /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'patient_id');
     }
 
     /**

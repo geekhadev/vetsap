@@ -3,6 +3,7 @@
 namespace App\Models\Medic;
 
 use App\Enums\Medic\DoctorDocumentType;
+use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -75,6 +76,14 @@ class Doctor extends Model
             ->orderBy('day_of_week')
             ->orderBy('sort_order')
             ->orderBy('starts_at');
+    }
+
+    /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'doctor_id');
     }
 
     /**

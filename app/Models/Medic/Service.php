@@ -2,6 +2,7 @@
 
 namespace App\Models\Medic;
 
+use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'company_id',
@@ -50,6 +52,14 @@ class Service extends Model
     public function specialty(): BelongsTo
     {
         return $this->belongsTo(Specialty::class, 'specialty_id');
+    }
+
+    /**
+     * @return HasMany<Appointment, $this>
+     */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'service_id');
     }
 
     /**
