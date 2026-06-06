@@ -1,5 +1,6 @@
 playwrite-report/
 ai/
+pnpm-lock.yaml
 
 tasks.md
 /.phpunit.cache
