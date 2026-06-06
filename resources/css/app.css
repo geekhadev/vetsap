@@ -98,6 +98,22 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.87 0 0);
+
+    --toast-success-bg: oklch(0.96 0.04 145);
+    --toast-success-border: oklch(0.82 0.1 145);
+    --toast-success-text: oklch(0.42 0.14 145);
+
+    --toast-error-bg: oklch(0.97 0.02 25);
+    --toast-error-border: oklch(0.82 0.12 25);
+    --toast-error-text: oklch(0.48 0.2 25);
+
+    --toast-warning-bg: oklch(0.97 0.04 55);
+    --toast-warning-border: oklch(0.82 0.14 55);
+    --toast-warning-text: oklch(0.52 0.18 55);
+
+    --toast-info-bg: oklch(0.97 0.03 250);
+    --toast-info-border: oklch(0.82 0.1 250);
+    --toast-info-text: oklch(0.48 0.15 250);
 }
 
 .dark {
@@ -133,6 +149,22 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(0.269 0 0);
     --sidebar-ring: oklch(0.439 0 0);
+
+    --toast-success-bg: oklch(0.28 0.06 145);
+    --toast-success-border: oklch(0.38 0.1 145);
+    --toast-success-text: oklch(0.78 0.14 145);
+
+    --toast-error-bg: oklch(0.28 0.06 25);
+    --toast-error-border: oklch(0.38 0.12 25);
+    --toast-error-text: oklch(0.78 0.14 25);
+
+    --toast-warning-bg: oklch(0.28 0.06 55);
+    --toast-warning-border: oklch(0.38 0.12 55);
+    --toast-warning-text: oklch(0.8 0.15 55);
+
+    --toast-info-bg: oklch(0.28 0.06 250);
+    --toast-info-border: oklch(0.38 0.1 250);
+    --toast-info-text: oklch(0.78 0.12 250);
 }
 
 @layer base {
