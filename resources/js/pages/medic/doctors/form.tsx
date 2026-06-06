@@ -4,16 +4,14 @@ import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormSelect } from '@/components/custom/form-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { DoctorServicesEditor } from '@/pages/medic/doctors/doctor-services-editor';
 import { useDoctorForm } from '@/pages/medic/doctors/hooks/use-form';
 import { DOCUMENT_TYPE_OPTIONS } from '@/pages/medic/doctors/types';
-import type { Doctor, ServiceOption } from '@/pages/medic/doctors/types';
+import type { Doctor } from '@/pages/medic/doctors/types';
 
 type DoctorFormProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     entity: Doctor | null;
-    services: ServiceOption[];
 };
 
 type DoctorFormFields = Pick<
@@ -28,12 +26,7 @@ type DoctorFormFields = Pick<
     | 'use_web'
 >;
 
-export function DoctorForm({
-    open,
-    onOpenChange,
-    entity,
-    services,
-}: DoctorFormProps) {
+export function DoctorForm({ open, onOpenChange, entity }: DoctorFormProps) {
     const { isEdit, formProps, headTitle, description } = useDoctorForm(entity);
 
     const documentOptions = useMemo(
@@ -156,17 +149,12 @@ export function DoctorForm({
                         description="Visible en el formulario de citas de la web pública."
                     />
 
-                    {isEdit ? (
-                        <DoctorServicesEditor
-                            serviceOptions={services}
-                            assigned={entity?.services}
-                        />
-                    ) : (
+                    {!isEdit ? (
                         <p className="text-muted-foreground text-sm">
-                            Tras crear la ficha podrás asignar los servicios
-                            que presta este profesional.
+                            Tras crear la ficha podrás asignar servicios desde
+                            la acción «Servicios» en el listado.
                         </p>
-                    )}
+                    ) : null}
 
                     <FormDialogFooter
                         onCancel={() => onOpenChange(false)}

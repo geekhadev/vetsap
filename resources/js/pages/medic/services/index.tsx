@@ -9,8 +9,8 @@ import type { TabledataColumn } from '@/components/custom/tabledata';
 import {
     buildTabledataCrudActionsColumn,
     buildTabledataIsActiveStatusColumn,
+    buildTabledataWebVisibilityColumn,
 } from '@/components/custom/tabledata-crud-actions';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import { CONFIG_TABLEDATA } from '@/pages/medic/services/config';
@@ -20,9 +20,7 @@ import { ServiceForm } from '@/pages/medic/services/form';
 import { useServicesIndex } from '@/pages/medic/services/hooks/use-index';
 import {
     formatDuration,
-    formatIsActive,
     formatPrice,
-    formatUseWeb,
 } from '@/pages/medic/services/types';
 import type { Service, ServiceListFilters, ServicesIndexFiltersDraftFull } from '@/pages/medic/services/types';
 
@@ -58,19 +56,8 @@ function ServicesIndex() {
                 sortable: true,
                 render: (row) => formatPrice(row.price),
             },
-            buildTabledataIsActiveStatusColumn<Service>({ formatIsActive }),
-            {
-                key: 'use_web',
-                label: 'Citas web',
-                sortable: true,
-                render: (row) => (
-                    <Badge
-                        variant={row.use_web ? 'default' : 'secondary'}
-                    >
-                        {formatUseWeb(row.use_web)}
-                    </Badge>
-                ),
-            },
+            buildTabledataWebVisibilityColumn<Service>(),
+            buildTabledataIsActiveStatusColumn<Service>(),
             buildTabledataCrudActionsColumn<Service>({
                 can,
                 onEdit: openEdit,

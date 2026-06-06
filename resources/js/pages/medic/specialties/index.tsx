@@ -19,7 +19,6 @@ import type { SpecialtiesIndexPageProps } from '@/pages/medic/specialties/config
 import { SpecialtiesIndexFilters } from '@/pages/medic/specialties/filters';
 import { SpecialtyForm } from '@/pages/medic/specialties/form';
 import { useSpecialtiesIndex } from '@/pages/medic/specialties/hooks/use-index';
-import { formatIsActive } from '@/pages/medic/specialties/types';
 import type { Specialty, SpecialtyListFilters, SpecialtiesIndexFiltersDraftFull } from '@/pages/medic/specialties/types';
 
 function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
@@ -41,7 +40,7 @@ function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
                 sortable: false,
                 render: (row) => row.description ?? '—',
             },
-            buildTabledataIsActiveStatusColumn<Specialty>({ formatIsActive }),
+            buildTabledataIsActiveStatusColumn<Specialty>({ gender: 'f' }),
             buildTabledataCrudActionsColumn<Specialty>({
                 can,
                 onEdit: openEdit,

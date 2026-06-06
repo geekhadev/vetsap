@@ -19,6 +19,7 @@ return new class extends Migration
                 ->constrained('medic_services')
                 ->cascadeOnDelete();
             $table->unsignedInteger('duration_override_minutes')->nullable();
+            $table->decimal('price_override', 12, 0)->nullable();
             $table->timestamps();
 
             $table->primary(['doctor_id', 'service_id']);

@@ -10,30 +10,10 @@ class DoctorUpdateRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        $merged = DoctorPayloadValidationRules::mergeNormalizedNullableFields([
+        $this->merge(DoctorPayloadValidationRules::mergeNormalizedNullableFields([
             'phone' => $this->input('phone'),
             'email' => $this->input('email'),
-        ]);
-
-        if ($this->input('services_present') && ! $this->has('services')) {
-            $merged['services'] = [];
-        }
-
-        $services = $this->input('services');
-        if (is_array($services)) {
-            foreach ($services as $index => $row) {
-                if (! is_array($row)) {
-                    continue;
-                }
-                $override = $row['duration_override_minutes'] ?? null;
-                if ($override === '') {
-                    $services[$index]['duration_override_minutes'] = null;
-                }
-            }
-            $merged['services'] = $services;
-        }
-
-        $this->merge($merged);
+        ]));
     }
 
     public function authorize(): bool
@@ -53,7 +33,7 @@ class DoctorUpdateRequest extends FormRequest
             return ['first_name' => ['required']];
         }
 
-        return DoctorPayloadValidationRules::updateRules($companyId);
+        return DoctorPayloadValidationRules::updateRules();
     }
 
     /**
@@ -72,21 +52,5 @@ class DoctorUpdateRequest extends FormRequest
         $validated = $this->validated();
 
         return DoctorPayloadValidationRules::updatePayload($validated);
-    }
-
-    public function hasServicesPayload(): bool
-    {
-        return $this->has('services') || $this->filled('services_present');
-    }
-
-    /**
-     * @return list<array{service_id: string, duration_override_minutes: int|null}>
-     */
-    public function servicesPayload(): array
-    {
-        /** @var array<string, mixed> $validated */
-        $validated = $this->validated();
-
-        return DoctorPayloadValidationRules::servicesPayload($validated);
     }
 }

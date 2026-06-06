@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'company_id',
@@ -58,8 +59,22 @@ class Doctor extends Model
             'doctor_id',
             'service_id',
         )
-            ->withPivot('duration_override_minutes')
+            ->withPivot([
+                'duration_override_minutes',
+                'price_override',
+            ])
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<DoctorScheduleBlock, $this>
+     */
+    public function scheduleBlocks(): HasMany
+    {
+        return $this->hasMany(DoctorScheduleBlock::class, 'doctor_id')
+            ->orderBy('day_of_week')
+            ->orderBy('sort_order')
+            ->orderBy('starts_at');
     }
 
     /**

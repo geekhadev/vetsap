@@ -1,4 +1,4 @@
-import { Save, X } from 'lucide-react';
+import { Eraser, Save, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,9 @@ export type FormDialogFooterProps = {
     submitLabel?: string;
     submitLabelLoading?: string;
     submitDisabled?: boolean;
+    onClear?: () => void;
+    clearLabel?: string;
+    clearDisabled?: boolean;
 };
 
 export function FormDialogFooter({
@@ -22,12 +25,29 @@ export function FormDialogFooter({
     submitLabel,
     submitLabelLoading,
     submitDisabled,
+    onClear,
+    clearLabel = 'Limpiar',
+    clearDisabled,
 }: FormDialogFooterProps) {
     const resolvedSubmitLabel = submitLabel ?? (isEdit ? 'Guardar cambios' : 'Guardar');
     const resolvedSubmitLabelLoading = submitLabelLoading ?? 'Guardando…';
 
     return (
-        <DialogFooter className="gap-2 sm:justify-end">
+        <DialogFooter className="gap-2 sm:justify-between">
+            {onClear ? (
+                <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={onClear}
+                    disabled={clearDisabled ?? processing}
+                >
+                    <Eraser />
+                    {clearLabel}
+                </Button>
+            ) : (
+                <span className="hidden sm:block" />
+            )}
+            <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="outline" onClick={onCancel}>
                 <X />
                 Cancelar
@@ -35,12 +55,13 @@ export function FormDialogFooter({
             <FormSubmitButton
                 type="submit"
                 loading={processing}
-                disabled={submitDisabled}
+                disabled={submitDisabled ?? processing}
                 icon={submitIcon}
                 label={resolvedSubmitLabel}
                 labelLoading={resolvedSubmitLabelLoading}
                 containerClassName="w-auto"
             />
+            </div>
         </DialogFooter>
     );
 }

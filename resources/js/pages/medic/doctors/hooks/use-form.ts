@@ -6,8 +6,8 @@ export function useDoctorForm(entity: Doctor | null) {
     const isEdit = entity !== null;
     const headTitle = isEdit ? 'Editar doctor' : 'Nuevo doctor';
     const description = isEdit
-        ? 'Modifica la ficha del profesional y los servicios que puede prestar. El tipo y número de documento no se pueden cambiar.'
-        : 'Registra un veterinario o profesional. Podrás asignar servicios al editar la ficha.';
+        ? 'Modifica los datos de contacto y el estado del profesional. El tipo y número de documento no se pueden cambiar.'
+        : 'Registra un veterinario o profesional. Podrás asignar servicios desde el listado.';
 
     const formProps = useMemo(() => {
         if (isEdit && entity) {

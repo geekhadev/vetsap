@@ -22,7 +22,21 @@ final class ListDoctorsForCompanyAction
             ->forCompany($companyId)
             ->with([
                 'services' => fn ($query) => $query
-                    ->select('medic_services.id', 'medic_services.name', 'medic_services.duration_minutes'),
+                    ->select(
+                        'medic_services.id',
+                        'medic_services.name',
+                        'medic_services.duration_minutes',
+                        'medic_services.price',
+                    ),
+                'scheduleBlocks' => fn ($query) => $query
+                    ->select(
+                        'id',
+                        'doctor_id',
+                        'day_of_week',
+                        'starts_at',
+                        'ends_at',
+                        'sort_order',
+                    ),
             ])
             ->withCount('services')
             ->filterIsActive($filters['is_active'] ?? null)

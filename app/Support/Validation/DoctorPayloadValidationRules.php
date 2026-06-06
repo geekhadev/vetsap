@@ -3,6 +3,7 @@
 namespace App\Support\Validation;
 
 use App\Enums\Medic\DoctorDocumentType;
+use App\Enums\Medic\DoctorScheduleDayOfWeek;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
@@ -35,7 +36,7 @@ final class DoctorPayloadValidationRules
     /**
      * @return array<string, ValidationRule|array<int, mixed|string>|string>
      */
-    public static function updateRules(string $companyId): array
+    public static function updateRules(): array
     {
         return [
             ...self::sharedFieldRules(),
@@ -43,14 +44,6 @@ final class DoctorPayloadValidationRules
             'document_number' => ['prohibited'],
             'is_active' => ['required', 'boolean'],
             'use_web' => ['required', 'boolean'],
-            'services' => ['sometimes', 'array'],
-            'services.*.service_id' => [
-                'required',
-                'uuid',
-                'distinct',
-                Rule::exists('medic_services', 'id')->where('company_id', $companyId),
-            ],
-            'services.*.duration_override_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
         ];
     }
 
@@ -68,7 +61,50 @@ final class DoctorPayloadValidationRules
                 Rule::exists('medic_services', 'id')->where('company_id', $companyId),
             ],
             'services.*.duration_override_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'services.*.price_override' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
         ];
+    }
+
+    /**
+     * @return array<string, ValidationRule|array<int, mixed|string>|string>
+     */
+    public static function syncScheduleRules(): array
+    {
+        return [
+            'blocks' => ['present', 'array'],
+            'blocks.*.day_of_week' => ['required', 'integer', Rule::enum(DoctorScheduleDayOfWeek::class)],
+            'blocks.*.starts_at' => ['required', 'date_format:H:i'],
+            'blocks.*.ends_at' => ['required', 'date_format:H:i', 'after:blocks.*.starts_at'],
+        ];
+    }
+
+    /**
+     * @return list<array{day_of_week: int, starts_at: string, ends_at: string}>
+     */
+    public static function schedulePayload(array $validated): array
+    {
+        if (! array_key_exists('blocks', $validated) || ! is_array($validated['blocks'])) {
+            return [];
+        }
+
+        $rows = [];
+
+        foreach ($validated['blocks'] as $block) {
+            if (! is_array($block) || ! isset($block['day_of_week'], $block['starts_at'], $block['ends_at'])) {
+                continue;
+            }
+
+            $day = $block['day_of_week'];
+            $rows[] = [
+                'day_of_week' => $day instanceof DoctorScheduleDayOfWeek
+                    ? $day->value
+                    : (int) $day,
+                'starts_at' => self::normalizeScheduleTime((string) $block['starts_at']),
+                'ends_at' => self::normalizeScheduleTime((string) $block['ends_at']),
+            ];
+        }
+
+        return $rows;
     }
 
     /**
@@ -150,7 +186,7 @@ final class DoctorPayloadValidationRules
     }
 
     /**
-     * @return list<array{service_id: string, duration_override_minutes: int|null}>
+     * @return list<array{service_id: string, duration_override_minutes: int|null, price_override: int|null}>
      */
     public static function servicesPayload(array $validated): array
     {
@@ -165,12 +201,16 @@ final class DoctorPayloadValidationRules
                 continue;
             }
 
-            $override = $row['duration_override_minutes'] ?? null;
+            $durationOverride = $row['duration_override_minutes'] ?? null;
+            $priceOverride = $row['price_override'] ?? null;
             $rows[] = [
                 'service_id' => (string) $row['service_id'],
-                'duration_override_minutes' => ($override === null || $override === '')
+                'duration_override_minutes' => ($durationOverride === null || $durationOverride === '')
                     ? null
-                    : (int) $override,
+                    : (int) $durationOverride,
+                'price_override' => ($priceOverride === null || $priceOverride === '')
+                    ? null
+                    : (int) $priceOverride,
             ];
         }
 
@@ -193,5 +233,18 @@ final class DoctorPayloadValidationRules
             'phone' => $validated['phone'] ?? null,
             'email' => $validated['email'] ?? null,
         ];
+    }
+
+    private static function normalizeScheduleTime(string $time): string
+    {
+        if (preg_match('/^\d{2}:\d{2}$/', $time) === 1) {
+            return $time;
+        }
+
+        if (preg_match('/^(\d{2}:\d{2})/', $time, $matches) === 1) {
+            return $matches[1];
+        }
+
+        return $time;
     }
 }

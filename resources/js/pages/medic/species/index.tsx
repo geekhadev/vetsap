@@ -17,7 +17,6 @@ import type { SpeciesIndexPageProps } from '@/pages/medic/species/config';
 import { SpeciesIndexFilters } from '@/pages/medic/species/filters';
 import { SpeciesForm } from '@/pages/medic/species/form';
 import { useSpeciesIndex } from '@/pages/medic/species/hooks/use-index';
-import { formatIsActive } from '@/pages/medic/species/types';
 import type { Species, SpeciesListFilters, SpeciesIndexFiltersDraftFull } from '@/pages/medic/species/types';
 
 function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
@@ -33,7 +32,7 @@ function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
                 sortable: true,
                 hideable: false,
             },
-            buildTabledataIsActiveStatusColumn<Species>({ formatIsActive }),
+            buildTabledataIsActiveStatusColumn<Species>({ gender: 'f' }),
             buildTabledataCrudActionsColumn<Species>({
                 can,
                 onEdit: openEdit,

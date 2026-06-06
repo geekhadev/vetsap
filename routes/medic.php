@@ -12,3 +12,5 @@ Route::resource('species', SpeciesController::class)->except(['show']);
 Route::resource('doctors', DoctorsController::class)->except(['show']);
 Route::put('doctors/{doctor}/services', [DoctorsController::class, 'syncServices'])
     ->name('doctors.services.sync');
+Route::put('doctors/{doctor}/schedule', [DoctorsController::class, 'syncSchedule'])
+    ->name('doctors.schedule.sync');

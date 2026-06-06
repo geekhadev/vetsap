@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Medic;
 use App\Actions\Medic\Doctors\CreateDoctorAction;
 use App\Actions\Medic\Doctors\DeleteDoctorAction;
 use App\Actions\Medic\Doctors\ListDoctorsForCompanyAction;
+use App\Actions\Medic\Doctors\SyncDoctorScheduleAction;
 use App\Actions\Medic\Doctors\SyncDoctorServicesAction;
 use App\Actions\Medic\Doctors\UpdateDoctorAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Medic\DoctorListRequest;
 use App\Http\Requests\Medic\DoctorStoreRequest;
+use App\Http\Requests\Medic\DoctorSyncScheduleRequest;
 use App\Http\Requests\Medic\DoctorSyncServicesRequest;
 use App\Http\Requests\Medic\DoctorUpdateRequest;
 use App\Models\Company;
@@ -48,8 +50,9 @@ class DoctorsController extends Controller
                 ? Service::query()
                     ->forCompany($company->id)
                     ->where('is_active', true)
+                    ->with(['specialty:id,name'])
                     ->orderBy('name')
-                    ->get(['id', 'name', 'duration_minutes', 'specialty_id'])
+                    ->get(['id', 'name', 'duration_minutes', 'price', 'specialty_id'])
                 : [],
             'can' => [
                 'create' => $user?->can('create', Doctor::class) ?? false,
@@ -96,9 +99,7 @@ class DoctorsController extends Controller
     ): RedirectResponse {
         $this->authorize('update', $doctor);
 
-        $services = $request->hasServicesPayload() ? $request->servicesPayload() : null;
-
-        $action->execute($doctor, $request->doctorPayload(), $services);
+        $action->execute($doctor, $request->doctorPayload());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Doctor actualizado correctamente.']);
 
@@ -115,6 +116,20 @@ class DoctorsController extends Controller
         $action->execute($doctor, $request->servicesPayload());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Servicios del doctor actualizados.']);
+
+        return to_route('medic.doctors.index');
+    }
+
+    public function syncSchedule(
+        DoctorSyncScheduleRequest $request,
+        Doctor $doctor,
+        SyncDoctorScheduleAction $action,
+    ): RedirectResponse {
+        $this->authorize('update', $doctor);
+
+        $action->execute($doctor, $request->schedulePayload());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Horarios del doctor actualizados.']);
 
         return to_route('medic.doctors.index');
     }

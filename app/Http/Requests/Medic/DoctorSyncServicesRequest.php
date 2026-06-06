@@ -10,6 +10,10 @@ class DoctorSyncServicesRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
+        if ($this->input('services_present') && ! $this->has('services')) {
+            $this->merge(['services' => []]);
+        }
+
         $services = $this->input('services');
         if (! is_array($services)) {
             return;
@@ -19,9 +23,14 @@ class DoctorSyncServicesRequest extends FormRequest
             if (! is_array($row)) {
                 continue;
             }
-            $override = $row['duration_override_minutes'] ?? null;
-            if ($override === '') {
+            $durationOverride = $row['duration_override_minutes'] ?? null;
+            if ($durationOverride === '') {
                 $services[$index]['duration_override_minutes'] = null;
+            }
+
+            $priceOverride = $row['price_override'] ?? null;
+            if ($priceOverride === '') {
+                $services[$index]['price_override'] = null;
             }
         }
 
@@ -48,7 +57,7 @@ class DoctorSyncServicesRequest extends FormRequest
     }
 
     /**
-     * @return list<array{service_id: string, duration_override_minutes: int|null}>
+     * @return list<array{service_id: string, duration_override_minutes: int|null, price_override: int|null}>
      */
     public function servicesPayload(): array
     {

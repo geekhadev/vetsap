@@ -8,7 +8,7 @@ use App\Models\Medic\Service;
 final class SyncDoctorServicesAction
 {
     /**
-     * @param  list<array{service_id: string, duration_override_minutes: int|null}>  $services
+     * @param  list<array{service_id: string, duration_override_minutes: int|null, price_override: int|null}>  $services
      */
     public function execute(Doctor $doctor, array $services): void
     {
@@ -29,6 +29,7 @@ final class SyncDoctorServicesAction
 
             $syncData[$serviceId] = [
                 'duration_override_minutes' => $row['duration_override_minutes'],
+                'price_override' => $row['price_override'],
             ];
         }
 

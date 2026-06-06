@@ -7,6 +7,10 @@ export {
     isActiveFilterOptions,
     IS_ACTIVE_FILTER_OPTIONS,
 } from './active-record';
+export {
+    formatConfiguredStatus,
+    formatWebVisibility,
+} from './table-status-columns';
 export type { ActiveRecordGender, IsActiveFilterOption } from './active-record';
 export type * from './navigation';
 export { flattenNavItemsToLeaves, isNavParent } from './navigation';

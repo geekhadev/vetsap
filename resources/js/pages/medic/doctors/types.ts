@@ -11,20 +11,50 @@ export type DoctorServicePivot = {
     doctor_id: string;
     service_id: string;
     duration_override_minutes: number | null;
+    price_override: string | null;
 };
+
+export type DoctorScheduleDayOfWeek = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export type DoctorScheduleBlock = {
+    id: string;
+    doctor_id: string;
+    day_of_week: DoctorScheduleDayOfWeek;
+    starts_at: string;
+    ends_at: string;
+    sort_order: number;
+};
+
+export const SCHEDULE_DAYS = [
+    { value: 1 as DoctorScheduleDayOfWeek, label: 'Lunes', shortLabel: 'Lun' },
+    { value: 2 as DoctorScheduleDayOfWeek, label: 'Martes', shortLabel: 'Mar' },
+    { value: 3 as DoctorScheduleDayOfWeek, label: 'Miércoles', shortLabel: 'Mié' },
+    { value: 4 as DoctorScheduleDayOfWeek, label: 'Jueves', shortLabel: 'Jue' },
+    { value: 5 as DoctorScheduleDayOfWeek, label: 'Viernes', shortLabel: 'Vie' },
+    { value: 6 as DoctorScheduleDayOfWeek, label: 'Sábado', shortLabel: 'Sáb' },
+    { value: 7 as DoctorScheduleDayOfWeek, label: 'Domingo', shortLabel: 'Dom' },
+] as const;
 
 export type DoctorServiceAssignment = {
     id: string;
     name: string;
     duration_minutes: number | null;
+    price: string | null;
     pivot: DoctorServicePivot;
+};
+
+export type ServiceOptionSpecialtyRef = {
+    id: string;
+    name: string;
 };
 
 export type ServiceOption = {
     id: string;
     name: string;
     duration_minutes: number | null;
+    price: string | null;
     specialty_id: string;
+    specialty?: ServiceOptionSpecialtyRef | null;
 };
 
 export type Doctor = {
@@ -39,6 +69,7 @@ export type Doctor = {
     is_active: boolean;
     use_web: boolean;
     services?: DoctorServiceAssignment[];
+    schedule_blocks?: DoctorScheduleBlock[];
     services_count?: number;
     created_at: string;
     updated_at: string;
@@ -91,4 +122,22 @@ export function formatDocumentType(value: DoctorDocumentTypeValue): string {
 
 export function formatDoctorName(doctor: Pick<Doctor, 'first_name' | 'last_name'>): string {
     return `${doctor.first_name} ${doctor.last_name}`.trim();
+}
+
+export function formatServicesCount(count: number | undefined): string {
+    const value = count ?? 0;
+
+    return value === 1 ? '1 servicio' : `${value} servicios`;
+}
+
+export function hasDoctorServicesConfigured(
+    doctor: Pick<Doctor, 'services_count' | 'services'>,
+): boolean {
+    return (doctor.services_count ?? doctor.services?.length ?? 0) > 0;
+}
+
+export function hasDoctorScheduleConfigured(
+    doctor: Pick<Doctor, 'schedule_blocks'>,
+): boolean {
+    return (doctor.schedule_blocks?.length ?? 0) > 0;
 }

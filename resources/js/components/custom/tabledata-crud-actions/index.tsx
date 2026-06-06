@@ -1,12 +1,13 @@
-import { PencilIcon, TrashIcon } from 'lucide-react';
+import { PencilIcon, TrashIcon  } from 'lucide-react';
+import type {LucideIcon} from 'lucide-react';
+import { ActiveStatusBadge } from '@/components/custom/active-status-badge';
+import { ConfiguredStatusBadge } from '@/components/custom/configured-status-badge';
 import type { TabledataColumn } from '@/components/custom/tabledata';
-import { Badge } from '@/components/ui/badge';
+import { WebVisibilityBadge } from '@/components/custom/web-visibility-badge';
 import { Button } from '@/components/ui/button';
-import {
-    formatIsActive as formatIsActiveDefault
-    
-} from '@/types/active-record';
-import type {ActiveRecordGender} from '@/types/active-record';
+import type { ActiveRecordGender } from '@/types/active-record';
+
+const TABLEDATA_STATUS_COLUMN_CLASS = 'w-0 whitespace-nowrap';
 
 export type TabledataCrudActionsCan = {
     update?: boolean;
@@ -80,23 +81,62 @@ export function buildTabledataCrudActionsColumn<T>({
 
 export type TabledataIsActiveStatusColumnParams = {
     gender?: ActiveRecordGender;
-    formatIsActive?: (value: boolean) => string;
 };
 
 export function buildTabledataIsActiveStatusColumn<T extends { is_active: boolean }>({
     gender = 'm',
-    formatIsActive: formatFn,
 }: TabledataIsActiveStatusColumnParams = {}): TabledataColumn<T> {
-    const resolveLabel = formatFn ?? ((value: boolean) => formatIsActiveDefault(value, gender));
-
     return {
         key: 'is_active',
         label: 'Estado',
         sortable: true,
+        headerClassName: TABLEDATA_STATUS_COLUMN_CLASS,
+        className: TABLEDATA_STATUS_COLUMN_CLASS,
         render: (row) => (
-            <Badge variant={row.is_active ? 'default' : 'secondary'}>
-                {resolveLabel(row.is_active)}
-            </Badge>
+            <ActiveStatusBadge active={row.is_active} gender={gender} />
         ),
+    };
+}
+
+export type TabledataConfiguredStatusColumnParams<T> = {
+    key: string;
+    label: string;
+    isConfigured: (row: T) => boolean;
+    sortable?: boolean;
+    icon?: LucideIcon;
+};
+
+export function buildTabledataConfiguredStatusColumn<T>({
+    key,
+    label,
+    isConfigured,
+    sortable = false,
+    icon,
+}: TabledataConfiguredStatusColumnParams<T>): TabledataColumn<T> {
+    return {
+        key,
+        label,
+        sortable,
+        headerClassName: TABLEDATA_STATUS_COLUMN_CLASS,
+        className: TABLEDATA_STATUS_COLUMN_CLASS,
+        render: (row) => (
+            <ConfiguredStatusBadge
+                configured={isConfigured(row)}
+                icon={icon}
+            />
+        ),
+    };
+}
+
+export function buildTabledataWebVisibilityColumn<
+    T extends { use_web: boolean },
+>(): TabledataColumn<T> {
+    return {
+        key: 'use_web',
+        label: 'Web',
+        sortable: true,
+        headerClassName: TABLEDATA_STATUS_COLUMN_CLASS,
+        className: TABLEDATA_STATUS_COLUMN_CLASS,
+        render: (row) => <WebVisibilityBadge visible={row.use_web} />,
     };
 }
