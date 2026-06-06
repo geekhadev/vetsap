@@ -10,6 +10,7 @@ type BookingSliderProps = {
     label: string;
     itemCount: number;
     activeItemKey?: string | null;
+    initialScrollPosition?: 'start' | 'active';
     className?: string;
     trackClassName?: string;
     children: ReactNode;
@@ -19,6 +20,7 @@ export function BookingSlider({
     label,
     itemCount,
     activeItemKey,
+    initialScrollPosition = 'active',
     className,
     trackClassName,
     children,
@@ -60,14 +62,26 @@ export function BookingSlider({
     }, [itemCount, updateScrollButtons]);
 
     useEffect(() => {
-        if (!activeItemKey || !trackRef.current) {
+        const track = trackRef.current;
+
+        if (!track) {
             return;
         }
 
-        const selected = trackRef.current.querySelector<HTMLElement>(`[data-slider-item="${activeItemKey}"]`);
+        if (initialScrollPosition === 'start') {
+            track.scrollTo({ left: 0, behavior: 'auto' });
+
+            return;
+        }
+
+        if (!activeItemKey) {
+            return;
+        }
+
+        const selected = track.querySelector<HTMLElement>(`[data-slider-item="${activeItemKey}"]`);
 
         selected?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-    }, [activeItemKey]);
+    }, [activeItemKey, initialScrollPosition, itemCount]);
 
     const scrollByPage = (direction: -1 | 1) => {
         const track = trackRef.current;

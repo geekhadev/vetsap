@@ -1,15 +1,17 @@
 import { AppointmentBookingForm } from './appointment/appointment-booking-form';
 import { CLINIC_HERO_CTA_BUTTON } from './appointment/clinic-booking-theme';
+import { mapPublicBookingSchedule } from './appointment/types';
 import { buildClinicWhatsappUrl } from './clinic-whatsapp-url';
 import { EditableText } from './editable-text';
-import type { ClinicCompany, ClinicSettings } from './types';
+import type { ClinicCompany, ClinicSettings, ClinicShowProps } from './types';
 
 type ClinicHeroProps = {
     company: ClinicCompany;
     settings: ClinicSettings;
+    bookingSchedule: ClinicShowProps['bookingSchedule'];
 };
 
-export function ClinicHero({ settings }: ClinicHeroProps) {
+export function ClinicHero({ company, settings, bookingSchedule }: ClinicHeroProps) {
     const title = settings['hero_title'] ?? 'Cuidamos a tu mascota como si fuera nuestra';
     const subtitle =
         settings['hero_subtitle'] ??
@@ -70,7 +72,11 @@ export function ClinicHero({ settings }: ClinicHeroProps) {
                     />
                 </div>
                 <div className="order-first w-full lg:order-last lg:col-span-6">
-                    <AppointmentBookingForm />
+                    <AppointmentBookingForm
+                        companySlug={company.slug}
+                        companyAddress={company.address}
+                        bookingSchedule={mapPublicBookingSchedule(bookingSchedule)}
+                    />
                 </div>
             </div>
         </section>

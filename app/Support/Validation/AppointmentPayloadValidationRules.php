@@ -114,6 +114,7 @@ final class AppointmentPayloadValidationRules
         ?string $price,
         Carbon $startsAt,
         Carbon $endsAt,
+        AppointmentSource $source = AppointmentSource::Internal,
     ): array {
         return [
             'company_id' => $companyId,
@@ -128,7 +129,7 @@ final class AppointmentPayloadValidationRules
             'ends_at' => $endsAt,
             'duration_minutes' => $durationMinutes,
             'price' => $price,
-            'source' => AppointmentSource::Internal,
+            'source' => $source,
             'notes' => isset($validated['notes']) ? (string) $validated['notes'] : null,
             'public_notes' => isset($validated['public_notes']) ? (string) $validated['public_notes'] : null,
         ];

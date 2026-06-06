@@ -1,3 +1,4 @@
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CLINIC_BOOKING_ACTION_BUTTON, CLINIC_BOOKING_BACK_BUTTON } from './clinic-booking-theme';
@@ -5,10 +6,21 @@ import { BookingStepIndicator } from './components/booking-step-indicator';
 import { BookingSuccessStep } from './components/booking-success-step';
 import { ClientPetStep } from './components/client-pet-step';
 import { ServiceStep } from './components/service-step';
+import type { PublicBookingSchedule } from './types';
 import { useAppointmentBooking } from './use-appointment-booking';
 
-export function AppointmentBookingForm() {
-    const booking = useAppointmentBooking();
+type AppointmentBookingFormProps = {
+    companySlug: string;
+    companyAddress: string | null;
+    bookingSchedule: PublicBookingSchedule;
+};
+
+export function AppointmentBookingForm({
+    companySlug,
+    companyAddress,
+    bookingSchedule,
+}: AppointmentBookingFormProps) {
+    const booking = useAppointmentBooking(companySlug, bookingSchedule);
     const { state } = booking;
 
     const showBack = state.step === 'details';
@@ -31,9 +43,14 @@ export function AppointmentBookingForm() {
                         services={booking.services}
                         selectedServiceId={state.serviceId}
                         selectedService={booking.selectedService}
+                        calendarDates={booking.calendarDates}
                         availableDates={booking.availableDates}
+                        holidays={booking.holidays}
+                        scheduledDaysOfWeek={booking.scheduledDaysOfWeek}
+                        veterinarianBlocks={booking.veterinarianBlocks}
                         selectedDate={state.date}
                         blockRows={booking.blockRowsForSelectedDate}
+                        doctors={booking.doctors}
                         selectedSlotId={state.slotId}
                         onSelectService={booking.selectService}
                         onSelectDate={booking.selectDate}
@@ -49,8 +66,12 @@ export function AppointmentBookingForm() {
                         petSelection={state.petSelection}
                         clientName={state.clientName}
                         clientEmail={state.clientEmail}
+                        species={booking.species}
+                        isLookingUp={booking.isLookingUp}
+                        lookupError={booking.lookupError}
+                        submitError={booking.submitError}
                         onPhoneChange={booking.setPhone}
-                        onLookup={booking.lookupClient}
+                        onLookup={() => void booking.lookupClient()}
                         onSelectExistingPet={booking.selectExistingPet}
                         onSelectNewPet={booking.selectNewPet}
                         onPetSelectionChange={booking.updatePetSelection}
@@ -70,6 +91,7 @@ export function AppointmentBookingForm() {
                         veterinarian={booking.selectedVeterinarian}
                         clientName={state.clientName}
                         petName={state.petSelection.petName}
+                        companyAddress={companyAddress}
                         onReset={booking.resetBooking}
                     />
                 )}
@@ -104,9 +126,16 @@ export function AppointmentBookingForm() {
                             type="button"
                             className={CLINIC_BOOKING_ACTION_BUTTON}
                             disabled={!booking.canSubmit}
-                            onClick={booking.submitBooking}
+                            onClick={() => void booking.submitBooking()}
                         >
-                            Confirmar cita
+                            {booking.isSubmitting ? (
+                                <>
+                                    <Loader2 className="size-4 animate-spin" />
+                                    Confirmando…
+                                </>
+                            ) : (
+                                'Confirmar cita'
+                            )}
                         </Button>
                     )}
                 </div>

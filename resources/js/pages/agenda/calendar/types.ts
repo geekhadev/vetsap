@@ -101,6 +101,7 @@ export type AppointmentDetail = {
 
 export type CalendarIndexPageProps = {
     holidays: CalendarHoliday[];
+    scheduled_days_of_week: number[];
     appointments: CalendarAppointmentEvent[];
     formOptions: AppointmentFormOptions;
     appointmentStatuses: AppointmentStatusOption[];

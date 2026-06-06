@@ -19,6 +19,16 @@ import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { appointmentStatusCalendarEventClasses } from '@/lib/appointment-status-colors';
 import { cn } from '@/lib/utils';
+import { BlockedDayHoverTooltip } from './blocked-day-hover-tooltip';
+import {
+    annotateBlockedCalendarElements,
+    applyBlockedDayReason,
+    buildScheduledDaysOfWeekSet,
+    buildUnscheduledDayRootClasses,
+    isCalendarBlockedDate,
+    isCalendarUnscheduledDate,
+    resolveBlockedDayReason,
+} from './blocked-days';
 import {
     buildSlotDefaultsFromDate,
     CALENDAR_DEFAULT_EVENT_DURATION,
@@ -154,6 +164,7 @@ function renderEventContent(arg: EventContentArg) {
 export function VetsapFullCalendar({
     className,
     holidays = [],
+    scheduledDaysOfWeek = [],
     appointments = [],
     canCreate = false,
     onNewAppointment,
@@ -170,6 +181,16 @@ export function VetsapFullCalendar({
     const holidayDates = useMemo(
         () => buildHolidayDateSet(holidays),
         [holidays],
+    );
+
+    const scheduledDays = useMemo(
+        () => buildScheduledDaysOfWeekSet(scheduledDaysOfWeek),
+        [scheduledDaysOfWeek],
+    );
+
+    const unscheduledDayRootClasses = useMemo(
+        () => buildUnscheduledDayRootClasses(scheduledDays),
+        [scheduledDays],
     );
 
     const holidaysByDate = useMemo(
@@ -235,40 +256,63 @@ export function VetsapFullCalendar({
         (arg: DayHeaderContentArg) => {
             const holiday = holidaysByDate.get(toCalendarDateKey(arg.date));
 
-            if (!holiday) {
-                return arg.text;
+            if (holiday) {
+                return (
+                    <div className="fc-holiday-header">
+                        <span className="fc-holiday-header-date">{arg.text}</span>
+                        <span className="fc-holiday-header-name">{holiday.name}</span>
+                    </div>
+                );
             }
 
-            return (
-                <div className="fc-holiday-header">
-                    <span className="fc-holiday-header-date">{arg.text}</span>
-                    <span className="fc-holiday-header-name">{holiday.name}</span>
-                </div>
-            );
+            if (isCalendarUnscheduledDate(arg.date, scheduledDays)) {
+                return (
+                    <div className="fc-unscheduled-header">
+                        <span className="fc-unscheduled-header-date">{arg.text}</span>
+                        <span className="fc-unscheduled-header-name">Sin horario</span>
+                    </div>
+                );
+            }
+
+            return arg.text;
         },
-        [holidaysByDate],
+        [holidaysByDate, scheduledDays],
     );
 
     const dayHeaderClassNames = useCallback(
-        (arg: { date: Date }) =>
-            isCalendarHolidayDate(arg.date, holidayDates)
-                ? ['is-holiday-header']
-                : [],
-        [holidayDates],
+        (arg: { date: Date }) => {
+            if (isCalendarHolidayDate(arg.date, holidayDates)) {
+                return ['is-holiday-header'];
+            }
+
+            if (isCalendarUnscheduledDate(arg.date, scheduledDays)) {
+                return ['is-unscheduled-header'];
+            }
+
+            return [];
+        },
+        [holidayDates, scheduledDays],
     );
 
     const dayCellClassNames = useCallback(
-        (arg: { date: Date }) =>
-            isCalendarHolidayDate(arg.date, holidayDates)
-                ? ['is-holiday-day']
-                : [],
-        [holidayDates],
+        (arg: { date: Date }) => {
+            if (isCalendarHolidayDate(arg.date, holidayDates)) {
+                return ['is-holiday-day'];
+            }
+
+            if (isCalendarUnscheduledDate(arg.date, scheduledDays)) {
+                return ['is-unscheduled-day'];
+            }
+
+            return [];
+        },
+        [holidayDates, scheduledDays],
     );
 
     const selectAllow = useCallback(
         (selectInfo: DateSpanApi) =>
-            !isCalendarHolidayDate(selectInfo.start, holidayDates),
-        [holidayDates],
+            !isCalendarBlockedDate(selectInfo.start, holidayDates, scheduledDays),
+        [holidayDates, scheduledDays],
     );
 
     const handleAppointmentPointerUp = useCallback(
@@ -322,13 +366,13 @@ export function VetsapFullCalendar({
                 return;
             }
 
-            if (isCalendarHolidayDate(arg.date, holidayDates)) {
+            if (isCalendarBlockedDate(arg.date, holidayDates, scheduledDays)) {
                 return;
             }
 
             onNewAppointment(buildSlotDefaultsFromDate(arg.date));
         },
-        [canCreate, holidayDates, onNewAppointment],
+        [canCreate, holidayDates, onNewAppointment, scheduledDays],
     );
 
     const handleEventClick = useCallback(
@@ -348,9 +392,47 @@ export function VetsapFullCalendar({
         [onAppointmentClick],
     );
 
+    const annotateBlockedDays = useCallback(() => {
+        const root = calendarRootRef.current;
+
+        if (!root) {
+            return;
+        }
+
+        annotateBlockedCalendarElements(root, holidaysByDate, scheduledDays);
+    }, [holidaysByDate, scheduledDays]);
+
+    const handleDayHeaderDidMount = useCallback(
+        (arg: { date: Date; el: HTMLElement }) => {
+            applyBlockedDayReason(
+                arg.el,
+                resolveBlockedDayReason(arg.date, holidaysByDate, scheduledDays),
+            );
+        },
+        [holidaysByDate, scheduledDays],
+    );
+
+    const handleDayCellDidMount = useCallback(
+        (arg: { date: Date; el: HTMLElement }) => {
+            applyBlockedDayReason(
+                arg.el,
+                resolveBlockedDayReason(arg.date, holidaysByDate, scheduledDays),
+            );
+        },
+        [holidaysByDate, scheduledDays],
+    );
+
     const handleEventDidMount = useCallback(
         (arg: EventMountArg) => {
-            if (arg.event.extendedProps.isHoliday || !arg.event.id) {
+            if (arg.event.extendedProps.isHoliday) {
+                const holidayName = arg.event.extendedProps.holidayName as string;
+
+                applyBlockedDayReason(arg.el, `Día feriado: ${holidayName}`);
+
+                return;
+            }
+
+            if (!arg.event.id) {
                 return;
             }
 
@@ -432,6 +514,7 @@ export function VetsapFullCalendar({
             className={cn(
                 'vetsap-full-calendar',
                 (canCreate || onAppointmentClick) && 'is-slot-selectable',
+                unscheduledDayRootClasses,
                 className,
             )}
             style={
@@ -509,6 +592,7 @@ export function VetsapFullCalendar({
                 ref={calendarRootRef}
                 className="min-h-0 flex-1 overflow-hidden px-4 pt-3 pb-4"
             >
+                <BlockedDayHoverTooltip containerRef={calendarRootRef} />
                 <FullCalendar
                     ref={calendarRef}
                     plugins={[
@@ -543,7 +627,9 @@ export function VetsapFullCalendar({
                     eventWillUnmount={handleEventWillUnmount}
                     dayHeaderContent={dayHeaderContent}
                     dayHeaderClassNames={dayHeaderClassNames}
+                    dayHeaderDidMount={handleDayHeaderDidMount}
                     dayCellClassNames={dayCellClassNames}
+                    dayCellDidMount={handleDayCellDidMount}
                     selectAllow={selectAllow}
                     dateClick={canCreate ? handleDateClick : undefined}
                     eventClick={onAppointmentClick ? handleEventClick : undefined}
@@ -559,6 +645,10 @@ export function VetsapFullCalendar({
                     }}
                     datesSet={({ view }) => {
                         setActiveView(view.type as CalendarViewId);
+
+                        requestAnimationFrame(() => {
+                            annotateBlockedDays();
+                        });
 
                         if (
                             isTimeGridView(view.type) &&

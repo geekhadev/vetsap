@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\Web\Clinic\BuildPublicBookingScheduleAction;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Support\Storage\PublicStorageUrl;
@@ -12,8 +13,11 @@ use Inertia\Response;
 
 class ClinicController extends Controller
 {
-    public function __invoke(Request $request, string $slug): Response
-    {
+    public function __invoke(
+        Request $request,
+        string $slug,
+        BuildPublicBookingScheduleAction $buildPublicBookingSchedule,
+    ): Response {
         $company = Company::query()->where('slug', $slug)->firstOrFail();
 
         $settings = $this->resolveSettings($company);
@@ -30,6 +34,7 @@ class ClinicController extends Controller
                 'address' => $company->address,
             ],
             'settings' => $settings,
+            'bookingSchedule' => $buildPublicBookingSchedule->execute($company->id),
             'canEdit' => $canEdit,
         ]);
     }
@@ -50,6 +55,7 @@ class ClinicController extends Controller
 
             if ($row === null) {
                 $result[$key] = null;
+
                 continue;
             }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Agenda;
 use App\Actions\Agenda\Appointments\BuildAppointmentFormOptionsAction;
 use App\Actions\Agenda\Appointments\ListAppointmentsForCalendarAction;
 use App\Actions\Agenda\AppointmentStatuses\ListActiveAppointmentStatusesForCalendarAction;
+use App\Actions\Agenda\Calendar\ListScheduledDaysOfWeekForCompanyAction;
 use App\Actions\Agenda\Holidays\ListActiveHolidaysForCalendarAction;
 use App\Http\Controllers\Controller;
 use App\Models\Agenda\Appointment;
@@ -22,6 +23,7 @@ class CalendarController extends Controller
         ListAppointmentsForCalendarAction $listAppointments,
         BuildAppointmentFormOptionsAction $buildFormOptions,
         ListActiveAppointmentStatusesForCalendarAction $listAppointmentStatuses,
+        ListScheduledDaysOfWeekForCompanyAction $listScheduledDaysOfWeek,
     ): Response {
         $this->authorize('viewAny', Calendar::class);
 
@@ -31,6 +33,9 @@ class CalendarController extends Controller
         return Inertia::render('agenda/calendar/index', [
             'holidays' => $company instanceof Company
                 ? $listActiveHolidays->execute($company->id)
+                : [],
+            'scheduled_days_of_week' => $company instanceof Company
+                ? $listScheduledDaysOfWeek->execute($company->id)
                 : [],
             'appointments' => $company instanceof Company
                 ? $listAppointments->execute($company->id)

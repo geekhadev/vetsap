@@ -11,6 +11,7 @@ type BookingSuccessStepProps = {
     veterinarian: Veterinarian | undefined;
     clientName: string;
     petName: string;
+    companyAddress: string | null;
     onReset: () => void;
 };
 
@@ -21,6 +22,7 @@ export function BookingSuccessStep({
     veterinarian,
     clientName,
     petName,
+    companyAddress,
     onReset,
 }: BookingSuccessStepProps) {
     const formattedDate = date
@@ -46,9 +48,12 @@ export function BookingSuccessStep({
                 <li>
                     <span className="text-gray-500">Hora:</span> {time}
                 </li>
-                <li>
-                    <span className="text-gray-500">Dirección de la clínica:</span> San Pedro de La Paz, Chile, Av. Principal 1234, Biobio
-                </li>
+                {companyAddress && (
+                    <li>
+                        <span className="text-gray-500">Dirección de la clínica:</span>{' '}
+                        {companyAddress}
+                    </li>
+                )}
                 <li>
                     <span className="text-gray-500">Médico:</span> {veterinarian?.name}
                 </li>
@@ -56,7 +61,6 @@ export function BookingSuccessStep({
                     <span className="text-gray-500">Mascota:</span> {petName}
                 </li>
             </ul>
-            <p className="mt-3 text-xs text-gray-500">(Simulación — sin envío real al servidor)</p>
             <Button type="button" className={cn('mt-5', CLINIC_BOOKING_ACTION_BUTTON)} onClick={onReset}>
                 Agendar otra cita
             </Button>

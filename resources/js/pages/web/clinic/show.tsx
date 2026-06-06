@@ -22,7 +22,7 @@ function ClinicSection({ tone, children }: { tone: ClinicSectionTone; children: 
 }
 
 export default function ClinicShow() {
-    const { company, settings, canEdit } = usePage<ClinicShowProps>().props;
+    const { company, settings, bookingSchedule, canEdit } = usePage<ClinicShowProps>().props;
 
     const hasGallery = [1, 2, 3, 4, 5, 6].some(
         (i) => settings[`gallery_image_${i}`] != null,
@@ -54,7 +54,11 @@ export default function ClinicShow() {
                 <main className="flex flex-col">
                     <div className="relative">
                         <ClinicHeader logo={settings['logo']} companyName={company.name} />
-                        <ClinicHero company={company} settings={settings} />
+                        <ClinicHero
+                            company={company}
+                            settings={settings}
+                            bookingSchedule={bookingSchedule}
+                        />
                     </div>
                     <ClinicSection tone="muted">
                         <ClinicServices settings={settings} />
@@ -78,7 +82,9 @@ export default function ClinicShow() {
         </>
     );
 
-    if (!canEdit) return page;
+    if (!canEdit) {
+return page;
+}
 
     return <ClinicEditorProvider slug={company.slug}>{page}</ClinicEditorProvider>;
 }

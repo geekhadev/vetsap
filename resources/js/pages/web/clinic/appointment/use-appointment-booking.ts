@@ -1,42 +1,50 @@
-import { useCallback, useMemo, useState } from 'react';
-import {
-    findClientByPhone,
-    generateMockVeterinarianBlocks,
-    getServiceById,
-    getVeterinarianById,
-    MOCK_BLOCK_CONFIG,
-    MOCK_SERVICES,
-} from './mock-data';
+import { router, useHttp } from '@inertiajs/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import ClinicBookingController from '@/actions/App/Http/Controllers/Web/ClinicBookingController';
+import { isValidChileanMobilePhone } from './booking-phone';
 import {
     buildBookableSlotsForDate,
+    consumeBookedBlocks,
     getAvailableDatesFromBlocks,
+    getCalendarDatesFromToday,
     getDefaultScheduleForService,
     getFirstBookableSlotForDate,
     groupSlotsIntoBlockRows,
 } from './schedule-blocks';
-import type { BookingFormState, PetSelection, TimeBlockSlot } from './types';
+import type { BookingScheduleContext } from './schedule-blocks';
+import type {
+    AppointmentService,
+    BookingClient,
+    BookingFormState,
+    PetSelection,
+    PublicBookingSchedule,
+    TimeBlockSlot,
+    Veterinarian,
+} from './types';
 
 const initialPetSelection: PetSelection = {
     mode: 'new',
     petName: '',
+    speciesId: '',
     petSpecies: '',
 };
 
-const veterinarianBlocks = generateMockVeterinarianBlocks();
-
-function createInitialState(): BookingFormState {
-    const serviceId = MOCK_SERVICES[0]?.id ?? null;
-    const service = serviceId ? getServiceById(serviceId) : undefined;
-    const schedule =
+function createInitialState(
+    services: AppointmentService[],
+    schedule: BookingScheduleContext,
+): BookingFormState {
+    const serviceId = services[0]?.id ?? null;
+    const service = services.find((item) => item.id === serviceId);
+    const defaultSchedule =
         service !== undefined
-            ? getDefaultScheduleForService(veterinarianBlocks, service, MOCK_BLOCK_CONFIG)
+            ? getDefaultScheduleForService(schedule, service)
             : { date: null, slotId: null };
 
     return {
         step: 'service',
         serviceId,
-        date: schedule.date,
-        slotId: schedule.slotId,
+        date: defaultSchedule.date,
+        slotId: defaultSchedule.slotId,
         phone: '',
         client: null,
         clientLookupDone: false,
@@ -46,31 +54,110 @@ function createInitialState(): BookingFormState {
     };
 }
 
-export function useAppointmentBooking() {
-    const [state, setState] = useState<BookingFormState>(createInitialState);
+type LookupClientResponse = {
+    client: BookingClient | null;
+};
 
-    const selectedService = state.serviceId ? getServiceById(state.serviceId) : undefined;
+function mapClientFromLookup(client: BookingClient & {
+    pets: Array<{
+        id: string;
+        customer_id?: string;
+        customerId?: string;
+        name: string;
+        species: string;
+        breed?: string | null;
+    }>;
+}): BookingClient {
+    return {
+        ...client,
+        email: client.email ?? '',
+        phone: client.phone ?? '',
+        pets: client.pets.map((pet) => ({
+            id: pet.id,
+            customerId: pet.customerId ?? pet.customer_id ?? client.id,
+            name: pet.name,
+            species: pet.species,
+            breed: pet.breed ?? undefined,
+        })),
+    };
+}
+
+const emptyStorePayload = {
+    phone: '',
+    service_id: '',
+    doctor_id: '',
+    appointment_date: '',
+    starts_at_time: '',
+    customer_id: '',
+    client_name: '',
+    client_email: '',
+    patient_id: '',
+    pet_name: '',
+    species_id: '',
+};
+
+export function useAppointmentBooking(
+    companySlug: string,
+    bookingSchedule: PublicBookingSchedule,
+) {
+    const lookupHttp = useHttp({ phone: '' });
+    const storeHttp = useHttp(emptyStorePayload);
+    const [liveSchedule, setLiveSchedule] = useState(bookingSchedule);
+
+    useEffect(() => {
+        setLiveSchedule(bookingSchedule);
+    }, [bookingSchedule]);
+
+    const scheduleContext = useMemo<BookingScheduleContext>(
+        () => ({
+            veterinarianBlocks: liveSchedule.veterinarianBlocks,
+            doctors: liveSchedule.doctors,
+            blockConfig: liveSchedule.blockConfig,
+        }),
+        [liveSchedule],
+    );
+
+    const [state, setState] = useState<BookingFormState>(() =>
+        createInitialState(bookingSchedule.services, {
+            veterinarianBlocks: bookingSchedule.veterinarianBlocks,
+            doctors: bookingSchedule.doctors,
+            blockConfig: bookingSchedule.blockConfig,
+        }),
+    );
+    const [isLookingUp, setIsLookingUp] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [lookupError, setLookupError] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const services = liveSchedule.services;
+    const doctors = liveSchedule.doctors;
+    const species = liveSchedule.species;
+
+    const selectedService = useMemo(
+        () => services.find((service) => service.id === state.serviceId),
+        [services, state.serviceId],
+    );
+
+    const calendarDates = useMemo(
+        () => getCalendarDatesFromToday(liveSchedule.blockConfig.daysAhead),
+        [liveSchedule.blockConfig.daysAhead],
+    );
 
     const availableDates = useMemo(() => {
         if (!selectedService) {
             return [];
         }
 
-        return getAvailableDatesFromBlocks(veterinarianBlocks, selectedService, MOCK_BLOCK_CONFIG);
-    }, [selectedService]);
+        return getAvailableDatesFromBlocks(scheduleContext, selectedService);
+    }, [scheduleContext, selectedService]);
 
     const bookableSlotsForSelectedDate = useMemo(() => {
         if (!selectedService || !state.date) {
             return [];
         }
 
-        return buildBookableSlotsForDate(
-            veterinarianBlocks,
-            state.date,
-            selectedService,
-            MOCK_BLOCK_CONFIG,
-        );
-    }, [selectedService, state.date]);
+        return buildBookableSlotsForDate(scheduleContext, state.date, selectedService);
+    }, [scheduleContext, selectedService, state.date]);
 
     const blockRowsForSelectedDate = useMemo(
         () => groupSlotsIntoBlockRows(bookableSlotsForSelectedDate),
@@ -85,27 +172,34 @@ export function useAppointmentBooking() {
         return bookableSlotsForSelectedDate.find((slot) => slot.id === state.slotId) ?? null;
     }, [bookableSlotsForSelectedDate, state.slotId]);
 
-    const selectedVeterinarian = selectedSlot
-        ? getVeterinarianById(selectedSlot.veterinarianId)
-        : undefined;
-
-    const selectService = useCallback((serviceId: string) => {
-        const service = getServiceById(serviceId);
-
-        if (!service) {
-            return;
+    const selectedVeterinarian = useMemo<Veterinarian | undefined>(() => {
+        if (!selectedSlot) {
+            return undefined;
         }
 
-        const schedule = getDefaultScheduleForService(veterinarianBlocks, service, MOCK_BLOCK_CONFIG);
+        return doctors.find((doctor) => doctor.id === selectedSlot.veterinarianId);
+    }, [doctors, selectedSlot]);
 
-        setState((current) => ({
-            ...current,
-            serviceId,
-            date: schedule.date,
-            slotId: schedule.slotId,
-            step: 'service',
-        }));
-    }, []);
+    const selectService = useCallback(
+        (serviceId: string) => {
+            const service = services.find((item) => item.id === serviceId);
+
+            if (!service) {
+                return;
+            }
+
+            const defaultSchedule = getDefaultScheduleForService(scheduleContext, service);
+
+            setState((current) => ({
+                ...current,
+                serviceId,
+                date: defaultSchedule.date,
+                slotId: defaultSchedule.slotId,
+                step: 'service',
+            }));
+        },
+        [scheduleContext, services],
+    );
 
     const continueToDetails = useCallback(() => {
         if (!state.serviceId || !state.slotId) {
@@ -115,21 +209,30 @@ export function useAppointmentBooking() {
         setState((current) => ({ ...current, step: 'details' }));
     }, [state.serviceId, state.slotId]);
 
-    const selectDate = useCallback((date: string) => {
-        setState((current) => {
-            const service = current.serviceId ? getServiceById(current.serviceId) : undefined;
+    const selectDate = useCallback(
+        (date: string) => {
+            setState((current) => {
+                const service = services.find((item) => item.id === current.serviceId);
 
-            if (!service) {
-                return { ...current, date, slotId: null };
-            }
+                if (!service) {
+                    return { ...current, date, slotId: null };
+                }
 
-            return {
-                ...current,
-                date,
-                slotId: getFirstBookableSlotForDate(veterinarianBlocks, date, service, MOCK_BLOCK_CONFIG),
-            };
-        });
-    }, []);
+                const slotId = getFirstBookableSlotForDate(scheduleContext, date, service);
+
+                if (!slotId) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    date,
+                    slotId,
+                };
+            });
+        },
+        [scheduleContext, services],
+    );
 
     const selectSlot = useCallback((slot: TimeBlockSlot) => {
         setState((current) => ({
@@ -140,6 +243,7 @@ export function useAppointmentBooking() {
     }, []);
 
     const setPhone = useCallback((phone: string) => {
+        setLookupError(null);
         setState((current) => ({
             ...current,
             phone,
@@ -151,41 +255,64 @@ export function useAppointmentBooking() {
         }));
     }, []);
 
-    const lookupClient = useCallback(() => {
-        const client = findClientByPhone(state.phone);
+    const lookupClient = useCallback(async () => {
+        if (!isValidChileanMobilePhone(state.phone)) {
+            setLookupError('Ingresa un teléfono móvil chileno válido (9 dígitos, comienza con 9).');
 
-        setState((current) => {
-            if (!client) {
+            return;
+        }
+
+        setIsLookingUp(true);
+        setLookupError(null);
+
+        try {
+            lookupHttp.transform(() => ({ phone: state.phone }));
+
+            const response = (await lookupHttp.post(
+                ClinicBookingController.lookupClient.url(companySlug),
+            )) as LookupClientResponse;
+
+            const client = response.client ? mapClientFromLookup(response.client) : null;
+
+            setState((current) => {
+                if (!client) {
+                    return {
+                        ...current,
+                        client: null,
+                        clientLookupDone: true,
+                        petSelection: initialPetSelection,
+                        clientName: '',
+                        clientEmail: '',
+                    };
+                }
+
+                const firstPet = client.pets[0];
+
                 return {
                     ...current,
-                    client: null,
+                    client,
                     clientLookupDone: true,
-                    petSelection: { mode: 'new', petName: '', petSpecies: '' },
-                    clientName: '',
-                    clientEmail: '',
+                    clientName: client.name,
+                    clientEmail: client.email ?? '',
+                    petSelection:
+                        client.pets.length === 1 && firstPet
+                            ? {
+                                  mode: 'existing',
+                                  petId: firstPet.id,
+                                  customerId: firstPet.customerId,
+                                  petName: firstPet.name,
+                                  speciesId: '',
+                                  petSpecies: firstPet.species,
+                              }
+                            : initialPetSelection,
                 };
-            }
-
-            const firstPet = client.pets[0];
-
-            return {
-                ...current,
-                client,
-                clientLookupDone: true,
-                clientName: client.name,
-                clientEmail: client.email,
-                petSelection:
-                    client.pets.length === 1 && firstPet
-                        ? {
-                              mode: 'existing',
-                              petId: firstPet.id,
-                              petName: firstPet.name,
-                              petSpecies: firstPet.species,
-                          }
-                        : { mode: 'new', petName: '', petSpecies: '' },
-            };
-        });
-    }, [state.phone]);
+            });
+        } catch {
+            setLookupError('No pudimos buscar tu teléfono. Intenta de nuevo.');
+        } finally {
+            setIsLookingUp(false);
+        }
+    }, [companySlug, lookupHttp, state.phone]);
 
     const selectExistingPet = useCallback((petId: string) => {
         setState((current) => {
@@ -200,7 +327,9 @@ export function useAppointmentBooking() {
                 petSelection: {
                     mode: 'existing',
                     petId: pet.id,
+                    customerId: pet.customerId,
                     petName: pet.name,
+                    speciesId: '',
                     petSpecies: pet.species,
                 },
             };
@@ -210,7 +339,7 @@ export function useAppointmentBooking() {
     const selectNewPet = useCallback(() => {
         setState((current) => ({
             ...current,
-            petSelection: { mode: 'new', petName: '', petSpecies: '' },
+            petSelection: initialPetSelection,
         }));
     }, []);
 
@@ -221,9 +350,12 @@ export function useAppointmentBooking() {
         }));
     }, []);
 
-    const updateClientFields = useCallback((fields: Partial<Pick<BookingFormState, 'clientName' | 'clientEmail'>>) => {
-        setState((current) => ({ ...current, ...fields }));
-    }, []);
+    const updateClientFields = useCallback(
+        (fields: Partial<Pick<BookingFormState, 'clientName' | 'clientEmail'>>) => {
+            setState((current) => ({ ...current, ...fields }));
+        },
+        [],
+    );
 
     const goBack = useCallback(() => {
         setState((current) => {
@@ -235,31 +367,122 @@ export function useAppointmentBooking() {
         });
     }, []);
 
-    const submitBooking = useCallback(() => {
-        setState((current) => ({ ...current, step: 'success' }));
-    }, []);
+    const submitBooking = useCallback(async () => {
+        if (!state.serviceId || !state.date || !selectedSlot) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        const payload: Record<string, string> = {
+            phone: state.phone,
+            service_id: state.serviceId,
+            doctor_id: selectedSlot.veterinarianId,
+            appointment_date: state.date,
+            starts_at_time: selectedSlot.startTime,
+        };
+
+        const customerId =
+            state.petSelection.mode === 'existing' && state.petSelection.customerId
+                ? state.petSelection.customerId
+                : state.client?.id;
+
+        if (customerId) {
+            payload.customer_id = customerId;
+        } else {
+            payload.client_name = state.clientName.trim();
+        }
+
+        if (state.clientEmail.trim() !== '') {
+            payload.client_email = state.clientEmail.trim();
+        }
+
+        if (state.petSelection.mode === 'existing' && state.petSelection.petId) {
+            payload.patient_id = state.petSelection.petId;
+        } else {
+            payload.pet_name = state.petSelection.petName.trim();
+            payload.species_id = state.petSelection.speciesId;
+        }
+
+        try {
+            storeHttp.transform(() => ({
+                ...emptyStorePayload,
+                ...payload,
+            }));
+
+            await storeHttp.post(ClinicBookingController.storeAppointment.url(companySlug));
+
+            setLiveSchedule((current) => ({
+                ...current,
+                veterinarianBlocks: consumeBookedBlocks(current.veterinarianBlocks, selectedSlot),
+            }));
+
+            setState((current) => ({ ...current, step: 'success' }));
+        } catch {
+            setSubmitError('No pudimos confirmar la cita. Revisa los datos e intenta de nuevo.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [
+        companySlug,
+        selectedSlot,
+        state.client,
+        state.clientEmail,
+        state.clientName,
+        state.date,
+        state.petSelection.mode,
+        state.petSelection.customerId,
+        state.petSelection.petId,
+        state.petSelection.petName,
+        state.petSelection.speciesId,
+        state.phone,
+        state.serviceId,
+        storeHttp,
+    ]);
 
     const resetBooking = useCallback(() => {
-        setState(createInitialState());
-    }, []);
+        setLookupError(null);
+        setSubmitError(null);
+        setState(createInitialState(services, scheduleContext));
+        router.reload({ only: ['bookingSchedule'], preserveScroll: true });
+    }, [scheduleContext, services]);
 
     const canContinueToDetails = Boolean(state.serviceId && state.date && state.slotId);
 
+    const hasValidPetSelection =
+        state.petSelection.mode === 'existing'
+            ? Boolean(state.petSelection.petId)
+            : state.petSelection.petName.trim().length > 0 &&
+              state.petSelection.speciesId.trim().length > 0;
+
     const canSubmit =
+        state.clientLookupDone &&
+        isValidChileanMobilePhone(state.phone) &&
         state.clientName.trim().length > 0 &&
-        state.petSelection.petName.trim().length > 0 &&
-        state.petSelection.petSpecies.trim().length > 0 &&
-        state.phone.trim().length > 0;
+        hasValidPetSelection &&
+        !isLookingUp &&
+        !isSubmitting;
 
     return {
         state,
-        services: MOCK_SERVICES,
-        blockConfig: MOCK_BLOCK_CONFIG,
+        services,
+        doctors,
+        species,
+        blockConfig: liveSchedule.blockConfig,
+        veterinarianBlocks: liveSchedule.veterinarianBlocks,
+        holidays: liveSchedule.holidays,
+        scheduledDaysOfWeek: liveSchedule.scheduledDaysOfWeek,
+        calendarDates,
         availableDates,
         blockRowsForSelectedDate,
         selectedService,
         selectedSlot,
         selectedVeterinarian,
+        isLookingUp,
+        isSubmitting,
+        lookupError,
+        submitError,
         selectService,
         continueToDetails,
         selectDate,

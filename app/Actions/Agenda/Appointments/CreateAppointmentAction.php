@@ -18,8 +18,12 @@ final class CreateAppointmentAction
     /**
      * @param  array<string, mixed>  $validated
      */
-    public function execute(array $validated, string $companyId, User $user): Appointment
-    {
+    public function execute(
+        array $validated,
+        string $companyId,
+        ?User $user = null,
+        AppointmentSource $source = AppointmentSource::Internal,
+    ): Appointment {
         $terms = $this->resolveServiceTerms->execute(
             (string) $validated['doctor_id'],
             (string) $validated['service_id'],
@@ -38,23 +42,24 @@ final class CreateAppointmentAction
             $terms['price'],
             $scheduling['starts_at'],
             $scheduling['ends_at'],
+            $source,
         );
 
         $pendingStatusId = AppointmentPayloadValidationRules::defaultPendingStatusId();
 
-        return DB::transaction(function () use ($payload, $pendingStatusId, $user): Appointment {
+        return DB::transaction(function () use ($payload, $pendingStatusId, $user, $source): Appointment {
             $appointment = Appointment::query()->create([
                 ...$payload,
                 'appointment_status_id' => $pendingStatusId,
-                'created_by_user_id' => $user->id,
-                'updated_by_user_id' => $user->id,
+                'created_by_user_id' => $user?->id,
+                'updated_by_user_id' => $user?->id,
             ]);
 
             $this->recordStatusChange->execute(
                 $appointment,
                 null,
                 $pendingStatusId,
-                AppointmentSource::Internal,
+                $source,
                 $user,
             );
 

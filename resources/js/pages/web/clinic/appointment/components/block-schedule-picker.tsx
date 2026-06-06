@@ -11,27 +11,40 @@ import {
     CLINIC_BOOKING_SLIDER_ITEM_SCHEDULE,
     CLINIC_BOOKING_UNSELECTED,
 } from '../clinic-booking-theme';
-import { getVeterinarianById } from '../mock-data';
-import type { AppointmentService, BlockScheduleRow, TimeBlockSlot } from '../types';
+import type { AppointmentService, BlockScheduleRow, TimeBlockSlot, Veterinarian } from '../types';
 import { BookingSlider } from './booking-slider';
 
 type BlockSchedulePickerProps = {
     service: AppointmentService;
     rows: BlockScheduleRow[];
+    doctors: Veterinarian[];
     selectedSlotId: string | null;
     onSelectSlot: (slot: TimeBlockSlot) => void;
 };
 
-function vetShortName(fullName: string): string {
-    return fullName.replace(/^Dr(a)?\.\s*/i, '').split(' ')[0] ?? fullName;
+const DOCTOR_NAME_MAX_LENGTH = 22;
+
+function formatDoctorDisplayName(fullName: string, maxLength = DOCTOR_NAME_MAX_LENGTH): string {
+    const normalized = fullName.trim().replace(/\s+/g, ' ');
+
+    if (normalized.length <= maxLength) {
+        return normalized;
+    }
+
+    return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
 export function BlockSchedulePicker({
     service,
     rows,
+    doctors,
     selectedSlotId,
     onSelectSlot,
 }: BlockSchedulePickerProps) {
+    const doctorsById = useMemo(
+        () => new Map(doctors.map((doctor) => [doctor.id, doctor])),
+        [doctors],
+    );
     const activeRowKey = useMemo(() => {
         if (!selectedSlotId) {
             return null;
@@ -93,7 +106,7 @@ export function BlockSchedulePicker({
 
                         <div className="flex flex-col gap-1.5">
                             {row.slots.map((slot) => {
-                                const veterinarian = getVeterinarianById(slot.veterinarianId);
+                                const veterinarian = doctorsById.get(slot.veterinarianId);
                                 const isSelected = selectedSlotId === slot.id;
 
                                 return (
@@ -101,16 +114,17 @@ export function BlockSchedulePicker({
                                         key={slot.id}
                                         type="button"
                                         onClick={() => onSelectSlot(slot)}
+                                        title={veterinarian?.name}
                                         className={cn(
-                                            'border px-3 py-2 text-left text-xs transition-all',
+                                            'w-full min-w-0 border px-3 py-2 text-left text-xs transition-all',
                                             CLINIC_BOOKING_SELECTION_ROUNDED,
                                             isSelected
                                                 ? CLINIC_BOOKING_SELECTED_FILLED
                                                 : cn(CLINIC_BOOKING_UNSELECTED, CLINIC_BOOKING_HOVER),
                                         )}
                                     >
-                                        <span className="font-semibold">
-                                            {vetShortName(veterinarian?.name ?? '')}
+                                        <span className="block truncate font-semibold">
+                                            {formatDoctorDisplayName(veterinarian?.name ?? '')}
                                         </span>
                                     </button>
                                 );

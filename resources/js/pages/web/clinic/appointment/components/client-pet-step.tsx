@@ -1,4 +1,4 @@
-import { PawPrint, Phone, Search } from 'lucide-react';
+import { Loader2, PawPrint, Phone, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,16 +21,19 @@ import {
     CLINIC_BOOKING_SELECTED_RING,
     CLINIC_BOOKING_UNSELECTED,
 } from '../clinic-booking-theme';
-import { MOCK_PET_SPECIES } from '../mock-data';
-import type { MockClient, PetSelection } from '../types';
+import type { BookingClient, BookingSpecies, PetSelection } from '../types';
 
 type ClientPetStepProps = {
     phone: string;
-    client: MockClient | null;
+    client: BookingClient | null;
     clientLookupDone: boolean;
     petSelection: PetSelection;
     clientName: string;
     clientEmail: string;
+    species: BookingSpecies[];
+    isLookingUp: boolean;
+    lookupError: string | null;
+    submitError: string | null;
     onPhoneChange: (phone: string) => void;
     onLookup: () => void;
     onSelectExistingPet: (petId: string) => void;
@@ -46,6 +49,10 @@ export function ClientPetStep({
     petSelection,
     clientName,
     clientEmail,
+    species,
+    isLookingUp,
+    lookupError,
+    submitError,
     onPhoneChange,
     onLookup,
     onSelectExistingPet,
@@ -72,11 +79,22 @@ export function ClientPetStep({
                             className={cn(CLINIC_BOOKING_INPUT, 'pl-9')}
                         />
                     </div>
-                    <Button type="button" variant="outline" className={CLINIC_BOOKING_OUTLINE_BUTTON} onClick={onLookup}>
-                        <Search className="size-4" />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className={CLINIC_BOOKING_OUTLINE_BUTTON}
+                        onClick={onLookup}
+                        disabled={isLookingUp}
+                    >
+                        {isLookingUp ? (
+                            <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                            <Search className="size-4" />
+                        )}
                         Buscar
                     </Button>
                 </div>
+                {lookupError && <p className="text-sm text-red-600">{lookupError}</p>}
             </div>
 
             {clientLookupDone && client && (
@@ -166,16 +184,23 @@ export function ClientPetStep({
                     <div className="min-w-0 flex-1 space-y-2">
                         <Label htmlFor="pet-species">Especie</Label>
                         <Select
-                            value={petSelection.petSpecies || undefined}
-                            onValueChange={(value) => onPetSelectionChange({ petSpecies: value })}
+                            value={petSelection.speciesId || undefined}
+                            onValueChange={(value) => {
+                                const selectedSpecies = species.find((item) => item.id === value);
+
+                                onPetSelectionChange({
+                                    speciesId: value,
+                                    petSpecies: selectedSpecies?.name ?? '',
+                                });
+                            }}
                         >
                             <SelectTrigger id="pet-species" className={CLINIC_BOOKING_SELECT_TRIGGER}>
                                 <SelectValue placeholder="Selecciona especie" />
                             </SelectTrigger>
                             <SelectContent>
-                                {MOCK_PET_SPECIES.map((species) => (
-                                    <SelectItem key={species} value={species}>
-                                        {species}
+                                {species.map((item) => (
+                                    <SelectItem key={item.id} value={item.id}>
+                                        {item.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -203,7 +228,6 @@ export function ClientPetStep({
                             value={clientName}
                             onChange={(event) => onClientFieldsChange({ clientName: event.target.value })}
                             placeholder="Nombre y apellido"
-                            readOnly={Boolean(client)}
                             className={CLINIC_BOOKING_INPUT}
                         />
                     </div>
@@ -215,12 +239,13 @@ export function ClientPetStep({
                             value={clientEmail}
                             onChange={(event) => onClientFieldsChange({ clientEmail: event.target.value })}
                             placeholder="correo@ejemplo.cl"
-                            readOnly={Boolean(client)}
                             className={CLINIC_BOOKING_INPUT}
                         />
                     </div>
                 </div>
             )}
+
+            {submitError && <p className="text-sm text-red-600">{submitError}</p>}
         </div>
     );
 }

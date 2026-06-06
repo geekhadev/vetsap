@@ -1,4 +1,38 @@
-import type { AppointmentService, BlockScheduleRow, ScheduleBlockConfig, TimeBlockSlot, VeterinarianBlock } from './types';
+import type {
+    AppointmentService,
+    BlockScheduleRow,
+    ScheduleBlockConfig,
+    TimeBlockSlot,
+    Veterinarian,
+    VeterinarianBlock,
+} from './types';
+
+export type BookingScheduleContext = {
+    veterinarianBlocks: VeterinarianBlock[];
+    doctors: Veterinarian[];
+    blockConfig: ScheduleBlockConfig;
+};
+
+function resolveBlockCountForDoctor(
+    service: AppointmentService,
+    veterinarianId: string,
+    doctors: Veterinarian[],
+    config: ScheduleBlockConfig,
+): number | null {
+    const doctor = doctors.find((item) => item.id === veterinarianId);
+
+    if (!doctor || !doctor.serviceIds.includes(service.id)) {
+        return null;
+    }
+
+    const durationMinutes = doctor.serviceDurations[service.id] ?? service.durationMinutes;
+
+    if (durationMinutes <= 0) {
+        return null;
+    }
+
+    return Math.ceil(durationMinutes / config.blockMinutes);
+}
 
 export function addMinutesToTime(time: string, minutes: number): string {
     const [hours, mins] = time.split(':').map(Number);
@@ -29,11 +63,11 @@ export function generateDayBlockStarts(
 }
 
 export function buildBookableSlotsForDate(
-    veterinarianBlocks: VeterinarianBlock[],
+    schedule: BookingScheduleContext,
     date: string,
     service: AppointmentService,
-    config: ScheduleBlockConfig,
 ): TimeBlockSlot[] {
+    const { veterinarianBlocks, doctors, blockConfig: config } = schedule;
     const slots: TimeBlockSlot[] = [];
     const blocksForDate = veterinarianBlocks
         .filter((block) => block.date === date)
@@ -48,16 +82,29 @@ export function buildBookableSlotsForDate(
     });
 
     byVet.forEach((vetBlocks, veterinarianId) => {
+        const blockCount = resolveBlockCountForDoctor(service, veterinarianId, doctors, config);
+
+        if (!blockCount || blockCount <= 0) {
+            return;
+        }
+
         const sorted = [...vetBlocks].sort((a, b) => a.blockIndex - b.blockIndex);
 
-        for (let index = 0; index <= sorted.length - service.blockCount; index += 1) {
-            const sequence = sorted.slice(index, index + service.blockCount);
+        for (let index = 0; index <= sorted.length - blockCount; index += 1) {
+            const sequence = sorted.slice(index, index + blockCount);
             const isConsecutive = sequence.every((block, offset) => {
                 if (!block.available) {
                     return false;
                 }
 
-                return block.blockIndex === sequence[0].blockIndex + offset;
+                if (block.blockIndex !== sequence[0].blockIndex + offset) {
+                    return false;
+                }
+
+                return (
+                    block.startTime ===
+                    addMinutesToTime(sequence[0].startTime, offset * config.blockMinutes)
+                );
             });
 
             if (!isConsecutive) {
@@ -65,7 +112,7 @@ export function buildBookableSlotsForDate(
             }
 
             const startBlock = sequence[0];
-            const endTime = addMinutesToTime(startBlock.startTime, service.blockCount * config.blockMinutes);
+            const endTime = addMinutesToTime(startBlock.startTime, blockCount * config.blockMinutes);
 
             slots.push({
                 id: `${date}-${startBlock.startTime}-${veterinarianId}-${service.id}`,
@@ -73,7 +120,7 @@ export function buildBookableSlotsForDate(
                 startTime: startBlock.startTime,
                 endTime,
                 blockIndex: startBlock.blockIndex,
-                blockCount: service.blockCount,
+                blockCount,
                 veterinarianId,
             });
         }
@@ -106,32 +153,91 @@ export function groupSlotsIntoBlockRows(slots: TimeBlockSlot[]): BlockScheduleRo
         .sort((a, b) => a.startTime.localeCompare(b.startTime));
 }
 
-export function getAvailableDatesFromBlocks(
+function formatLocalDateKey(date: Date): string {
+    return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0'),
+    ].join('-');
+}
+
+/** Rango continuo de fechas desde hoy (hora local del navegador). */
+function toIsoDayOfWeek(date: Date): number {
+    const day = date.getDay();
+
+    return day === 0 ? 7 : day;
+}
+
+export function resolveWebBookingDayBlockedReason(
+    dateKey: string,
+    availableDates: Set<string>,
+    holidaysByDate: Map<string, string>,
+    scheduledDaysOfWeek: Set<number>,
     veterinarianBlocks: VeterinarianBlock[],
+): string | null {
+    if (availableDates.has(dateKey)) {
+        return null;
+    }
+
+    const holidayName = holidaysByDate.get(dateKey);
+
+    if (holidayName) {
+        return `Día feriado: ${holidayName}`;
+    }
+
+    const date = new Date(`${dateKey}T12:00:00`);
+
+    if (!scheduledDaysOfWeek.has(toIsoDayOfWeek(date))) {
+        return 'Sin horario: ningún doctor tiene agenda este día';
+    }
+
+    const hasBlocks = veterinarianBlocks.some((block) => block.date === dateKey);
+
+    if (!hasBlocks) {
+        return 'Sin horario: ningún doctor tiene agenda este día';
+    }
+
+    return 'Sin cupos disponibles para el servicio seleccionado';
+}
+
+export function getCalendarDatesFromToday(daysAhead: number): string[] {
+    const dates: string[] = [];
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+
+    for (let offset = 0; offset < daysAhead; offset += 1) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + offset);
+        dates.push(formatLocalDateKey(date));
+    }
+
+    return dates;
+}
+
+export function getAvailableDatesFromBlocks(
+    schedule: BookingScheduleContext,
     service: AppointmentService,
-    config: ScheduleBlockConfig,
 ): string[] {
     const dates = new Set<string>();
 
-    veterinarianBlocks.forEach((block) => dates.add(block.date));
+    schedule.veterinarianBlocks.forEach((block) => dates.add(block.date));
 
     return Array.from(dates)
-        .filter((date) => buildBookableSlotsForDate(veterinarianBlocks, date, service, config).length > 0)
+        .filter((date) => buildBookableSlotsForDate(schedule, date, service).length > 0)
         .sort();
 }
 
 export function getDefaultScheduleForService(
-    veterinarianBlocks: VeterinarianBlock[],
+    schedule: BookingScheduleContext,
     service: AppointmentService,
-    config: ScheduleBlockConfig,
 ): { date: string | null; slotId: string | null } {
-    const firstDate = getAvailableDatesFromBlocks(veterinarianBlocks, service, config)[0] ?? null;
+    const firstDate = getAvailableDatesFromBlocks(schedule, service)[0] ?? null;
 
     if (!firstDate) {
         return { date: null, slotId: null };
     }
 
-    const firstSlot = buildBookableSlotsForDate(veterinarianBlocks, firstDate, service, config)[0];
+    const firstSlot = buildBookableSlotsForDate(schedule, firstDate, service)[0];
 
     return {
         date: firstDate,
@@ -140,10 +246,32 @@ export function getDefaultScheduleForService(
 }
 
 export function getFirstBookableSlotForDate(
-    veterinarianBlocks: VeterinarianBlock[],
+    schedule: BookingScheduleContext,
     date: string,
     service: AppointmentService,
-    config: ScheduleBlockConfig,
 ): string | null {
-    return buildBookableSlotsForDate(veterinarianBlocks, date, service, config)[0]?.id ?? null;
+    return buildBookableSlotsForDate(schedule, date, service)[0]?.id ?? null;
+}
+
+/** Marca como no disponibles los bloques consumidos por una cita recién agendada. */
+export function consumeBookedBlocks(
+    veterinarianBlocks: VeterinarianBlock[],
+    slot: TimeBlockSlot,
+): VeterinarianBlock[] {
+    const consumedIndexes = Array.from(
+        { length: slot.blockCount },
+        (_, offset) => slot.blockIndex + offset,
+    );
+
+    return veterinarianBlocks.map((block) => {
+        if (
+            block.date !== slot.date ||
+            block.veterinarianId !== slot.veterinarianId ||
+            !consumedIndexes.includes(block.blockIndex)
+        ) {
+            return block;
+        }
+
+        return { ...block, available: false };
+    });
 }

@@ -45,6 +45,8 @@ export type CalendarAppointmentEvent = {
 export type FullCalendarProps = {
     className?: string;
     holidays?: CalendarHoliday[];
+    /** ISO 1=lunes … 7=domingo con al menos un doctor activo con horario. */
+    scheduledDaysOfWeek?: number[];
     appointments?: CalendarAppointmentEvent[];
     canCreate?: boolean;
     onNewAppointment?: (defaults?: {

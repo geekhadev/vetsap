@@ -13,6 +13,8 @@
     --fc-weekend-bg: oklch(0.985 0.018 95);
     --fc-holiday-bg: color-mix(in oklch, var(--muted) 45%, var(--card));
     --fc-holiday-stripe: color-mix(in oklch, var(--muted) 65%, transparent);
+    --fc-unscheduled-bg: color-mix(in oklch, var(--muted) 38%, var(--card));
+    --fc-unscheduled-stripe: color-mix(in oklch, var(--muted) 58%, transparent);
     --fc-event-gap: 0.25rem;
     --fc-event-inset: 0.3125rem;
 
@@ -28,6 +30,8 @@
     --fc-weekend-bg: color-mix(in oklch, oklch(0.92 0.03 95) 12%, var(--card));
     --fc-holiday-bg: color-mix(in oklch, var(--muted) 55%, var(--card));
     --fc-holiday-stripe: color-mix(in oklch, var(--muted) 75%, transparent);
+    --fc-unscheduled-bg: color-mix(in oklch, var(--muted) 48%, var(--card));
+    --fc-unscheduled-stripe: color-mix(in oklch, var(--muted) 68%, transparent);
 }
 
 /* Días feriados */
@@ -118,6 +122,64 @@
 .vetsap-full-calendar .fc-daygrid-day.fc-day-sat.is-holiday-day,
 .vetsap-full-calendar .fc-daygrid-day.fc-day-sun.is-holiday-day {
     background: var(--fc-holiday-bg);
+}
+
+/* Días sin horario de doctores */
+.vetsap-full-calendar .fc-unscheduled-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    line-height: 1.2;
+}
+
+.vetsap-full-calendar .fc-unscheduled-header-date {
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+}
+
+.vetsap-full-calendar .fc-unscheduled-header-name {
+    color: var(--muted-foreground);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.2;
+    text-transform: none;
+}
+
+.vetsap-full-calendar .fc-col-header-cell.is-unscheduled-header {
+    background: var(--fc-unscheduled-bg);
+}
+
+.vetsap-full-calendar .fc-col-header-cell.is-unscheduled-header .fc-col-header-cell-cushion {
+    color: var(--muted-foreground);
+}
+
+.vetsap-full-calendar .fc-daygrid-day.is-unscheduled-day {
+    background: repeating-linear-gradient(
+        45deg,
+        var(--fc-unscheduled-bg),
+        var(--fc-unscheduled-bg) 6px,
+        var(--fc-unscheduled-stripe) 6px,
+        var(--fc-unscheduled-stripe) 12px
+    );
+}
+
+.vetsap-full-calendar.blocks-dow-mon .fc-day-mon,
+.vetsap-full-calendar.blocks-dow-tue .fc-day-tue,
+.vetsap-full-calendar.blocks-dow-wed .fc-day-wed,
+.vetsap-full-calendar.blocks-dow-thu .fc-day-thu,
+.vetsap-full-calendar.blocks-dow-fri .fc-day-fri,
+.vetsap-full-calendar.blocks-dow-sat .fc-day-sat,
+.vetsap-full-calendar.blocks-dow-sun .fc-day-sun {
+    background: repeating-linear-gradient(
+        45deg,
+        var(--fc-unscheduled-bg),
+        var(--fc-unscheduled-bg) 6px,
+        var(--fc-unscheduled-stripe) 6px,
+        var(--fc-unscheduled-stripe) 12px
+    );
 }
 
 .vetsap-full-calendar .fc {
@@ -436,8 +498,27 @@
 
 /* Click en bloques horarios para nueva cita */
 .vetsap-full-calendar.is-slot-selectable .fc-timegrid-slot,
-.vetsap-full-calendar.is-slot-selectable .fc-daygrid-day:not(.is-holiday-day) {
+.vetsap-full-calendar.is-slot-selectable
+    .fc-daygrid-day:not(.is-holiday-day):not(.is-unscheduled-day) {
     cursor: pointer;
+}
+
+.vetsap-full-calendar.is-slot-selectable.blocks-dow-mon .fc-timegrid-col.fc-day-mon .fc-timegrid-slot,
+.vetsap-full-calendar.is-slot-selectable.blocks-dow-tue .fc-timegrid-col.fc-day-tue .fc-timegrid-slot,
+.vetsap-full-calendar.is-slot-selectable.blocks-dow-wed .fc-timegrid-col.fc-day-wed .fc-timegrid-slot,
+.vetsap-full-calendar.is-slot-selectable.blocks-dow-thu .fc-timegrid-col.fc-day-thu .fc-timegrid-slot,
+.vetsap-full-calendar.is-slot-selectable.blocks-dow-fri .fc-timegrid-col.fc-day-fri .fc-timegrid-slot,
+.vetsap-full-calendar.is-slot-selectable.blocks-dow-sat .fc-timegrid-col.fc-day-sat .fc-timegrid-slot,
+.vetsap-full-calendar.is-slot-selectable.blocks-dow-sun .fc-timegrid-col.fc-day-sun .fc-timegrid-slot {
+    cursor: default;
+}
+
+.vetsap-full-calendar [data-blocked-day-reason] {
+    cursor: help;
+}
+
+.vetsap-full-calendar .fc-bg-event.holiday-blocked[data-blocked-day-reason] {
+    cursor: help;
 }
 
 /* Citas clicables: FC renderiza <a> sin href y en timeGrid el hover cae en el harness */

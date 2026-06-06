@@ -10,6 +10,7 @@ import { buildDefaultAppointmentFormDefaults } from '@/pages/agenda/calendar/typ
 
 export default function CalendarIndex({
     holidays,
+    scheduled_days_of_week,
     appointments,
     formOptions,
     can,
@@ -67,6 +68,7 @@ export default function CalendarIndex({
                 <VetsapFullCalendar
                     className="min-h-0 flex-1"
                     holidays={holidays}
+                    scheduledDaysOfWeek={scheduled_days_of_week}
                     appointments={appointments}
                     canCreate={can.create}
                     onNewAppointment={openCreateForm}
