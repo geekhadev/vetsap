@@ -24,12 +24,12 @@ export function ProductsIndexFilters({
 }: ProductsIndexFiltersProps) {
     const categoryOptions = productCategories.map((c) => ({
         id: c.id,
-        label: c.is_global ? `${c.name} (Global)` : c.name,
+        label: c.name,
     }));
 
     const typeOptions = productTypes.map((t) => ({
         id: t.id,
-        label: t.is_global ? `${t.name} (Global)` : t.name,
+        label: t.name,
     }));
 
     return (

@@ -92,8 +92,7 @@ export function formatPrice(price: string | null): string {
 
 export function formatMasterLabel(option: MasterOption, selectedId?: string): string {
     const inactive = !option.is_active && option.id !== selectedId;
-    const global = option.is_global ? ' (Global)' : '';
     const suffix = inactive ? ' (inactivo)' : '';
 
-    return `${option.name}${global}${suffix}`;
+    return `${option.name}${suffix}`;
 }

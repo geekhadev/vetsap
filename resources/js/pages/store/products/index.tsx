@@ -12,7 +12,6 @@ import {
 } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
 import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
-import { renderMasterRecordName } from '@/lib/store-master-record';
 import { CONFIG_TABLEDATA } from '@/pages/store/products/config';
 import type { ProductsIndexPageProps } from '@/pages/store/products/config';
 import { ProductsIndexFilters } from '@/pages/store/products/filters';
@@ -40,21 +39,13 @@ function ProductsIndex() {
                 key: 'product_category',
                 label: 'Categoría',
                 sortable: false,
-                render: (row) =>
-                    renderMasterRecordName(
-                        row.product_category?.name,
-                        row.product_category?.company_id,
-                    ),
+                render: (row) => row.product_category?.name ?? '—',
             },
             {
                 key: 'product_type',
                 label: 'Tipo',
                 sortable: false,
-                render: (row) =>
-                    renderMasterRecordName(
-                        row.product_type?.name,
-                        row.product_type?.company_id,
-                    ),
+                render: (row) => row.product_type?.name ?? '—',
             },
             {
                 key: 'price',
