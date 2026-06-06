@@ -3,6 +3,7 @@
 namespace App\Actions\Shared\SiiTaxDocumentTypes;
 
 use App\Models\Shared\SiiTaxDocumentType;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListSiiTaxDocumentTypesAction
@@ -12,11 +13,12 @@ class ListSiiTaxDocumentTypesAction
      */
     public function execute(array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], SiiTaxDocumentType::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'created_at';
-        $direction = ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            SiiTaxDocumentType::SORTABLE_COLUMNS,
+            'created_at',
+            'desc',
+        );
 
         $query = SiiTaxDocumentType::query()
             ->searchFields($filters['search'] ?? null);

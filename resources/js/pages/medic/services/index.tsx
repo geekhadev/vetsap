@@ -1,18 +1,20 @@
 import { Head, usePage } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
+import {
+    buildTabledataCrudActionsColumn,
+    buildTabledataIsActiveStatusColumn,
+} from '@/components/custom/tabledata-crud-actions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    CONFIG_TABLEDATA
-    
-} from '@/pages/medic/services/config';
-import type {ServicesIndexPageProps} from '@/pages/medic/services/config';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
+import { CONFIG_TABLEDATA } from '@/pages/medic/services/config';
+import type { ServicesIndexPageProps } from '@/pages/medic/services/config';
 import { ServicesIndexFilters } from '@/pages/medic/services/filters';
 import { ServiceForm } from '@/pages/medic/services/form';
 import { useServicesIndex } from '@/pages/medic/services/hooks/use-index';
@@ -27,26 +29,8 @@ import type { Service, ServiceListFilters, ServicesIndexFiltersDraftFull } from 
 function ServicesIndex() {
     const { can, specialties } = usePage<ServicesIndexPageProps>().props;
     const { deleteRow } = useServicesIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingService, setEditingService] = useState<Service | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingService(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: Service) => {
-        setEditingService(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingService(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<Service>();
 
     const columns = useMemo<TabledataColumn<Service>[]>(
         () => [
@@ -74,64 +58,26 @@ function ServicesIndex() {
                 sortable: true,
                 render: (row) => formatPrice(row.price),
             },
-            {
-                key: 'is_active',
-                label: 'Estado',
-                sortable: true,
-                render: (row) => (
-                    <Badge variant={row.is_active ? 'default' : 'secondary'}>
-                        {formatIsActive(row.is_active)}
-                    </Badge>
-                ),
-            },
+            buildTabledataIsActiveStatusColumn<Service>({ formatIsActive }),
             {
                 key: 'is_public_booking',
                 label: 'Citas web',
                 sortable: true,
                 render: (row) => (
                     <Badge
-                        variant={
-                            row.is_public_booking ? 'default' : 'secondary'
-                        }
+                        variant={row.is_public_booking ? 'default' : 'secondary'}
                     >
                         {formatPublicBooking(row.is_public_booking)}
                     </Badge>
                 ),
             },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                sortable: false,
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        {can.update ? (
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                type="button"
-                                onClick={() => openEdit(row)}
-                            >
-                                <PencilIcon className="size-3" />
-                            </Button>
-                        ) : null}
-                        {can.delete ? (
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="p-0.5"
-                                type="button"
-                                onClick={() => deleteRow(row)}
-                            >
-                                <TrashIcon className="size-3" />
-                            </Button>
-                        ) : null}
-                    </div>
-                ),
-            },
+            buildTabledataCrudActionsColumn<Service>({
+                can,
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
-        [can.delete, can.update, deleteRow, openEdit],
+        [can, deleteRow, openEdit],
     );
 
     return (
@@ -141,7 +87,7 @@ function ServicesIndex() {
             <ServiceForm
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                entity={editingService}
+                entity={editingEntity}
                 specialties={specialties}
             />
 

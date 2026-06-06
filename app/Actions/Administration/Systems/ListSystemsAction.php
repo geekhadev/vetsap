@@ -3,6 +3,7 @@
 namespace App\Actions\Administration\Systems;
 
 use App\Models\Administration\System;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListSystemsAction
@@ -12,11 +13,12 @@ class ListSystemsAction
      */
     public function execute(array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], System::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'created_at';
-        $direction = ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            System::SORTABLE_COLUMNS,
+            'created_at',
+            'desc',
+        );
 
         return System::query()
             ->searchNameOrSlug($filters['search'] ?? null)

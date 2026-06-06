@@ -1,12 +1,9 @@
-import { Save, X } from 'lucide-react';
-import { FormSubmitButton } from '@/components/custom/form-submit-button';
+import { FormBooleanSwitch } from '@/components/custom/form-boolean-switch';
+import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { useSpecialtyForm } from '@/pages/medic/specialties/hooks/use-form';
-import { SpecialtyActiveSwitch } from '@/pages/medic/specialties/specialty-active-switch';
 import type { Specialty } from '@/pages/medic/specialties/types';
 
 type SpecialtyFormProps = {
@@ -57,30 +54,24 @@ export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps
                         }}
                     />
 
-                    <SpecialtyActiveSwitch
+                    <FormBooleanSwitch
+                        label="Activa"
+                        name="is_active"
                         defaultChecked={entity?.is_active ?? true}
-                        hasActiveServices={(entity?.active_services_count ?? 0) > 0}
                         error={errors.is_active}
+                        description="Controla la visibilidad en la web pública y en la agenda."
+                        confirmUncheck={{
+                            when: (entity?.active_services_count ?? 0) > 0,
+                            message:
+                                'Esta especialidad tiene servicios activos asociados. Si la desactivas, dejará de mostrarse en la web pública y en el selector de citas, pero el sistema puede rechazar el cambio hasta que esos servicios se desactiven.',
+                        }}
                     />
 
-                    <DialogFooter className="gap-2 sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            <X />
-                            Cancelar
-                        </Button>
-                        <FormSubmitButton
-                            type="submit"
-                            loading={processing}
-                            icon={<Save />}
-                            label={entity ? 'Guardar cambios' : 'Guardar'}
-                            labelLoading="Guardando…"
-                            containerClassName="w-auto"
-                        />
-                    </DialogFooter>
+                    <FormDialogFooter
+                        onCancel={() => onOpenChange(false)}
+                        processing={processing}
+                        isEdit={entity !== null}
+                    />
                 </>
             )}
         </InertiaFormDialog>

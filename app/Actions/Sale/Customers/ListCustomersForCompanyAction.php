@@ -3,6 +3,7 @@
 namespace App\Actions\Sale\Customers;
 
 use App\Models\Sale\Customer;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ListCustomersForCompanyAction
@@ -12,11 +13,10 @@ final class ListCustomersForCompanyAction
      */
     public function execute(string $companyId, array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], Customer::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'name';
-        $direction = ($filters['direction'] ?? 'asc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            Customer::SORTABLE_COLUMNS,
+        );
 
         return Customer::query()
             ->forCompany($companyId)

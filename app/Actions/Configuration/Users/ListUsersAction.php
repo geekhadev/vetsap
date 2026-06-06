@@ -4,6 +4,7 @@ namespace App\Actions\Configuration\Users;
 
 use App\Enums\UserType;
 use App\Models\User;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as ConcretePaginator;
 
@@ -14,11 +15,12 @@ class ListUsersAction
      */
     public function execute(User $actor, ?string $scopedCompanyId, array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], User::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'created_at';
-        $direction = ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            User::SORTABLE_COLUMNS,
+            'created_at',
+            'desc',
+        );
 
         if ($actor->type !== UserType::Root) {
             if ($scopedCompanyId === null || $scopedCompanyId === '') {

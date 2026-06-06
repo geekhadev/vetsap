@@ -1,47 +1,29 @@
 import { Head } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
-    CONFIG_TABLEDATA,
-} from '@/pages/medic/species/config';
+    buildTabledataCrudActionsColumn,
+    buildTabledataIsActiveStatusColumn,
+} from '@/components/custom/tabledata-crud-actions';
+import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
+import { CONFIG_TABLEDATA } from '@/pages/medic/species/config';
 import type { SpeciesIndexPageProps } from '@/pages/medic/species/config';
 import { SpeciesIndexFilters } from '@/pages/medic/species/filters';
 import { SpeciesForm } from '@/pages/medic/species/form';
 import { useSpeciesIndex } from '@/pages/medic/species/hooks/use-index';
-import {
-    formatIsActive,
-} from '@/pages/medic/species/types';
+import { formatIsActive } from '@/pages/medic/species/types';
 import type { Species, SpeciesListFilters, SpeciesIndexFiltersDraftFull } from '@/pages/medic/species/types';
 
 function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
     const { deleteRow } = useSpeciesIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingSpecies, setEditingSpecies] = useState<Species | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingSpecies(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: Species) => {
-        setEditingSpecies(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingSpecies(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<Species>();
 
     const columns = useMemo<TabledataColumn<Species>[]>(
         () => [
@@ -51,50 +33,14 @@ function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
                 sortable: true,
                 hideable: false,
             },
-            {
-                key: 'is_active',
-                label: 'Estado',
-                sortable: true,
-                render: (row) => (
-                    <Badge variant={row.is_active ? 'default' : 'secondary'}>
-                        {formatIsActive(row.is_active)}
-                    </Badge>
-                ),
-            },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                sortable: false,
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        {can.update ? (
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                type="button"
-                                onClick={() => openEdit(row)}
-                            >
-                                <PencilIcon className="size-3" />
-                            </Button>
-                        ) : null}
-                        {can.delete ? (
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="p-0.5"
-                                type="button"
-                                onClick={() => deleteRow(row)}
-                            >
-                                <TrashIcon className="size-3" />
-                            </Button>
-                        ) : null}
-                    </div>
-                ),
-            },
+            buildTabledataIsActiveStatusColumn<Species>({ formatIsActive }),
+            buildTabledataCrudActionsColumn<Species>({
+                can,
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
-        [can.delete, can.update, deleteRow, openEdit],
+        [can, deleteRow, openEdit],
     );
 
     return (
@@ -104,7 +50,7 @@ function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
             <SpeciesForm
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                entity={editingSpecies}
+                entity={editingEntity}
             />
 
             <TabledataProvider<Species, SpeciesListFilters, SpeciesIndexFiltersDraftFull>

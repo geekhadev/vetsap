@@ -7,7 +7,7 @@ use App\Models\Company;
 use App\Models\Sale\SiiCaf;
 use App\Models\User;
 use App\Models\UserCompanyRole;
-use App\Support\Sale\SiiCafPermissionSlugs;
+use App\Support\Administration\ModulePermissionSlugs;
 
 class SiiCafPolicy
 {
@@ -62,7 +62,7 @@ class SiiCafPolicy
             return $company instanceof Company && $user->isOwnerOf($company);
         }
 
-        return $this->userHasPermissionForCompany($user, $companyId, SiiCafPermissionSlugs::view());
+        return $this->userHasPermissionForCompany($user, $companyId, ModulePermissionSlugs::for('sale.sii-cafs')->segment('view'));
     }
 
     private function canUpload(User $user): bool
@@ -82,7 +82,7 @@ class SiiCafPolicy
             return $company instanceof Company && $user->isOwnerOf($company);
         }
 
-        return $this->userHasPermissionForCompany($user, $companyId, SiiCafPermissionSlugs::upload());
+        return $this->userHasPermissionForCompany($user, $companyId, ModulePermissionSlugs::for('sale.sii-cafs')->segment('upload'));
     }
 
     private function canDelete(User $user): bool
@@ -102,7 +102,7 @@ class SiiCafPolicy
             return $company instanceof Company && $user->isOwnerOf($company);
         }
 
-        return $this->userHasPermissionForCompany($user, $companyId, SiiCafPermissionSlugs::delete());
+        return $this->userHasPermissionForCompany($user, $companyId, ModulePermissionSlugs::for('sale.sii-cafs')->delete());
     }
 
     private function sessionCompanyId(): ?string

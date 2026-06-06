@@ -5,6 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
+export type FormBooleanSwitchConfirmUncheck = {
+    when: boolean;
+    message: string;
+};
+
 export type FormBooleanSwitchProps = {
     label: string;
     name: string;
@@ -16,6 +21,7 @@ export type FormBooleanSwitchProps = {
     errorClassName?: string;
     switchClassName?: string;
     description?: string;
+    confirmUncheck?: FormBooleanSwitchConfirmUncheck;
 };
 
 /**
@@ -32,6 +38,7 @@ export function FormBooleanSwitch({
     errorClassName,
     switchClassName,
     description,
+    confirmUncheck,
 }: FormBooleanSwitchProps) {
     const baseId = useId();
     const controlId = id ?? `${baseId}-${name}`;
@@ -39,6 +46,16 @@ export function FormBooleanSwitch({
     const trimmedError = error?.trim() ?? '';
     const hasError = trimmedError.length > 0;
     const [checked, setChecked] = useState(defaultChecked);
+
+    const handleCheckedChange = (next: boolean) => {
+        if (!next && confirmUncheck?.when) {
+            if (!window.confirm(confirmUncheck.message)) {
+                return;
+            }
+        }
+
+        setChecked(next);
+    };
 
     return (
         <div className={cn('grid w-full gap-2', containerClassName)}>
@@ -56,7 +73,7 @@ export function FormBooleanSwitch({
                     <Switch
                         id={controlId}
                         checked={checked}
-                        onCheckedChange={setChecked}
+                        onCheckedChange={handleCheckedChange}
                         className={switchClassName}
                         aria-invalid={hasError ? true : undefined}
                         aria-describedby={

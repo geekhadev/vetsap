@@ -13,7 +13,6 @@ use App\Http\Requests\Medic\SpecialtyUpdateRequest;
 use App\Models\Company;
 use App\Models\Medic\Specialty;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -103,16 +102,5 @@ class SpecialtiesController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Especialidad eliminada.']);
 
         return to_route('medic.specialties.index');
-    }
-
-    private function resolveCompany(Request $request): ?Company
-    {
-        $id = data_get($request->session()->get('company_selected'), 'id');
-
-        if (! is_string($id) || $id === '') {
-            return null;
-        }
-
-        return Company::query()->find($id);
     }
 }

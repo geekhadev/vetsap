@@ -1,4 +1,8 @@
 import type { TabledataListStandardDraft } from '@/components/custom/tabledata';
+import {
+    formatIsActive as formatIsActiveBase,
+    isActiveFilterOptions,
+} from '@/types/active-record';
 import type { PaginatedListFilters } from '@/types/list-filters';
 
 export type ServiceSpecialtyRef = {
@@ -52,13 +56,10 @@ export type ServicesIndexCan = {
     delete: boolean;
 };
 
-export const IS_ACTIVE_FILTER_OPTIONS = [
-    { id: '1', label: 'Activos' },
-    { id: '0', label: 'Inactivos' },
-] as const;
+export const IS_ACTIVE_FILTER_OPTIONS = isActiveFilterOptions('m');
 
 export function formatIsActive(value: boolean): string {
-    return value ? 'Activo' : 'Inactivo';
+    return formatIsActiveBase(value, 'm');
 }
 
 export function formatPublicBooking(value: boolean): string {

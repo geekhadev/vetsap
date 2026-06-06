@@ -3,6 +3,7 @@
 namespace App\Actions\Shared\Countries;
 
 use App\Models\Shared\Country;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListCountriesAction
@@ -12,11 +13,10 @@ class ListCountriesAction
      */
     public function execute(array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], Country::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'name';
-        $direction = ($filters['direction'] ?? 'asc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            Country::SORTABLE_COLUMNS,
+        );
 
         return Country::query()
             ->searchFields($filters['search'] ?? null)

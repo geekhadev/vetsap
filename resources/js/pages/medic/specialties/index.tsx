@@ -1,13 +1,17 @@
 import { Head } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
-import { Badge } from '@/components/ui/badge';
+import {
+    buildTabledataCrudActionsColumn,
+    buildTabledataIsActiveStatusColumn,
+} from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import {
     CONFIG_TABLEDATA,
 } from '@/pages/medic/specialties/config';
@@ -15,33 +19,13 @@ import type { SpecialtiesIndexPageProps } from '@/pages/medic/specialties/config
 import { SpecialtiesIndexFilters } from '@/pages/medic/specialties/filters';
 import { SpecialtyForm } from '@/pages/medic/specialties/form';
 import { useSpecialtiesIndex } from '@/pages/medic/specialties/hooks/use-index';
-import {
-    formatIsActive,
-} from '@/pages/medic/specialties/types';
+import { formatIsActive } from '@/pages/medic/specialties/types';
 import type { Specialty, SpecialtyListFilters, SpecialtiesIndexFiltersDraftFull } from '@/pages/medic/specialties/types';
 
 function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
     const { deleteRow } = useSpecialtiesIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingSpecialty, setEditingSpecialty] = useState<Specialty | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingSpecialty(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: Specialty) => {
-        setEditingSpecialty(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingSpecialty(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<Specialty>();
 
     const columns = useMemo<TabledataColumn<Specialty>[]>(
         () => [
@@ -57,50 +41,14 @@ function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
                 sortable: false,
                 render: (row) => row.description ?? '—',
             },
-            {
-                key: 'is_active',
-                label: 'Estado',
-                sortable: true,
-                render: (row) => (
-                    <Badge variant={row.is_active ? 'default' : 'secondary'}>
-                        {formatIsActive(row.is_active)}
-                    </Badge>
-                ),
-            },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                sortable: false,
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        {can.update ? (
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                type="button"
-                                onClick={() => openEdit(row)}
-                            >
-                                <PencilIcon className="size-3" />
-                            </Button>
-                        ) : null}
-                        {can.delete ? (
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="p-0.5"
-                                type="button"
-                                onClick={() => deleteRow(row)}
-                            >
-                                <TrashIcon className="size-3" />
-                            </Button>
-                        ) : null}
-                    </div>
-                ),
-            },
+            buildTabledataIsActiveStatusColumn<Specialty>({ formatIsActive }),
+            buildTabledataCrudActionsColumn<Specialty>({
+                can,
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
-        [can.delete, can.update, deleteRow, openEdit],
+        [can, deleteRow, openEdit],
     );
 
     return (
@@ -110,7 +58,7 @@ function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
             <SpecialtyForm
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                entity={editingSpecialty}
+                entity={editingEntity}
             />
 
             <TabledataProvider<Specialty, SpecialtyListFilters, SpecialtiesIndexFiltersDraftFull>

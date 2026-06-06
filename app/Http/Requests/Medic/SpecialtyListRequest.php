@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Medic;
 
+use App\Http\Requests\Concerns\InteractsWithIsActiveListFilter;
 use App\Http\Requests\Concerns\InteractsWithPaginatedListQuery;
 use App\Models\Medic\Specialty;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -10,6 +11,7 @@ use Illuminate\Validation\Rule;
 
 class SpecialtyListRequest extends FormRequest
 {
+    use InteractsWithIsActiveListFilter;
     use InteractsWithPaginatedListQuery;
 
     public function authorize(): bool
@@ -27,23 +29,15 @@ class SpecialtyListRequest extends FormRequest
             'sort' => ['nullable', 'string', Rule::in(Specialty::SORTABLE_COLUMNS)],
             'direction' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
             'per_page' => ['nullable', 'integer', Rule::in([20, 50, 100])],
-            'is_active' => ['nullable', 'string', Rule::in(['1', '0', ''])],
+            ...$this->isActiveListFilterRules(),
         ];
     }
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'sort' => $this->input('sort', 'name'),
-            'direction' => $this->input('direction', 'asc'),
-        ]);
-
+        $this->prepareNameSortedListDefaults();
         $this->prepareStandardListQuery();
-
-        $isActive = $this->input('is_active');
-        if ($isActive === '') {
-            $this->merge(['is_active' => null]);
-        }
+        $this->prepareIsActiveListFilter();
     }
 
     /**
@@ -56,7 +50,7 @@ class SpecialtyListRequest extends FormRequest
 
         return [
             ...$this->standardListFiltersForAction($validated),
-            'is_active' => $validated['is_active'] ?? null,
+            ...$this->isActiveListFilterForAction($validated),
         ];
     }
 
@@ -67,7 +61,7 @@ class SpecialtyListRequest extends FormRequest
     {
         return [
             ...$this->standardListFiltersForFrontend(),
-            'is_active' => $this->input('is_active') ?? '',
+            ...$this->isActiveListFilterForFrontend(),
         ];
     }
 }

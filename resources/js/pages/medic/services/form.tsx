@@ -1,14 +1,11 @@
-import { Save, X } from 'lucide-react';
 import { useMemo } from 'react';
+import { FormBooleanSwitch } from '@/components/custom/form-boolean-switch';
+import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormSelect } from '@/components/custom/form-select';
-import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { useServiceForm } from '@/pages/medic/services/hooks/use-form';
-import { ServiceActiveSwitch } from '@/pages/medic/services/service-active-switch';
 import { ServicePublicBookingSwitch } from '@/pages/medic/services/service-public-booking-switch';
 import type { Service, SpecialtyOption } from '@/pages/medic/services/types';
 
@@ -132,9 +129,12 @@ export function ServiceForm({
                         />
                     </div>
 
-                    <ServiceActiveSwitch
+                    <FormBooleanSwitch
+                        label="Activo"
+                        name="is_active"
                         defaultChecked={entity?.is_active ?? true}
                         error={errors.is_active}
+                        description="Disponible para uso interno y asignación en el sistema."
                     />
 
                     <ServicePublicBookingSwitch
@@ -142,24 +142,11 @@ export function ServiceForm({
                         error={errors.is_public_booking}
                     />
 
-                    <DialogFooter className="gap-2 sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            <X />
-                            Cancelar
-                        </Button>
-                        <FormSubmitButton
-                            type="submit"
-                            loading={processing}
-                            icon={<Save />}
-                            label={isEdit ? 'Guardar cambios' : 'Guardar'}
-                            labelLoading="Guardando…"
-                            containerClassName="w-auto"
-                        />
-                    </DialogFooter>
+                    <FormDialogFooter
+                        onCancel={() => onOpenChange(false)}
+                        processing={processing}
+                        isEdit={isEdit}
+                    />
                 </>
             )}
         </InertiaFormDialog>

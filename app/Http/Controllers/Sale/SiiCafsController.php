@@ -109,17 +109,6 @@ class SiiCafsController extends Controller
         return to_route('sale.sii-cafs.index');
     }
 
-    private function resolveCompany(Request $request): ?Company
-    {
-        $id = data_get($request->session()->get('company_selected'), 'id');
-
-        if (! is_string($id) || $id === '') {
-            return null;
-        }
-
-        return Company::query()->find($id);
-    }
-
     /**
      * @return array{caf: array<string, mixed>, folios: list<array<string, mixed>>, truncated: bool}|null
      */

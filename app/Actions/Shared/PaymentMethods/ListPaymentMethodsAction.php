@@ -3,6 +3,7 @@
 namespace App\Actions\Shared\PaymentMethods;
 
 use App\Models\Shared\PaymentMethod;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListPaymentMethodsAction
@@ -12,11 +13,12 @@ class ListPaymentMethodsAction
      */
     public function execute(array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], PaymentMethod::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'created_at';
-        $direction = ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            PaymentMethod::SORTABLE_COLUMNS,
+            'created_at',
+            'desc',
+        );
 
         return PaymentMethod::query()
             ->searchNameOrCode($filters['search'] ?? null)

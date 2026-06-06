@@ -3,6 +3,7 @@
 namespace App\Actions\Medic\Species;
 
 use App\Models\Medic\Species;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ListSpeciesForCompanyAction
@@ -12,11 +13,10 @@ final class ListSpeciesForCompanyAction
      */
     public function execute(string $companyId, array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], Species::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'name';
-        $direction = ($filters['direction'] ?? 'asc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            Species::SORTABLE_COLUMNS,
+        );
 
         return Species::query()
             ->forCompany($companyId)

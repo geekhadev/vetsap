@@ -5,6 +5,7 @@ namespace App\Actions\Sale\SiiCafs;
 use App\Enums\Sale\SiiCafFolioStatus;
 use App\Models\Sale\SiiCaf;
 use App\Models\Sale\SiiCafFolio;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -15,11 +16,12 @@ final class ListSiiCafsForCompanyAction
      */
     public function execute(string $companyId, array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], SiiCaf::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'folio_from';
-        $direction = ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            SiiCaf::SORTABLE_COLUMNS,
+            'folio_from',
+            'desc',
+        );
 
         $cafsTable = (new SiiCaf)->getTable();
 

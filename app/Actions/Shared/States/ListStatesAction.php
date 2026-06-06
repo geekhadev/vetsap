@@ -3,6 +3,7 @@
 namespace App\Actions\Shared\States;
 
 use App\Models\Shared\State;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListStatesAction
@@ -12,11 +13,10 @@ class ListStatesAction
      */
     public function execute(array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], [...State::SORTABLE_COLUMNS, 'country'], true)
-            ? $filters['sort']
-            : 'name';
-        $direction = ($filters['direction'] ?? 'asc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            [...State::SORTABLE_COLUMNS, 'country'],
+        );
 
         $query = State::query()
             ->with('country:id,name')

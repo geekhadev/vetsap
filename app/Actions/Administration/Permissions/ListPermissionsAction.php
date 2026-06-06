@@ -3,6 +3,7 @@
 namespace App\Actions\Administration\Permissions;
 
 use App\Models\Administration\Permission;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListPermissionsAction
@@ -12,11 +13,12 @@ class ListPermissionsAction
      */
     public function execute(array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], Permission::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'created_at';
-        $direction = ($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            Permission::SORTABLE_COLUMNS,
+            'created_at',
+            'desc',
+        );
 
         $query = Permission::query()
             ->with([

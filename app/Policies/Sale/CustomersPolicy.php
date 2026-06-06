@@ -7,7 +7,7 @@ use App\Models\Company;
 use App\Models\Sale\Customer;
 use App\Models\User;
 use App\Models\UserCompanyRole;
-use App\Support\Sale\CustomerPermissionSlugs;
+use App\Support\Administration\ModulePermissionSlugs;
 
 class CustomersPolicy
 {
@@ -73,7 +73,7 @@ class CustomersPolicy
             return $company instanceof Company && $user->isOwnerOf($company);
         }
 
-        return $this->userHasPermissionForCompany($user, $companyId, CustomerPermissionSlugs::list());
+        return $this->userHasPermissionForCompany($user, $companyId, ModulePermissionSlugs::for('sale.customers')->list());
     }
 
     private function canCreate(User $user): bool
@@ -93,7 +93,7 @@ class CustomersPolicy
             return $company instanceof Company && $user->isOwnerOf($company);
         }
 
-        return $this->userHasPermissionForCompany($user, $companyId, CustomerPermissionSlugs::create());
+        return $this->userHasPermissionForCompany($user, $companyId, ModulePermissionSlugs::for('sale.customers')->create());
     }
 
     private function canUpdate(User $user): bool
@@ -113,7 +113,7 @@ class CustomersPolicy
             return $company instanceof Company && $user->isOwnerOf($company);
         }
 
-        return $this->userHasPermissionForCompany($user, $companyId, CustomerPermissionSlugs::update());
+        return $this->userHasPermissionForCompany($user, $companyId, ModulePermissionSlugs::for('sale.customers')->update());
     }
 
     private function canDelete(User $user): bool
@@ -133,7 +133,7 @@ class CustomersPolicy
             return $company instanceof Company && $user->isOwnerOf($company);
         }
 
-        return $this->userHasPermissionForCompany($user, $companyId, CustomerPermissionSlugs::delete());
+        return $this->userHasPermissionForCompany($user, $companyId, ModulePermissionSlugs::for('sale.customers')->delete());
     }
 
     private function sessionCompanyId(): ?string

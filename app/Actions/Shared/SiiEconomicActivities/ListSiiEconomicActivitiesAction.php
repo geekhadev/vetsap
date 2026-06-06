@@ -3,6 +3,7 @@
 namespace App\Actions\Shared\SiiEconomicActivities;
 
 use App\Models\Shared\SiiEconomicActivity;
+use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListSiiEconomicActivitiesAction
@@ -12,11 +13,12 @@ class ListSiiEconomicActivitiesAction
      */
     public function execute(array $filters): LengthAwarePaginator
     {
-        $sort = in_array($filters['sort'], SiiEconomicActivity::SORTABLE_COLUMNS, true)
-            ? $filters['sort']
-            : 'code';
-        $direction = ($filters['direction'] ?? 'asc') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) ($filters['per_page'] ?? 20);
+        ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
+            $filters,
+            SiiEconomicActivity::SORTABLE_COLUMNS,
+            'code',
+            'asc',
+        );
 
         return SiiEconomicActivity::query()
             ->searchFields($filters['search'] ?? null)

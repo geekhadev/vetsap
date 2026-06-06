@@ -1,11 +1,8 @@
-import { Save, X } from 'lucide-react';
-import { FormSubmitButton } from '@/components/custom/form-submit-button';
+import { FormBooleanSwitch } from '@/components/custom/form-boolean-switch';
+import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { useSpeciesForm } from '@/pages/medic/species/hooks/use-form';
-import { SpeciesActiveSwitch } from '@/pages/medic/species/species-active-switch';
 import type { Species } from '@/pages/medic/species/types';
 
 type SpeciesFormProps = {
@@ -17,7 +14,7 @@ type SpeciesFormProps = {
 type SpeciesFormFields = Pick<Species, 'name' | 'is_active'>;
 
 export function SpeciesForm({ open, onOpenChange, entity }: SpeciesFormProps) {
-    const { isEdit, formProps, headTitle, description } = useSpeciesForm(entity);
+    const { formProps, headTitle, description } = useSpeciesForm(entity);
 
     return (
         <InertiaFormDialog<SpeciesFormFields>
@@ -43,29 +40,19 @@ export function SpeciesForm({ open, onOpenChange, entity }: SpeciesFormProps) {
                         }}
                     />
 
-                    <SpeciesActiveSwitch
+                    <FormBooleanSwitch
+                        label="Activa"
+                        name="is_active"
                         defaultChecked={entity?.is_active ?? true}
                         error={errors.is_active}
+                        description="Controla si la especie aparece en el registro de pacientes."
                     />
 
-                    <DialogFooter className="gap-2 sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            <X />
-                            Cancelar
-                        </Button>
-                        <FormSubmitButton
-                            type="submit"
-                            loading={processing}
-                            icon={<Save />}
-                            label={isEdit ? 'Guardar cambios' : 'Guardar'}
-                            labelLoading="Guardando…"
-                            containerClassName="w-auto"
-                        />
-                    </DialogFooter>
+                    <FormDialogFooter
+                        onCancel={() => onOpenChange(false)}
+                        processing={processing}
+                        isEdit={entity !== null}
+                    />
                 </>
             )}
         </InertiaFormDialog>
