@@ -9,6 +9,9 @@ export type FormDialogFooterProps = {
     processing: boolean;
     isEdit?: boolean;
     submitIcon?: ReactNode;
+    submitLabel?: string;
+    submitLabelLoading?: string;
+    submitDisabled?: boolean;
 };
 
 export function FormDialogFooter({
@@ -16,7 +19,13 @@ export function FormDialogFooter({
     processing,
     isEdit = false,
     submitIcon = <Save />,
+    submitLabel,
+    submitLabelLoading,
+    submitDisabled,
 }: FormDialogFooterProps) {
+    const resolvedSubmitLabel = submitLabel ?? (isEdit ? 'Guardar cambios' : 'Guardar');
+    const resolvedSubmitLabelLoading = submitLabelLoading ?? 'Guardando…';
+
     return (
         <DialogFooter className="gap-2 sm:justify-end">
             <Button type="button" variant="outline" onClick={onCancel}>
@@ -26,9 +35,10 @@ export function FormDialogFooter({
             <FormSubmitButton
                 type="submit"
                 loading={processing}
+                disabled={submitDisabled}
                 icon={submitIcon}
-                label={isEdit ? 'Guardar cambios' : 'Guardar'}
-                labelLoading="Guardando…"
+                label={resolvedSubmitLabel}
+                labelLoading={resolvedSubmitLabelLoading}
                 containerClassName="w-auto"
             />
         </DialogFooter>

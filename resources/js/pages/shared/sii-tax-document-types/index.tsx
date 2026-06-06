@@ -1,12 +1,14 @@
 import { Head } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
+import { buildTabledataCrudActionsColumn } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import { CONFIG_TABLEDATA } from '@/pages/shared/sii-tax-document-types/config';
 import { SiiTaxDocumentTypesIndexFilters } from '@/pages/shared/sii-tax-document-types/filters';
 import { FormDialog } from '@/pages/shared/sii-tax-document-types/form-dialog';
@@ -20,26 +22,8 @@ import { UsageBadges } from './usage-badges';
 
 function SiiTaxDocumentTypesIndex() {
     const { deleteRow } = useSiiTaxDocumentTypesIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingRow, setEditingRow] = useState<SiiTaxDocumentType | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingRow(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: SiiTaxDocumentType) => {
-        setEditingRow(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingRow(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<SiiTaxDocumentType>();
 
     const columns = useMemo<TabledataColumn<SiiTaxDocumentType>[]>(
         () => [
@@ -71,33 +55,10 @@ function SiiTaxDocumentTypesIndex() {
                 headerClassName: 'min-w-[140px]',
                 render: (row) => <UsageBadges row={row} />,
             },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            type="button"
-                            onClick={() => openEdit(row)}
-                        >
-                            <PencilIcon className="size-3" />
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            className="p-0.5"
-                            type="button"
-                            onClick={() => deleteRow(row)}
-                        >
-                            <TrashIcon className="size-3" />
-                        </Button>
-                    </div>
-                ),
-            },
+            buildTabledataCrudActionsColumn<SiiTaxDocumentType>({
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
         [deleteRow, openEdit],
     );
@@ -109,7 +70,7 @@ function SiiTaxDocumentTypesIndex() {
             <FormDialog
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                siiTaxDocumentType={editingRow}
+                siiTaxDocumentType={editingEntity}
             />
 
             <TabledataProvider<

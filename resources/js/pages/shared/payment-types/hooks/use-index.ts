@@ -1,27 +1,17 @@
 /**
  * Hook mínimo del índice de tipos de pago: acciones fuera de `TabledataProvider` + Inertia list.
  */
-import { router } from '@inertiajs/react';
-import { useCallback } from 'react';
-import { TABLEDATA_LIST_INERTIA_ONLY } from '@/components/custom/tabledata';
+import { useTabledataDeleteRow } from '@/hooks/use-tabledata-delete-row';
 import { destroy } from '@/routes/shared/payment-types';
 import type { PaymentType } from '../types';
 
 export type { PaymentTypesIndexPageProps } from '@/pages/shared/payment-types/config';
 
 export function usePaymentTypesIndex() {
-    const deleteRow = useCallback((row: PaymentType) => {
-        if (!window.confirm(`¿Eliminar el tipo de pago «${row.name}»?`)) {
-            return;
-        }
+    const { deleteRow } = useTabledataDeleteRow<PaymentType>({
+        getDestroyUrl: (row) => destroy.url(row.id),
+        confirmMessage: (row) => `¿Eliminar el tipo de pago «${row.name}»?`,
+    });
 
-        router.delete(destroy.url(row.id), {
-            preserveScroll: true,
-            only: [...TABLEDATA_LIST_INERTIA_ONLY],
-        });
-    }, []);
-
-    return {
-        deleteRow,
-    };
+    return { deleteRow };
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Medic;
 
+use App\Http\Requests\Concerns\InteractsWithIsActiveListFilter;
 use App\Http\Requests\Concerns\InteractsWithPaginatedListQuery;
 use App\Models\Medic\Service;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -10,6 +11,7 @@ use Illuminate\Validation\Rule;
 
 class ServiceListRequest extends FormRequest
 {
+    use InteractsWithIsActiveListFilter;
     use InteractsWithPaginatedListQuery;
 
     public function authorize(): bool
@@ -27,27 +29,18 @@ class ServiceListRequest extends FormRequest
             'sort' => ['nullable', 'string', Rule::in(Service::SORTABLE_COLUMNS)],
             'direction' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
             'per_page' => ['nullable', 'integer', Rule::in([20, 50, 100])],
-            'is_active' => ['nullable', 'string', Rule::in(['1', '0', ''])],
+            ...$this->isActiveListFilterRules(),
             'specialty_id' => ['nullable', 'string', 'uuid'],
         ];
     }
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'sort' => $this->input('sort', 'name'),
-            'direction' => $this->input('direction', 'asc'),
-        ]);
-
+        $this->prepareNameSortedListDefaults();
         $this->prepareStandardListQuery();
+        $this->prepareIsActiveListFilter();
 
-        $isActive = $this->input('is_active');
-        if ($isActive === '') {
-            $this->merge(['is_active' => null]);
-        }
-
-        $specialtyId = $this->input('specialty_id');
-        if ($specialtyId === '') {
+        if ($this->input('specialty_id') === '') {
             $this->merge(['specialty_id' => null]);
         }
     }
@@ -62,7 +55,7 @@ class ServiceListRequest extends FormRequest
 
         return [
             ...$this->standardListFiltersForAction($validated),
-            'is_active' => $validated['is_active'] ?? null,
+            ...$this->isActiveListFilterForAction($validated),
             'specialty_id' => $validated['specialty_id'] ?? null,
         ];
     }
@@ -74,7 +67,7 @@ class ServiceListRequest extends FormRequest
     {
         return [
             ...$this->standardListFiltersForFrontend(),
-            'is_active' => $this->input('is_active') ?? '',
+            ...$this->isActiveListFilterForFrontend(),
             'specialty_id' => $this->input('specialty_id') ?? '',
         ];
     }

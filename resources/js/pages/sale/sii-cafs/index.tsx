@@ -11,6 +11,7 @@ import {
 import type { TabledataColumn } from '@/components/custom/tabledata';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import {
     CONFIG_TABLEDATA,
 
@@ -60,7 +61,8 @@ export default function SiiCafsIndex() {
     } = page.props;
 
     const { deleteRow } = useSiiCafsIndex();
-    const [formOpen, setFormOpen] = useState(false);
+    const { formOpen, openCreate, handleFormOpenChange } =
+        useEntityFormDialogState<SiiCafRow>();
     const [foliosLocalOpen, setFoliosLocalOpen] = useState(false);
 
     const foliosDialogOpen = folios_for_modal !== null || foliosLocalOpen;
@@ -223,7 +225,7 @@ export default function SiiCafsIndex() {
         <>
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
-            <FormDialog open={formOpen} onOpenChange={setFormOpen} />
+            <FormDialog open={formOpen} onOpenChange={handleFormOpenChange} />
 
             <FoliosDialog
                 open={foliosDialogOpen}
@@ -249,7 +251,7 @@ export default function SiiCafsIndex() {
                                     resetFilters={list.resetFilters}
                                 />
                                 {can.upload ? (
-                                    <Button type="button" onClick={() => setFormOpen(true)}>
+                                    <Button type="button" onClick={openCreate}>
                                         <CirclePlus />
                                         Nuevo
                                     </Button>

@@ -1,12 +1,14 @@
 import { Head } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
+import { buildTabledataCrudActionsColumn } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import { CONFIG_TABLEDATA } from '@/pages/administration/systems/config';
 import { FormDialog } from '@/pages/administration/systems/form-dialog';
 import { useSystemsIndex } from '@/pages/administration/systems/hooks/use-index';
@@ -14,26 +16,8 @@ import type { System, SystemListFilters, SystemsIndexFiltersDraftFull } from './
 
 function SystemsIndex() {
     const { deleteRow } = useSystemsIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingSystem, setEditingSystem] = useState<System | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingSystem(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: System) => {
-        setEditingSystem(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingSystem(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<System>();
 
     const columns = useMemo<TabledataColumn<System>[]>(
         () => [
@@ -49,33 +33,10 @@ function SystemsIndex() {
                 sortable: true,
                 hideable: false,
             },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            type="button"
-                            onClick={() => openEdit(row)}
-                        >
-                            <PencilIcon className="size-3" />
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            className="p-0.5"
-                            type="button"
-                            onClick={() => deleteRow(row)}
-                        >
-                            <TrashIcon className="size-3" />
-                        </Button>
-                    </div>
-                ),
-            },
+            buildTabledataCrudActionsColumn<System>({
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
         [deleteRow, openEdit],
     );
@@ -87,7 +48,7 @@ function SystemsIndex() {
             <FormDialog
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                system={editingSystem}
+                system={editingEntity}
             />
 
             <TabledataProvider<System, SystemListFilters, SystemsIndexFiltersDraftFull>

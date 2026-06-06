@@ -1,12 +1,14 @@
 import { Head } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
+import { buildTabledataCrudActionsColumn } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import { CONFIG_TABLEDATA } from '@/pages/shared/payment-types/config';
 import { FormDialog } from '@/pages/shared/payment-types/form-dialog';
 import { usePaymentTypesIndex } from '@/pages/shared/payment-types/hooks/use-index';
@@ -18,27 +20,8 @@ import type {
 
 function PaymentTypesIndex() {
     const { deleteRow } = usePaymentTypesIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingPaymentType, setEditingPaymentType] =
-        useState<PaymentType | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingPaymentType(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: PaymentType) => {
-        setEditingPaymentType(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingPaymentType(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<PaymentType>();
 
     const columns = useMemo<TabledataColumn<PaymentType>[]>(
         () => [
@@ -54,33 +37,10 @@ function PaymentTypesIndex() {
                 sortable: true,
                 hideable: false,
             },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            type="button"
-                            onClick={() => openEdit(row)}
-                        >
-                            <PencilIcon className="size-3" />
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            className="p-0.5"
-                            type="button"
-                            onClick={() => deleteRow(row)}
-                        >
-                            <TrashIcon className="size-3" />
-                        </Button>
-                    </div>
-                ),
-            },
+            buildTabledataCrudActionsColumn<PaymentType>({
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
         [deleteRow, openEdit],
     );
@@ -92,7 +52,7 @@ function PaymentTypesIndex() {
             <FormDialog
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                paymentType={editingPaymentType}
+                paymentType={editingEntity}
             />
 
             <TabledataProvider<

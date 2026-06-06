@@ -1,9 +1,6 @@
-import { Save, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { FormSubmitButton } from '@/components/custom/form-submit-button';
+import { useState } from 'react';
+import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { store } from '@/routes/sale/sii-cafs';
@@ -16,16 +13,18 @@ type FormDialogProps = {
 export function FormDialog({ open, onOpenChange }: FormDialogProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-    useEffect(() => {
-        if (!open) {
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (!nextOpen) {
             setSelectedFile(null);
         }
-    }, [open]);
+
+        onOpenChange(nextOpen);
+    };
 
     return (
         <InertiaFormDialog<{ xml_file: File | null }>
             open={open}
-            onOpenChange={onOpenChange}
+            onOpenChange={handleOpenChange}
             title="Subir CAF SII"
             description="Selecciona el archivo XML del CAF descargado desde el portal del SII."
             formKey="sii-caf-upload"
@@ -55,25 +54,13 @@ export function FormDialog({ open, onOpenChange }: FormDialogProps) {
                         ) : null}
                     </div>
 
-                    <DialogFooter className="gap-2 sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            <X />
-                            Cancelar
-                        </Button>
-                        <FormSubmitButton
-                            type="submit"
-                            loading={processing}
-                            disabled={!selectedFile}
-                            icon={<Save />}
-                            label="Subir CAF"
-                            labelLoading="Subiendo…"
-                            containerClassName="w-auto"
-                        />
-                    </DialogFooter>
+                    <FormDialogFooter
+                        onCancel={() => handleOpenChange(false)}
+                        processing={processing}
+                        submitLabel="Subir CAF"
+                        submitLabelLoading="Subiendo…"
+                        submitDisabled={!selectedFile}
+                    />
                 </>
             )}
         </InertiaFormDialog>

@@ -1,13 +1,16 @@
 import { Head } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
+import { buildTabledataCrudActionsColumn } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
-import { CONFIG_TABLEDATA, type StatesIndexPageProps } from '@/pages/shared/states/config';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
+import { CONFIG_TABLEDATA  } from '@/pages/shared/states/config';
+import type {StatesIndexPageProps} from '@/pages/shared/states/config';
 import { StatesIndexFilters } from '@/pages/shared/states/filters';
 import { FormDialog } from '@/pages/shared/states/form-dialog';
 import { useStatesIndex } from '@/pages/shared/states/hooks/use-index';
@@ -15,26 +18,8 @@ import type { State, StateListFilters, StatesIndexFiltersDraftFull } from './typ
 
 function StatesIndex({ countries }: Pick<StatesIndexPageProps, 'countries'>) {
     const { deleteRow } = useStatesIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingState, setEditingState] = useState<State | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingState(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: State) => {
-        setEditingState(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingState(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<State>();
 
     const columns = useMemo<TabledataColumn<State>[]>(
         () => [
@@ -50,34 +35,10 @@ function StatesIndex({ countries }: Pick<StatesIndexPageProps, 'countries'>) {
                 sortable: true,
                 render: (row) => row.country?.name ?? '—',
             },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                sortable: false,
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            type="button"
-                            onClick={() => openEdit(row)}
-                        >
-                            <PencilIcon className="size-3" />
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            className="p-0.5"
-                            type="button"
-                            onClick={() => deleteRow(row)}
-                        >
-                            <TrashIcon className="size-3" />
-                        </Button>
-                    </div>
-                ),
-            },
+            buildTabledataCrudActionsColumn<State>({
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
         [deleteRow, openEdit],
     );
@@ -89,7 +50,7 @@ function StatesIndex({ countries }: Pick<StatesIndexPageProps, 'countries'>) {
             <FormDialog
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                entity={editingState}
+                entity={editingEntity}
                 countries={countries}
             />
 

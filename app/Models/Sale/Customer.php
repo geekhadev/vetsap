@@ -4,6 +4,7 @@ namespace App\Models\Sale;
 
 use App\Enums\Sale\CustomerDocumentType;
 use App\Models\Company;
+use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Customer extends Model
 {
     use HasUuids;
+    use InteractsWithCompanyMasterRecord;
 
     protected $table = 'sale_customers';
 
@@ -39,15 +41,6 @@ class Customer extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'company_id');
-    }
-
-    /**
-     * @param  Builder<$this>  $query
-     * @return Builder<$this>
-     */
-    public function scopeForCompany(Builder $query, string $companyId): Builder
-    {
-        return $query->where('company_id', $companyId);
     }
 
     /**
@@ -80,31 +73,6 @@ class Customer extends Model
                 ->orWhere('document_number', 'like', $term)
                 ->orWhere('email', 'like', $term);
         });
-    }
-
-    /**
-     * @param  Builder<$this>  $query
-     * @return Builder<$this>
-     */
-    public function scopeOrderByColumn(Builder $query, string $column, string $direction): Builder
-    {
-        return $query->orderBy($column, $direction);
-    }
-
-    public function resolveRouteBinding($value, $field = null): static
-    {
-        $field ??= $this->getRouteKeyName();
-
-        $companyId = data_get(request()->session()->get('company_selected'), 'id');
-        if (! is_string($companyId) || $companyId === '') {
-            abort(404);
-        }
-
-        /** @var static */
-        return static::query()
-            ->where('company_id', $companyId)
-            ->where($field, $value)
-            ->firstOrFail();
     }
 
     /**

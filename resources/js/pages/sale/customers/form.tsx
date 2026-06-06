@@ -1,16 +1,10 @@
-import { Save, X } from 'lucide-react';
+import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormSelect } from '@/components/custom/form-select';
-import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { useCustomerForm } from '@/pages/sale/customers/hooks/use-form';
-import {
-    DOCUMENT_TYPE_OPTIONS
-    
-} from '@/pages/sale/customers/types';
-import type {Customer} from '@/pages/sale/customers/types';
+import { DOCUMENT_TYPE_OPTIONS } from '@/pages/sale/customers/types';
+import type { Customer } from '@/pages/sale/customers/types';
 
 type CustomerFormProps = {
     open: boolean;
@@ -124,24 +118,11 @@ export function CustomerForm({ open, onOpenChange, entity }: CustomerFormProps) 
                         />
                     </div>
 
-                    <DialogFooter className="gap-2 sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            <X />
-                            Cancelar
-                        </Button>
-                        <FormSubmitButton
-                            type="submit"
-                            loading={processing}
-                            icon={<Save />}
-                            label={isEdit ? 'Guardar cambios' : 'Guardar'}
-                            labelLoading="Guardando…"
-                            containerClassName="w-auto"
-                        />
-                    </DialogFooter>
+                    <FormDialogFooter
+                        onCancel={() => onOpenChange(false)}
+                        processing={processing}
+                        isEdit={isEdit}
+                    />
                 </>
             )}
         </InertiaFormDialog>

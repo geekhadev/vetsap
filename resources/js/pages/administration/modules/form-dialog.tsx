@@ -1,13 +1,10 @@
-import { Save, X } from 'lucide-react';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
+import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import type { FormSelectOption } from '@/components/custom/form-select';
 import { FormSelect } from '@/components/custom/form-select';
-import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -35,7 +32,7 @@ type FormDialogProps = {
     systems: SystemOption[];
 };
 
-export function FormDialog({
+function ModuleFormDialogContent({
     open,
     onOpenChange,
     module,
@@ -48,10 +45,6 @@ export function FormDialog({
     const [systemId, setSystemId] = useState(() =>
         module ? String(module.system_id) : '',
     );
-
-    useEffect(() => {
-        setSystemId(module ? String(module.system_id) : '');
-    }, [module]);
 
     const selectedSystem = useMemo(
         () => systems.find((s) => String(s.id) === systemId),
@@ -165,26 +158,22 @@ export function FormDialog({
                         <InputError id={slugErrorId} message={errors.slug} />
                     </div>
 
-                    <DialogFooter className="gap-2 sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            <X />
-                            Cancelar
-                        </Button>
-                        <FormSubmitButton
-                            type="submit"
-                            loading={processing}
-                            icon={<Save />}
-                            label={isEdit ? 'Guardar cambios' : 'Guardar'}
-                            labelLoading="Guardando…"
-                            containerClassName="w-auto"
-                        />
-                    </DialogFooter>
+                    <FormDialogFooter
+                        onCancel={() => onOpenChange(false)}
+                        processing={processing}
+                        isEdit={isEdit}
+                    />
                 </>
             )}
         </InertiaFormDialog>
+    );
+}
+
+export function FormDialog(props: FormDialogProps) {
+    return (
+        <ModuleFormDialogContent
+            key={props.module?.id ?? 'create'}
+            {...props}
+        />
     );
 }

@@ -1,21 +1,20 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { CirclePlus, Pencil, Trash2, UserCog } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 import {
     pickTabledataListShellConfig,
-    TABLEDATA_LIST_INERTIA_ONLY,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
 import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import { formatUserType } from '@/lib/format-user-type';
 import { CompanyRolesDialog } from '@/pages/configuration/users/company-roles-dialog';
 import type { UsersIndexPageProps } from '@/pages/configuration/users/config';
 import { CONFIG_TABLEDATA } from '@/pages/configuration/users/config';
 import { UsersIndexFilters } from '@/pages/configuration/users/filters';
 import { FormDialog } from '@/pages/configuration/users/form-dialog';
-import { destroy as destroyUser } from '@/routes/configuration/users';
+import { useUsersIndex } from '@/pages/configuration/users/hooks/use-index';
 import type {
     UserListRow,
     UserListRowRoot,
@@ -32,46 +31,16 @@ function isRootRow(row: UserListRow): row is UserListRowRoot {
     return 'type' in row && 'created_at' in row;
 }
 
-function formatCreatedAt(iso: string): string {
-    const d = new Date(iso);
-
-    if (Number.isNaN(d.getTime())) {
-        return '—';
-    }
-
-    return d.toLocaleString('es-CL', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-    });
-}
-
 function UsersIndex() {
     const page = usePage<UsersIndexPage>().props;
     const { listMode, companies } = page;
     const sessionCompany = page.company_selected ?? null;
     const currentUserId = page.auth?.user?.id ?? null;
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<UserListRow | null>(null);
+    const { deleteRow } = useUsersIndex();
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<UserListRow>();
     const [rolesOpen, setRolesOpen] = useState(false);
     const [rolesUser, setRolesUser] = useState<UserListRow | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingUser(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: UserListRow) => {
-        setEditingUser(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingUser(null);
-        }
-    }, []);
 
     const openRoles = useCallback((row: UserListRow) => {
         setRolesUser(row);
@@ -84,29 +53,6 @@ function UsersIndex() {
         if (!open) {
             setRolesUser(null);
         }
-    }, []);
-
-    const handleDeleteUser = useCallback((row: UserListRow) => {
-        if (
-            !window.confirm(
-                `¿Eliminar al usuario «${row.name}»? Esta acción no se puede deshacer.`,
-            )
-        ) {
-            return;
-        }
-
-        router.delete(destroyUser.url(row.id), {
-            only: [...TABLEDATA_LIST_INERTIA_ONLY],
-            onError: (errors) => {
-                const raw = errors.user;
-                const msg = Array.isArray(raw) ? raw[0] : raw;
-                toast.error(
-                    typeof msg === 'string'
-                        ? msg
-                        : 'No se pudo eliminar el usuario.',
-                );
-            },
-        });
     }, []);
 
     const columns = useMemo<TabledataColumn<UserListRow>[]>(() => {
@@ -151,7 +97,7 @@ function UsersIndex() {
                                 size="icon"
                                 type="button"
                                 className="text-destructive hover:text-destructive"
-                                onClick={() => handleDeleteUser(row)}
+                                onClick={() => deleteRow(row)}
                                 aria-label="Eliminar usuario"
                             >
                                 <Trash2 className="size-3" />
@@ -213,7 +159,7 @@ function UsersIndex() {
             },
             actionsColumn,
         ];
-    }, [currentUserId, handleDeleteUser, listMode, openEdit, openRoles]);
+    }, [currentUserId, deleteRow, listMode, openEdit, openRoles]);
 
     const emptyMessage =
         listMode === 'root'
@@ -227,7 +173,7 @@ function UsersIndex() {
             <FormDialog
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                editingUser={editingUser}
+                editingUser={editingEntity}
             />
 
             <CompanyRolesDialog

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Medic;
 
+use App\Http\Requests\Concerns\InteractsWithIsActiveListFilter;
 use App\Http\Requests\Concerns\InteractsWithPaginatedListQuery;
 use App\Models\Medic\Doctor;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -10,6 +11,7 @@ use Illuminate\Validation\Rule;
 
 class DoctorListRequest extends FormRequest
 {
+    use InteractsWithIsActiveListFilter;
     use InteractsWithPaginatedListQuery;
 
     public function authorize(): bool
@@ -27,7 +29,7 @@ class DoctorListRequest extends FormRequest
             'sort' => ['nullable', 'string', Rule::in(Doctor::SORTABLE_COLUMNS)],
             'direction' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
             'per_page' => ['nullable', 'integer', Rule::in([20, 50, 100])],
-            'is_active' => ['nullable', 'string', Rule::in(['1', '0', ''])],
+            ...$this->isActiveListFilterRules(),
         ];
     }
 
@@ -39,11 +41,7 @@ class DoctorListRequest extends FormRequest
         ]);
 
         $this->prepareStandardListQuery();
-
-        $isActive = $this->input('is_active');
-        if ($isActive === '') {
-            $this->merge(['is_active' => null]);
-        }
+        $this->prepareIsActiveListFilter();
     }
 
     /**
@@ -56,7 +54,7 @@ class DoctorListRequest extends FormRequest
 
         return [
             ...$this->standardListFiltersForAction($validated),
-            'is_active' => $validated['is_active'] ?? null,
+            ...$this->isActiveListFilterForAction($validated),
         ];
     }
 
@@ -67,7 +65,7 @@ class DoctorListRequest extends FormRequest
     {
         return [
             ...$this->standardListFiltersForFrontend(),
-            'is_active' => $this->input('is_active') ?? '',
+            ...$this->isActiveListFilterForFrontend(),
         ];
     }
 }

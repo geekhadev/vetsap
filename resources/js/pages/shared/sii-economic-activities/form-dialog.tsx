@@ -1,10 +1,7 @@
-import { Save, X } from 'lucide-react';
-import { FormSubmitButton } from '@/components/custom/form-submit-button';
-import { FormTextarea } from '@/components/custom/form-textarea';
+import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormTextInput } from '@/components/custom/form-text-input';
+import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useSiiEconomicActivityForm } from '@/pages/shared/sii-economic-activities/hooks/use-form';
@@ -149,24 +146,11 @@ export function FormDialog({
                         </div>
                     </div>
 
-                    <DialogFooter className="gap-2 sm:justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            <X />
-                            Cancelar
-                        </Button>
-                        <FormSubmitButton
-                            type="submit"
-                            loading={processing}
-                            icon={<Save />}
-                            label={isEdit ? 'Guardar cambios' : 'Guardar'}
-                            labelLoading="Guardando…"
-                            containerClassName="w-auto"
-                        />
-                    </DialogFooter>
+                    <FormDialogFooter
+                        onCancel={() => onOpenChange(false)}
+                        processing={processing}
+                        isEdit={isEdit}
+                    />
                 </>
             )}
         </InertiaFormDialog>

@@ -1,50 +1,32 @@
 import { Head } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
+import { buildTabledataCrudActionsColumn } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import {
-    CONFIG_TABLEDATA
-    
+    CONFIG_TABLEDATA,
 } from '@/pages/sale/customers/config';
-import type {CustomersIndexPageProps} from '@/pages/sale/customers/config';
+import type { CustomersIndexPageProps } from '@/pages/sale/customers/config';
 import { CustomersIndexFilters } from '@/pages/sale/customers/filters';
 import { CustomerForm } from '@/pages/sale/customers/form';
 import { useCustomersIndex } from '@/pages/sale/customers/hooks/use-index';
-import {
-    formatDocumentType
-    
-    
-    
+import { formatDocumentType } from '@/pages/sale/customers/types';
+import type {
+    Customer,
+    CustomerListFilters,
+    CustomersIndexFiltersDraftFull,
 } from '@/pages/sale/customers/types';
-import type {Customer, CustomerListFilters, CustomersIndexFiltersDraftFull} from '@/pages/sale/customers/types';
 
 function CustomersIndex({ can }: Pick<CustomersIndexPageProps, 'can'>) {
     const { deleteRow } = useCustomersIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingCustomer(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: Customer) => {
-        setEditingCustomer(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingCustomer(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<Customer>();
 
     const columns = useMemo<TabledataColumn<Customer>[]>(
         () => [
@@ -78,40 +60,13 @@ function CustomersIndex({ can }: Pick<CustomersIndexPageProps, 'can'>) {
                 sortable: false,
                 render: (row) => row.phone ?? '—',
             },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                sortable: false,
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        {can.update ? (
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                type="button"
-                                onClick={() => openEdit(row)}
-                            >
-                                <PencilIcon className="size-3" />
-                            </Button>
-                        ) : null}
-                        {can.delete ? (
-                            <Button
-                                variant="destructive"
-                                size="icon"
-                                className="p-0.5"
-                                type="button"
-                                onClick={() => deleteRow(row)}
-                            >
-                                <TrashIcon className="size-3" />
-                            </Button>
-                        ) : null}
-                    </div>
-                ),
-            },
+            buildTabledataCrudActionsColumn<Customer>({
+                can,
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
-        [can.delete, can.update, deleteRow, openEdit],
+        [can, deleteRow, openEdit],
     );
 
     return (
@@ -121,7 +76,7 @@ function CustomersIndex({ can }: Pick<CustomersIndexPageProps, 'can'>) {
             <CustomerForm
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                entity={editingCustomer}
+                entity={editingEntity}
             />
 
             <TabledataProvider<Customer, CustomerListFilters, CustomersIndexFiltersDraftFull>

@@ -1,12 +1,14 @@
 import { Head } from '@inertiajs/react';
-import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { CirclePlus } from 'lucide-react';
+import { useMemo } from 'react';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
+import { buildTabledataCrudActionsColumn } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
+import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import { CONFIG_TABLEDATA } from '@/pages/shared/sii-economic-activities/config';
 import { FormDialog } from '@/pages/shared/sii-economic-activities/form-dialog';
 import { useSiiEconomicActivitiesIndex } from '@/pages/shared/sii-economic-activities/hooks/use-index';
@@ -22,27 +24,8 @@ function yesNo(value: boolean): string {
 
 function SiiEconomicActivitiesIndex() {
     const { deleteRow } = useSiiEconomicActivitiesIndex();
-    const [formOpen, setFormOpen] = useState(false);
-    const [editingActivity, setEditingActivity] =
-        useState<SiiEconomicActivity | null>(null);
-
-    const openCreate = useCallback(() => {
-        setEditingActivity(null);
-        setFormOpen(true);
-    }, []);
-
-    const openEdit = useCallback((row: SiiEconomicActivity) => {
-        setEditingActivity(row);
-        setFormOpen(true);
-    }, []);
-
-    const handleFormOpenChange = useCallback((open: boolean) => {
-        setFormOpen(open);
-
-        if (!open) {
-            setEditingActivity(null);
-        }
-    }, []);
+    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+        useEntityFormDialogState<SiiEconomicActivity>();
 
     const columns = useMemo<TabledataColumn<SiiEconomicActivity>[]>(
         () => [
@@ -80,33 +63,10 @@ function SiiEconomicActivitiesIndex() {
                 headerClassName: 'min-w-[88px]',
                 render: (row) => yesNo(row.use_internet),
             },
-            {
-                key: 'actions',
-                label: 'Acciones',
-                hideable: false,
-                headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end gap-1">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            type="button"
-                            onClick={() => openEdit(row)}
-                        >
-                            <PencilIcon className="size-3" />
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            size="icon"
-                            className="p-0.5"
-                            type="button"
-                            onClick={() => deleteRow(row)}
-                        >
-                            <TrashIcon className="size-3" />
-                        </Button>
-                    </div>
-                ),
-            },
+            buildTabledataCrudActionsColumn<SiiEconomicActivity>({
+                onEdit: openEdit,
+                onDelete: deleteRow,
+            }),
         ],
         [deleteRow, openEdit],
     );
@@ -118,7 +78,7 @@ function SiiEconomicActivitiesIndex() {
             <FormDialog
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                siiEconomicActivity={editingActivity}
+                siiEconomicActivity={editingEntity}
             />
 
             <TabledataProvider<

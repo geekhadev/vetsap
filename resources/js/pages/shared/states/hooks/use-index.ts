@@ -1,24 +1,14 @@
-import { router } from '@inertiajs/react';
-import { useCallback } from 'react';
-import { TABLEDATA_LIST_INERTIA_ONLY } from '@/components/custom/tabledata';
+import { useTabledataDeleteRow } from '@/hooks/use-tabledata-delete-row';
 import { destroy } from '@/routes/shared/states';
 import type { State } from '../types';
 
 export type { StatesIndexPageProps } from '@/pages/shared/states/config';
 
 export function useStatesIndex() {
-    const deleteRow = useCallback((row: State) => {
-        if (!window.confirm(`¿Eliminar el estado «${row.name}»?`)) {
-            return;
-        }
+    const { deleteRow } = useTabledataDeleteRow<State>({
+        getDestroyUrl: (row) => destroy.url(row.id),
+        confirmMessage: (row) => `¿Eliminar el estado «${row.name}»?`,
+    });
 
-        router.delete(destroy.url(row.id), {
-            preserveScroll: true,
-            only: [...TABLEDATA_LIST_INERTIA_ONLY],
-        });
-    }, []);
-
-    return {
-        deleteRow,
-    };
+    return { deleteRow };
 }
