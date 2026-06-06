@@ -1,7 +1,7 @@
 import { format, isAfter, isValid, parse, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
-import { useId, useMemo } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { Matcher } from 'react-day-picker';
 
 import InputError from '@/components/input-error';
@@ -50,22 +50,38 @@ function collectMatchers(
     return matchers.length === 1 ? matchers[0] : matchers;
 }
 
-export function FormDatePickerField({
-    value,
-    onChange,
-    label = undefined,
-    required = false,
-    error,
-    placeholder = 'Seleccionar fecha',
-    id: idProp,
-    disableFutureDates = false,
-    disabled: disabledProp,
-    containerClassName,
-    labelClassName,
-    errorClassName,
-    triggerClassName,
-    popoverContentClassName,
-}: FormDatePickerFieldProps) {
+export function FormDatePickerField(props: FormDatePickerFieldProps) {
+    const {
+        label = undefined,
+        required = false,
+        error,
+        placeholder = 'Seleccionar fecha',
+        id: idProp,
+        disableFutureDates = false,
+        disabled: disabledProp,
+        containerClassName,
+        labelClassName,
+        errorClassName,
+        triggerClassName,
+        popoverContentClassName,
+        portalled = true,
+    } = props;
+
+    const isNamedField = 'name' in props && props.name !== undefined;
+    const [internalValue, setInternalValue] = useState(
+        isNamedField ? (props.defaultValue ?? '') : '',
+    );
+
+    const value = isNamedField ? internalValue : props.value;
+
+    const handleChange = (next: string) => {
+        if (isNamedField) {
+            setInternalValue(next);
+        } else {
+            props.onChange(next);
+        }
+    };
+
     const baseId = useId();
     const fieldId = idProp ?? baseId;
     const errorMessageId = `${baseId}-error`;
@@ -83,15 +99,20 @@ export function FormDatePickerField({
     const ariaDescribedBy =
         describedByParts.length > 0 ? describedByParts.join(' ') : undefined;
 
+    const [open, setOpen] = useState(false);
+
     return (
         <div className={cn('grid w-full gap-2', containerClassName)}>
+            {isNamedField ? (
+                <input type="hidden" name={props.name} value={value} />
+            ) : null}
             {label ? (
                 <Label htmlFor={fieldId} className={labelClassName}>
                     {label}
                     {required ? <span aria-hidden="true"> (*)</span> : null}
                 </Label>
             ) : null}
-            <Popover>
+            <Popover open={open} onOpenChange={setOpen} modal>
                 <PopoverTrigger asChild>
                     <Button
                         id={fieldId}
@@ -115,11 +136,11 @@ export function FormDatePickerField({
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent
+                    portalled={portalled}
                     align="start"
-                    className={cn(
-                        'z-60 w-auto border-border p-0 shadow-md',
-                        popoverContentClassName,
-                    )}
+                    className={cn('w-auto border-border p-0 shadow-md', popoverContentClassName)}
+                    onOpenAutoFocus={(event) => event.preventDefault()}
+                    onCloseAutoFocus={(event) => event.preventDefault()}
                 >
                     <Calendar
                         locale={es}
@@ -128,12 +149,14 @@ export function FormDatePickerField({
                         selected={selected}
                         onSelect={(date) => {
                             if (!date) {
-                                onChange('');
+                                handleChange('');
+                                setOpen(false);
 
                                 return;
                             }
 
-                            onChange(format(date, 'yyyy-MM-dd'));
+                            handleChange(format(date, 'yyyy-MM-dd'));
+                            setOpen(false);
                         }}
                         disabled={disabledMatchers}
                     />

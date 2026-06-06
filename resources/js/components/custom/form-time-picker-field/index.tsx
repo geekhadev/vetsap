@@ -124,13 +124,10 @@ export function FormTimePickerField({
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                    portalled={false}
+                    portalled
                     side={popoverSide}
                     align="start"
-                    className={cn(
-                        'z-[100] w-auto border-border p-3 shadow-md',
-                        popoverContentClassName,
-                    )}
+                    className={cn('w-auto border-border p-3 shadow-md', popoverContentClassName)}
                     onOpenAutoFocus={(event) => event.preventDefault()}
                 >
                     <div className="flex items-center gap-2">

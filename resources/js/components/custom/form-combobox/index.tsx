@@ -124,7 +124,7 @@ export function FormCombobox({
                 <PopoverContent
                     align="start"
                     className={cn(
-                        'z-60 w-(--radix-popover-trigger-width) p-0',
+                        'w-(--radix-popover-trigger-width) p-0',
                         popoverContentClassName,
                     )}
                 >

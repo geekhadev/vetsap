@@ -1,19 +1,23 @@
-import { Head } from '@inertiajs/react';
-import { CirclePlus } from 'lucide-react';
-import { useMemo } from 'react';
+import { Head, usePage } from '@inertiajs/react';
+import { CirclePlus, PawPrint, PencilIcon, TrashIcon } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import { DocumentBadge } from '@/components/custom/document-badge';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
-import { buildTabledataCrudActionsColumn } from '@/components/custom/tabledata-crud-actions';
+import { buildTabledataConfiguredStatusColumn } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
 import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
+import {
+    hasCustomerPatientsConfigured,
+} from '@/pages/medic/patients/types';
 import {
     CONFIG_TABLEDATA,
 } from '@/pages/sale/customers/config';
 import type { CustomersIndexPageProps } from '@/pages/sale/customers/config';
+import { CustomerPatientsForm } from '@/pages/sale/customers/customer-patients-form';
 import { CustomersIndexFilters } from '@/pages/sale/customers/filters';
 import { CustomerForm } from '@/pages/sale/customers/form';
 import { useCustomersIndex } from '@/pages/sale/customers/hooks/use-index';
@@ -23,10 +27,34 @@ import type {
     CustomersIndexFiltersDraftFull,
 } from '@/pages/sale/customers/types';
 
-function CustomersIndex({ can }: Pick<CustomersIndexPageProps, 'can'>) {
+function CustomersIndex() {
+    const { can, species, data: customersPage } = usePage<CustomersIndexPageProps>().props;
     const { deleteRow } = useCustomersIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Customer>();
+    const [patientsCustomerId, setPatientsCustomerId] = useState<string | null>(null);
+    const [patientsFormOpen, setPatientsFormOpen] = useState(false);
+
+    const patientsCustomer = useMemo(() => {
+        if (patientsCustomerId === null) {
+            return null;
+        }
+
+        return customersPage.data.find((row) => row.id === patientsCustomerId) ?? null;
+    }, [customersPage.data, patientsCustomerId]);
+
+    const openPatients = useCallback((row: Customer) => {
+        setPatientsCustomerId(row.id);
+        setPatientsFormOpen(true);
+    }, []);
+
+    const handlePatientsFormOpenChange = useCallback((open: boolean) => {
+        setPatientsFormOpen(open);
+
+        if (!open) {
+            setPatientsCustomerId(null);
+        }
+    }, []);
 
     const columns = useMemo<TabledataColumn<Customer>[]>(
         () => [
@@ -59,13 +87,67 @@ function CustomersIndex({ can }: Pick<CustomersIndexPageProps, 'can'>) {
                 sortable: false,
                 render: (row) => row.phone ?? '—',
             },
-            buildTabledataCrudActionsColumn<Customer>({
-                can,
-                onEdit: openEdit,
-                onDelete: deleteRow,
+            buildTabledataConfiguredStatusColumn<Customer>({
+                key: 'patients_status',
+                label: 'Pacientes',
+                isConfigured: hasCustomerPatientsConfigured,
+                icon: PawPrint,
             }),
+            {
+                key: 'actions',
+                label: '',
+                sortable: false,
+                hideable: false,
+                headerClassName: 'w-0 text-right',
+                render: (row) => {
+                    const patientsConfigured = hasCustomerPatientsConfigured(row);
+
+                    return (
+                        <div className="flex justify-end gap-1">
+                            {can.patients.update ? (
+                                <Button
+                                    variant={patientsConfigured ? 'outline' : 'destructive'}
+                                    size="icon"
+                                    type="button"
+                                    title={
+                                        patientsConfigured
+                                            ? 'Gestionar pacientes'
+                                            : 'Sin pacientes registrados'
+                                    }
+                                    onClick={() => openPatients(row)}
+                                >
+                                    <PawPrint className="size-3" />
+                                </Button>
+                            ) : null}
+                            {can.update ? (
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    type="button"
+                                    title="Editar cliente"
+                                    onClick={() => openEdit(row)}
+                                >
+                                    <PencilIcon className="size-3" />
+                                </Button>
+                            ) : null}
+                            {can.delete ? (
+                                <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="p-0.5"
+                                    type="button"
+                                    title="Eliminar"
+                                    onClick={() => deleteRow(row)}
+                                >
+                                    <TrashIcon className="size-3" />
+                                </Button>
+                            ) : null}
+                        </div>
+                    );
+                },
+            },
         ],
-        [can, deleteRow, openEdit],
+        [can.delete, can.patients.update, can.update, deleteRow, openEdit, openPatients],
     );
 
     return (
@@ -76,6 +158,14 @@ function CustomersIndex({ can }: Pick<CustomersIndexPageProps, 'can'>) {
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
                 entity={editingEntity}
+            />
+
+            <CustomerPatientsForm
+                open={patientsFormOpen}
+                onOpenChange={handlePatientsFormOpenChange}
+                customer={patientsCustomer}
+                speciesOptions={species}
+                can={can.patients}
             />
 
             <TabledataProvider<Customer, CustomerListFilters, CustomersIndexFiltersDraftFull>

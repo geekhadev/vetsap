@@ -131,6 +131,11 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'doctors',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Pacientes',
+                        'module_slug' => 'patients',
+                        'permissions' => $permissions_crud,
+                    ],
                 ],
             ],
             [

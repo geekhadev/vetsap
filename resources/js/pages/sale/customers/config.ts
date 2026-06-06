@@ -5,6 +5,7 @@ import type {
     CustomerListFilters,
     CustomersIndexCan,
     CustomersIndexFiltersDraftFull,
+    SpeciesOption,
 } from '@/pages/sale/customers/types';
 import { CUSTOMERS_INDEX_MODULE_FILTER_KEYS } from '@/pages/sale/customers/types';
 import { dashboard } from '@/routes';
@@ -15,6 +16,7 @@ import type { Paginated } from '@/types/pagination';
 export type CustomersIndexPageProps = {
     data: Paginated<Customer>;
     filters: CustomersIndexFiltersDraftFull;
+    species: SpeciesOption[];
     can: CustomersIndexCan;
 };
 

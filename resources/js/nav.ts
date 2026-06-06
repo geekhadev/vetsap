@@ -29,6 +29,7 @@ import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { index as doctorsIndex } from '@/routes/medic/doctors';
+import { index as patientsIndex } from '@/routes/medic/patients';
 import { index as servicesIndex } from '@/routes/medic/services';
 import { index as specialtiesIndex } from '@/routes/medic/specialties';
 import { index as speciesIndex } from '@/routes/medic/species';
@@ -185,6 +186,12 @@ export const mainNavItems: NavItem[] = [
                 href: doctorsIndex(),
                 icon: UserRound,
                 permission: 'medic.doctors.list',
+            },
+            {
+                title: 'Pacientes',
+                href: patientsIndex(),
+                icon: PawPrint,
+                permission: 'medic.patients.list',
             },
         ],
     },

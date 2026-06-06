@@ -11,6 +11,8 @@ use App\Http\Requests\Sale\CustomerListRequest;
 use App\Http\Requests\Sale\CustomerStoreRequest;
 use App\Http\Requests\Sale\CustomerUpdateRequest;
 use App\Models\Company;
+use App\Models\Medic\Patient;
+use App\Models\Medic\Species;
 use App\Models\Sale\Customer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -41,10 +43,22 @@ class CustomersController extends Controller
         return Inertia::render('sale/customers/index', [
             'data' => $data,
             'filters' => $request->filtersForFrontend(),
+            'species' => $company instanceof Company
+                ? Species::query()
+                    ->forCompany($company->id)
+                    ->where('is_active', true)
+                    ->orderBy('name')
+                    ->get(['id', 'name'])
+                : [],
             'can' => [
                 'create' => $user?->can('create', Customer::class) ?? false,
                 'update' => $user?->can('updateAny', Customer::class) ?? false,
                 'delete' => $user?->can('deleteAny', Customer::class) ?? false,
+                'patients' => [
+                    'create' => $user?->can('create', Patient::class) ?? false,
+                    'update' => $user?->can('updateAny', Patient::class) ?? false,
+                    'delete' => $user?->can('deleteAny', Patient::class) ?? false,
+                ],
             ],
         ]);
     }
