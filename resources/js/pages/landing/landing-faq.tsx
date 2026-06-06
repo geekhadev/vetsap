@@ -23,28 +23,30 @@ export function LandingFaq() {
                 </p>
             </div>
 
-            <Accordion type="single" collapsible className="mt-12 w-full">
+            <div className="mt-12 w-full space-y-10">
                 {landingFaqGroups.map((group, groupIndex) => (
-                    <div key={group.label} className={groupIndex > 0 ? 'mt-10' : undefined}>
+                    <div key={group.label}>
                         <p className="mb-2 text-xs font-semibold tracking-wide text-cyan-700 uppercase">
                             {group.label}
                         </p>
-                        {group.items.map((item, itemIndex) => (
-                            <AccordionItem
-                                key={faqItemValue(groupIndex, itemIndex)}
-                                value={faqItemValue(groupIndex, itemIndex)}
-                            >
-                                <AccordionTrigger className="text-base font-medium">
-                                    {item.question}
-                                </AccordionTrigger>
-                                <AccordionContent className="text-base leading-relaxed">
-                                    {item.answer}
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
+                        <Accordion type="single" collapsible className="w-full">
+                            {group.items.map((item, itemIndex) => (
+                                <AccordionItem
+                                    key={faqItemValue(groupIndex, itemIndex)}
+                                    value={faqItemValue(groupIndex, itemIndex)}
+                                >
+                                    <AccordionTrigger className="text-base font-medium">
+                                        {item.question}
+                                    </AccordionTrigger>
+                                    <AccordionContent className="text-base leading-relaxed">
+                                        {item.answer}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
                     </div>
                 ))}
-            </Accordion>
+            </div>
         </div>
     );
 }
