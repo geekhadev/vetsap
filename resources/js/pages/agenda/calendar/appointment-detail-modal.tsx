@@ -3,13 +3,12 @@ import {
     ArrowRight,
     Calculator,
     CalendarDays,
-    ChevronDown,
     Mail,
     MapPin,
     Phone,
 } from 'lucide-react';
-import { useEffect  } from 'react';
-import type {ReactNode} from 'react';
+import { useCallback, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,13 +23,19 @@ import {
     appointmentStatusColorToDotClass,
 } from '@/lib/appointment-status-colors';
 import { cn } from '@/lib/utils';
+import { AppointmentStatusSelector } from '@/pages/agenda/calendar/appointment-status-selector';
 import { useAppointmentDetail } from '@/pages/agenda/calendar/hooks/use-appointment-detail';
-import type { AppointmentDetail } from '@/pages/agenda/calendar/types';
+import { useChangeAppointmentStatus } from '@/pages/agenda/calendar/hooks/use-change-appointment-status';
+import type {
+    AppointmentDetail,
+    AppointmentStatusOption,
+} from '@/pages/agenda/calendar/types';
 
 type AppointmentDetailModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     appointmentId: string | null;
+    appointmentStatuses: AppointmentStatusOption[];
     canUpdate: boolean;
 };
 
@@ -98,15 +103,19 @@ function DetailRow({
 
 function AppointmentDetailContent({
     appointment,
+    appointmentStatuses,
     canUpdate,
+    statusChanging,
+    statusChangeError,
+    onStatusChange,
 }: {
     appointment: AppointmentDetail;
+    appointmentStatuses: AppointmentStatusOption[];
     canUpdate: boolean;
+    statusChanging: boolean;
+    statusChangeError: string | null;
+    onStatusChange: (statusId: string) => void;
 }) {
-    const statusDotClass = appointmentStatusColorToDotClass(
-        appointment.status.color,
-    );
-
     const patientMeta = joinDetailParts([
         formatPatientSexLabel(appointment.patient.sex),
         appointment.patient.age_years !== null
@@ -152,24 +161,36 @@ function AppointmentDetailContent({
                 ) : null}
             </div>
 
-            <div className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">
-                <div className="flex min-w-0 items-center gap-2">
+            {canUpdate ? (
+                <div className="space-y-1">
+                    <AppointmentStatusSelector
+                        currentStatus={appointment.status}
+                        statuses={appointmentStatuses}
+                        changing={statusChanging}
+                        onStatusChange={onStatusChange}
+                    />
+                    {statusChangeError ? (
+                        <p className="text-destructive text-xs" role="alert">
+                            {statusChangeError}
+                        </p>
+                    ) : null}
+                </div>
+            ) : (
+                <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
                     <span
                         aria-hidden
                         className={cn(
                             'size-2.5 shrink-0 rounded-full',
-                            statusDotClass,
+                            appointmentStatusColorToDotClass(
+                                appointment.status.color,
+                            ),
                         )}
                     />
-                    <span className="truncate text-sm">
+                    <span className="truncate">
                         Cita · {appointment.status.name}
                     </span>
                 </div>
-                <ChevronDown
-                    aria-hidden
-                    className="size-4 shrink-0 text-muted-foreground"
-                />
-            </div>
+            )}
 
             <DetailSection>
                 <DetailRow className="text-base font-medium text-primary">
@@ -272,18 +293,41 @@ export function AppointmentDetailModal({
     open,
     onOpenChange,
     appointmentId,
+    appointmentStatuses,
     canUpdate,
 }: AppointmentDetailModalProps) {
-    const { appointment, loading, error, fetchAppointment, reset } =
+    const { appointment, setAppointment, loading, error, fetchAppointment, reset } =
         useAppointmentDetail();
+    const {
+        changeStatus,
+        changing: statusChanging,
+        error: statusChangeError,
+        clearError: clearStatusChangeError,
+    } = useChangeAppointmentStatus();
+
+    const handleStatusChange = useCallback(
+        async (statusId: string) => {
+            if (appointment === null || appointmentId === null) {
+                return;
+            }
+
+            const updated = await changeStatus(appointmentId, statusId);
+
+            if (updated !== null) {
+                setAppointment(updated);
+            }
+        },
+        [appointment, appointmentId, changeStatus, setAppointment],
+    );
 
     useEffect(() => {
         if (!open || appointmentId === null) {
             return;
         }
 
+        clearStatusChangeError();
         void fetchAppointment(appointmentId);
-    }, [open, appointmentId, fetchAppointment]);
+    }, [open, appointmentId, fetchAppointment, clearStatusChangeError]);
 
     useEffect(() => {
         if (!open) {
@@ -312,7 +356,11 @@ export function AppointmentDetailModal({
                 {!loading && appointment ? (
                     <AppointmentDetailContent
                         appointment={appointment}
+                        appointmentStatuses={appointmentStatuses}
                         canUpdate={canUpdate}
+                        statusChanging={statusChanging}
+                        statusChangeError={statusChangeError}
+                        onStatusChange={handleStatusChange}
                     />
                 ) : null}
             </DialogContent>

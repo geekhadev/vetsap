@@ -40,6 +40,7 @@ export function useAppointmentDetail() {
 
     return {
         appointment,
+        setAppointment,
         loading,
         error,
         fetchAppointment,

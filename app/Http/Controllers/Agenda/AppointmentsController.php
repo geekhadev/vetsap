@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Agenda;
 
+use App\Actions\Agenda\Appointments\ChangeAppointmentStatusAction;
 use App\Actions\Agenda\Appointments\CreateAppointmentAction;
 use App\Actions\Agenda\Appointments\ShowAppointmentAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Agenda\AppointmentStatusChangeRequest;
 use App\Http\Requests\Agenda\AppointmentStoreRequest;
 use App\Models\Agenda\Appointment;
 use App\Models\Company;
@@ -21,6 +23,29 @@ class AppointmentsController extends Controller
         $this->authorize('view', $appointment);
 
         return response()->json($action->execute($appointment));
+    }
+
+    public function updateStatus(
+        AppointmentStatusChangeRequest $request,
+        Appointment $appointment,
+        ChangeAppointmentStatusAction $changeStatus,
+        ShowAppointmentAction $show,
+    ): JsonResponse {
+        $this->authorize('update', $appointment);
+
+        $user = $request->user();
+        if ($user === null) {
+            abort(403);
+        }
+
+        $appointment = $changeStatus->execute(
+            $appointment,
+            $request->appointmentStatusId(),
+            $user,
+            $request->statusChangeNotes(),
+        );
+
+        return response()->json($show->execute($appointment));
     }
 
     public function store(
