@@ -36,6 +36,7 @@ class Doctor extends Model
         'first_name',
         'last_name',
         'document_number',
+        'email',
         'is_active',
         'use_web',
         'created_at',

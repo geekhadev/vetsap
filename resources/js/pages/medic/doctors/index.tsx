@@ -94,6 +94,18 @@ function DoctorsIndex() {
                     />
                 ),
             },
+            {
+                key: 'email',
+                label: 'Email',
+                sortable: true,
+                render: (row) => row.email ?? '—',
+            },
+            {
+                key: 'phone',
+                label: 'Teléfono',
+                sortable: false,
+                render: (row) => row.phone ?? '—',
+            },
             buildTabledataConfiguredStatusColumn<Doctor>({
                 key: 'services_status',
                 label: 'Servicios',
