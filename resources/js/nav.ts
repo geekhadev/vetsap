@@ -1,6 +1,7 @@
 import {
     Boxes,
     Building2,
+    CalendarCog,
     CalendarDays,
     CalendarOff,
     ClipboardList,
@@ -31,6 +32,7 @@ import { index as systemsIndex } from '@/routes/administration/systems';
 import { index as appointmentStatusesIndex } from '@/routes/agenda/appointment-statuses';
 import { index as calendarIndex } from '@/routes/agenda/calendar';
 import { index as holidaysIndex } from '@/routes/agenda/holidays';
+import { index as calendarSettingsIndex } from '@/routes/configuration/calendar-settings';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
@@ -245,6 +247,11 @@ export const mainNavItems: NavItem[] = [
                 title: 'Usuarios',
                 href: usersIndex(),
                 icon: Users,
+            },
+            {
+                title: 'Calendario',
+                href: calendarSettingsIndex(),
+                icon: CalendarCog,
             },
         ],
     },
