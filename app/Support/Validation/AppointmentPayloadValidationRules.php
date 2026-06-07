@@ -8,6 +8,7 @@ use App\Models\Agenda\AppointmentStatus;
 use App\Models\Agenda\Holiday;
 use App\Models\CompanyOffice;
 use App\Models\Medic\Doctor;
+use App\Models\Medic\DoctorScheduleBlock;
 use App\Models\Medic\Patient;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Carbon;
@@ -64,8 +65,7 @@ final class AppointmentPayloadValidationRules
         );
         $endsAt = $startsAt->copy()->addMinutes($durationMinutes);
 
-        self::assertNotHoliday($companyId, $startsAt);
-        self::assertDoctorAvailable(
+        self::assertAppointmentSchedulingAvailability(
             $companyId,
             (string) $validated['doctor_id'],
             $startsAt,
@@ -150,15 +150,75 @@ final class AppointmentPayloadValidationRules
         }
     }
 
+    /**
+     * @return array<string, ValidationRule|array<int, mixed|string>|string>
+     */
+    public static function rescheduleRules(): array
+    {
+        return [
+            'appointment_date' => ['required', 'date', 'after_or_equal:today'],
+            'starts_at_time' => ['required', 'date_format:H:i'],
+        ];
+    }
+
+    /**
+     * @return array{starts_at: Carbon, ends_at: Carbon}
+     */
+    public static function validatedRescheduleWindow(
+        array $validated,
+        string $companyId,
+        int $durationMinutes,
+        string $doctorId,
+        string $exceptAppointmentId,
+    ): array {
+        $startsAt = Carbon::parse(
+            sprintf('%s %s:00', $validated['appointment_date'], $validated['starts_at_time']),
+        );
+        $endsAt = $startsAt->copy()->addMinutes($durationMinutes);
+
+        self::assertAppointmentSchedulingAvailability(
+            $companyId,
+            $doctorId,
+            $startsAt,
+            $endsAt,
+            $exceptAppointmentId,
+        );
+
+        return [
+            'starts_at' => $startsAt,
+            'ends_at' => $endsAt,
+        ];
+    }
+
+    protected static function assertAppointmentSchedulingAvailability(
+        string $companyId,
+        string $doctorId,
+        Carbon $startsAt,
+        Carbon $endsAt,
+        ?string $exceptAppointmentId = null,
+    ): void {
+        self::assertNotHoliday($companyId, $startsAt);
+        self::assertNotInPast($startsAt);
+        self::assertWithinDoctorSchedule($doctorId, $startsAt, $endsAt);
+        self::assertDoctorAvailable(
+            $companyId,
+            $doctorId,
+            $startsAt,
+            $endsAt,
+            $exceptAppointmentId,
+        );
+    }
+
     protected static function assertDoctorAvailable(
         string $companyId,
         string $doctorId,
         Carbon $startsAt,
         Carbon $endsAt,
+        ?string $exceptAppointmentId = null,
     ): void {
         $overlapExists = Appointment::query()
             ->forCompany($companyId)
-            ->overlappingForDoctor($doctorId, $startsAt, $endsAt)
+            ->overlappingForDoctor($doctorId, $startsAt, $endsAt, $exceptAppointmentId)
             ->exists();
 
         if ($overlapExists) {
@@ -166,6 +226,63 @@ final class AppointmentPayloadValidationRules
                 'starts_at_time' => 'El doctor ya tiene una cita en ese horario.',
             ]);
         }
+    }
+
+    protected static function assertNotInPast(Carbon $startsAt): void
+    {
+        if ($startsAt->isPast()) {
+            throw ValidationException::withMessages([
+                'starts_at_time' => 'No se puede agendar en una fecha u hora pasada.',
+            ]);
+        }
+    }
+
+    protected static function assertWithinDoctorSchedule(
+        string $doctorId,
+        Carbon $startsAt,
+        Carbon $endsAt,
+    ): void {
+        $dayOfWeek = $startsAt->dayOfWeekIso;
+
+        $blocks = DoctorScheduleBlock::query()
+            ->where('doctor_id', $doctorId)
+            ->where('day_of_week', $dayOfWeek)
+            ->get(['starts_at', 'ends_at']);
+
+        if ($blocks->isEmpty()) {
+            throw ValidationException::withMessages([
+                'appointment_date' => 'El doctor no tiene agenda configurada para ese día.',
+            ]);
+        }
+
+        $startMinutes = $startsAt->hour * 60 + $startsAt->minute;
+        $endMinutes = $endsAt->hour * 60 + $endsAt->minute;
+
+        if ($endsAt->toDateString() !== $startsAt->toDateString()) {
+            throw ValidationException::withMessages([
+                'starts_at_time' => 'La cita no cabe en el horario del día seleccionado.',
+            ]);
+        }
+
+        $fits = $blocks->contains(static function (DoctorScheduleBlock $block) use ($startMinutes, $endMinutes): bool {
+            $blockStart = self::timeToMinutes(substr((string) $block->starts_at, 0, 5));
+            $blockEnd = self::timeToMinutes(substr((string) $block->ends_at, 0, 5));
+
+            return $startMinutes >= $blockStart && $endMinutes <= $blockEnd;
+        });
+
+        if (! $fits) {
+            throw ValidationException::withMessages([
+                'starts_at_time' => 'Fuera del horario de atención del doctor.',
+            ]);
+        }
+    }
+
+    protected static function timeToMinutes(string $time): int
+    {
+        [$hours, $minutes] = array_map(intval(...), explode(':', $time));
+
+        return $hours * 60 + $minutes;
     }
 
     protected static function assertPatientBelongsToCustomer(string $patientId, string $customerId): void

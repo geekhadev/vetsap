@@ -1,15 +1,15 @@
-import { isBefore, startOfDay } from 'date-fns';
 import { useMemo, useState } from 'react';
 import { FormCombobox } from '@/components/custom/form-combobox';
-import { FormDateTimePickerField } from '@/components/custom/form-datetime-picker-field';
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormTextarea } from '@/components/custom/form-textarea';
-import { CALENDAR_SLOT_DURATION_MINUTES } from '@/components/custom/full-calendar/config';
+import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
 import { InfoBadge } from '@/components/custom/info-badge';
+import { AppointmentScheduleField } from '@/pages/agenda/calendar/appointment-schedule-field';
 import { useAppointmentForm } from '@/pages/agenda/calendar/hooks/use-appointment-form';
 import {
     buildInitialAppointmentFormState,
+    resolveDoctorScheduleWindows,
     resolveDoctorsForService,
     resolveSingleDoctorId,
 } from '@/pages/agenda/calendar/types';
@@ -24,6 +24,7 @@ type AppointmentFormProps = {
     onOpenChange: (open: boolean) => void;
     formOptions: AppointmentFormOptions;
     defaults: AppointmentFormDefaults;
+    holidays: CalendarHoliday[];
 };
 
 export function AppointmentForm({
@@ -31,6 +32,7 @@ export function AppointmentForm({
     onOpenChange,
     formOptions,
     defaults,
+    holidays,
 }: AppointmentFormProps) {
     const { formProps, headTitle, description } = useAppointmentForm();
 
@@ -105,6 +107,20 @@ export function AppointmentForm({
         formOptions.offices.length === 1
             ? (formOptions.offices[0]?.id ?? '')
             : formState.officeId;
+
+    const doctorScheduleWindows = useMemo(
+        () =>
+            resolveDoctorScheduleWindows(
+                formOptions.doctors,
+                resolvedDoctorId,
+            ),
+        [formOptions.doctors, resolvedDoctorId],
+    );
+
+    const scheduleValidationEnabled =
+        resolvedDoctorId !== '' &&
+        selectedService?.duration_minutes !== null &&
+        selectedService?.duration_minutes !== undefined;
 
     return (
         <InertiaFormDialog<AppointmentFormFields>
@@ -232,33 +248,30 @@ export function AppointmentForm({
                         </div>
 
                         <div className="min-w-0">
-                            <FormDateTimePickerField
-                                label="Fecha y hora"
-                                required
+                            <AppointmentScheduleField
                                 value={{
-                                    date: formState.appointmentDate,
-                                    time: formState.startsAtTime,
+                                    appointmentDate: formState.appointmentDate,
+                                    startsAtTime: formState.startsAtTime,
                                 }}
-                                onChange={({ date, time }) =>
+                                onChange={({ appointmentDate, startsAtTime }) =>
                                     setFormState((current) => ({
                                         ...current,
-                                        appointmentDate: date,
-                                        startsAtTime: time,
+                                        appointmentDate,
+                                        startsAtTime,
                                     }))
                                 }
-                                minuteStep={CALENDAR_SLOT_DURATION_MINUTES}
+                                durationMinutes={
+                                    selectedService?.duration_minutes ?? null
+                                }
+                                doctorScheduleWindows={doctorScheduleWindows}
+                                holidays={holidays}
+                                validateSelection={scheduleValidationEnabled}
+                                required
                                 error={
                                     errors.appointment_date ??
                                     errors.starts_at_time
                                 }
                                 id="appointment-scheduled-at"
-                                disabled={(date) =>
-                                    isBefore(
-                                        startOfDay(date),
-                                        startOfDay(new Date()),
-                                    )
-                                }
-                                popoverContentClassName="z-[100]"
                             />
                         </div>
                     </div>

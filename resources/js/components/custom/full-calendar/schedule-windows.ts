@@ -1,3 +1,4 @@
+import { addMinutes } from 'date-fns';
 import { toIsoDayOfWeek } from './blocked-days';
 import {
     CALENDAR_SLOT_DURATION_MINUTES,
@@ -136,6 +137,46 @@ export function isDateTimeWithinSchedule(
 
     return mergedWindows.some(
         (window) => roundedStart >= window.start && roundedStart < window.end,
+    );
+}
+
+export function isAppointmentWithinSchedule(
+    startDate: Date,
+    durationMinutes: number,
+    scheduleWindows: CalendarScheduleWindow[],
+    scheduledDaysOfWeek: Set<number>,
+    holidayDates: Set<string>,
+): boolean {
+    if (isCalendarHolidayDate(startDate, holidayDates)) {
+        return false;
+    }
+
+    const dayOfWeek = toIsoDayOfWeek(startDate);
+
+    if (!scheduledDaysOfWeek.has(dayOfWeek)) {
+        return false;
+    }
+
+    const mergedWindows = getMergedWindowsForDay(dayOfWeek, scheduleWindows);
+
+    if (mergedWindows.length === 0) {
+        return false;
+    }
+
+    const endDate = addMinutes(startDate, durationMinutes);
+
+    if (toCalendarDateKey(endDate) !== toCalendarDateKey(startDate)) {
+        return false;
+    }
+
+    const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
+    const endMinutes = endDate.getHours() * 60 + endDate.getMinutes();
+    const roundedStart =
+        Math.floor(startMinutes / CALENDAR_SLOT_DURATION_MINUTES) *
+        CALENDAR_SLOT_DURATION_MINUTES;
+
+    return mergedWindows.some(
+        (window) => roundedStart >= window.start && endMinutes <= window.end,
     );
 }
 

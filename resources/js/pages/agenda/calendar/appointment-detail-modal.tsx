@@ -1,14 +1,13 @@
 import { format } from 'date-fns';
 import {
     ArrowRight,
-    Calculator,
-    CalendarDays,
     Mail,
     MapPin,
     Phone,
 } from 'lucide-react';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,11 +22,14 @@ import {
     appointmentStatusColorToDotClass,
 } from '@/lib/appointment-status-colors';
 import { cn } from '@/lib/utils';
+import { AppointmentScheduleAutosaveField } from '@/pages/agenda/calendar/appointment-schedule-field';
 import { AppointmentStatusSelector } from '@/pages/agenda/calendar/appointment-status-selector';
 import { useAppointmentDetail } from '@/pages/agenda/calendar/hooks/use-appointment-detail';
 import { useChangeAppointmentStatus } from '@/pages/agenda/calendar/hooks/use-change-appointment-status';
+import { useRescheduleAppointment } from '@/pages/agenda/calendar/hooks/use-reschedule-appointment';
 import type {
     AppointmentDetail,
+    AppointmentScheduleValue,
     AppointmentStatusOption,
 } from '@/pages/agenda/calendar/types';
 
@@ -36,15 +38,9 @@ type AppointmentDetailModalProps = {
     onOpenChange: (open: boolean) => void;
     appointmentId: string | null;
     appointmentStatuses: AppointmentStatusOption[];
+    holidays: CalendarHoliday[];
     canUpdate: boolean;
 };
-
-function formatAppointmentSchedule(startsAt: string, endsAt: string): string {
-    const start = new Date(startsAt);
-    const end = new Date(endsAt);
-
-    return `${format(start, 'dd/MM/yyyy')} / ${format(start, 'HH:mm')} – ${format(end, 'HH:mm')}`;
-}
 
 function formatPriceClp(price: string | null): string {
     if (price === null || price.trim() === '') {
@@ -107,14 +103,24 @@ function AppointmentDetailContent({
     canUpdate,
     statusChanging,
     statusChangeError,
+    rescheduling,
+    rescheduleError,
+    holidays,
     onStatusChange,
+    onScheduleChange,
+    scheduleFieldKey,
 }: {
     appointment: AppointmentDetail;
     appointmentStatuses: AppointmentStatusOption[];
     canUpdate: boolean;
     statusChanging: boolean;
     statusChangeError: string | null;
+    rescheduling: boolean;
+    rescheduleError: string | null;
+    holidays: CalendarHoliday[];
+    scheduleFieldKey: number;
     onStatusChange: (statusId: string) => void;
+    onScheduleChange: (schedule: AppointmentScheduleValue) => void;
 }) {
     const patientMeta = joinDetailParts([
         formatPatientSexLabel(appointment.patient.sex),
@@ -138,28 +144,17 @@ function AppointmentDetailContent({
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3 border-b pb-4">
-                <div className="flex min-w-0 items-center gap-2 text-sm">
-                    <CalendarDays
-                        aria-hidden
-                        className="size-4 shrink-0 text-muted-foreground"
-                    />
-                    <span className="truncate font-medium">
-                        {formatAppointmentSchedule(
-                            appointment.starts_at,
-                            appointment.ends_at,
-                        )}
-                    </span>
-                </div>
-                {canUpdate ? (
-                    <button
-                        type="button"
-                        className="shrink-0 text-sm text-primary hover:underline"
-                    >
-                        Reagendar
-                    </button>
-                ) : null}
-            </div>
+            <AppointmentScheduleAutosaveField
+                key={`${appointment.starts_at}-${scheduleFieldKey}`}
+                startsAt={appointment.starts_at}
+                durationMinutes={appointment.duration_minutes}
+                doctorScheduleWindows={appointment.doctor.schedule_windows}
+                holidays={holidays}
+                canUpdate={canUpdate && !appointment.status.is_terminal}
+                saving={rescheduling}
+                error={rescheduleError}
+                onCommit={onScheduleChange}
+            />
 
             {canUpdate ? (
                 <div className="space-y-1">
@@ -263,10 +258,6 @@ function AppointmentDetailContent({
             ) : null}
 
             <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-end">
-                <Button type="button" variant="ghost" className="gap-2">
-                    <Calculator aria-hidden className="size-4" />
-                    Abrir caja
-                </Button>
                 <Button type="button" className="gap-2">
                     Iniciar atención
                     <ArrowRight aria-hidden className="size-4" />
@@ -294,6 +285,7 @@ export function AppointmentDetailModal({
     onOpenChange,
     appointmentId,
     appointmentStatuses,
+    holidays,
     canUpdate,
 }: AppointmentDetailModalProps) {
     const { appointment, setAppointment, loading, error, fetchAppointment, reset } =
@@ -304,6 +296,13 @@ export function AppointmentDetailModal({
         error: statusChangeError,
         clearError: clearStatusChangeError,
     } = useChangeAppointmentStatus();
+    const {
+        reschedule,
+        rescheduling,
+        error: rescheduleError,
+        clearError: clearRescheduleError,
+    } = useRescheduleAppointment();
+    const [scheduleFieldKey, setScheduleFieldKey] = useState(0);
 
     const handleStatusChange = useCallback(
         async (statusId: string) => {
@@ -320,14 +319,38 @@ export function AppointmentDetailModal({
         [appointment, appointmentId, changeStatus, setAppointment],
     );
 
+    const handleScheduleChange = useCallback(
+        async (schedule: AppointmentScheduleValue) => {
+            if (appointment === null || appointmentId === null) {
+                return;
+            }
+
+            const updated = await reschedule(appointmentId, schedule);
+
+            if (updated !== null) {
+                setAppointment(updated);
+            } else {
+                setScheduleFieldKey((current) => current + 1);
+            }
+        },
+        [appointment, appointmentId, reschedule, setAppointment],
+    );
+
     useEffect(() => {
         if (!open || appointmentId === null) {
             return;
         }
 
         clearStatusChangeError();
+        clearRescheduleError();
         void fetchAppointment(appointmentId);
-    }, [open, appointmentId, fetchAppointment, clearStatusChangeError]);
+    }, [
+        open,
+        appointmentId,
+        fetchAppointment,
+        clearStatusChangeError,
+        clearRescheduleError,
+    ]);
 
     useEffect(() => {
         if (!open) {
@@ -337,7 +360,7 @@ export function AppointmentDetailModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="gap-0 overflow-y-auto sm:max-w-md">
+            <DialogContent className="gap-0 overflow-y-auto sm:max-w-lg">
                 <DialogHeader className="sr-only">
                     <DialogTitle>Detalle de cita</DialogTitle>
                     <DialogDescription>
@@ -360,7 +383,12 @@ export function AppointmentDetailModal({
                         canUpdate={canUpdate}
                         statusChanging={statusChanging}
                         statusChangeError={statusChangeError}
+                        rescheduling={rescheduling}
+                        rescheduleError={rescheduleError}
+                        holidays={holidays}
+                        scheduleFieldKey={scheduleFieldKey}
                         onStatusChange={handleStatusChange}
+                        onScheduleChange={handleScheduleChange}
                     />
                 ) : null}
             </DialogContent>

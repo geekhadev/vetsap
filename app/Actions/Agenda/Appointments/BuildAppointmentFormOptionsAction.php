@@ -2,6 +2,7 @@
 
 namespace App\Actions\Agenda\Appointments;
 
+use App\Enums\Medic\DoctorScheduleDayOfWeek;
 use App\Models\CompanyOffice;
 use App\Models\Medic\Doctor;
 use App\Models\Medic\Patient;
@@ -11,7 +12,12 @@ final class BuildAppointmentFormOptionsAction
 {
     /**
      * @return array{
-     *     doctors: list<array{id: string, label: string, service_ids: list<string>}>,
+     *     doctors: list<array{
+     *         id: string,
+     *         label: string,
+     *         service_ids: list<string>,
+     *         schedule_windows: list<array{day_of_week: int, starts_at: string, ends_at: string}>,
+     *     }>,
      *     services: list<array{id: string, label: string, duration_minutes: int|null, price: string|null}>,
      *     patients: list<array{id: string, label: string, customer_id: string, search_text: string}>,
      *     offices: list<array{id: string, label: string}>,
@@ -22,7 +28,12 @@ final class BuildAppointmentFormOptionsAction
         $doctors = Doctor::query()
             ->forCompany($companyId)
             ->where('is_active', true)
-            ->with(['services:id'])
+            ->with([
+                'services:id',
+                'scheduleBlocks' => fn ($query) => $query
+                    ->orderBy('day_of_week')
+                    ->orderBy('starts_at'),
+            ])
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get(['id', 'first_name', 'last_name'])
@@ -30,6 +41,20 @@ final class BuildAppointmentFormOptionsAction
                 'id' => $doctor->id,
                 'label' => trim(sprintf('%s %s', $doctor->first_name, $doctor->last_name)),
                 'service_ids' => $doctor->services->pluck('id')->map(fn ($id): string => (string) $id)->values()->all(),
+                'schedule_windows' => $doctor->scheduleBlocks
+                    ->map(static function ($block): array {
+                        $dayOfWeek = $block->day_of_week;
+
+                        return [
+                            'day_of_week' => $dayOfWeek instanceof DoctorScheduleDayOfWeek
+                                ? $dayOfWeek->value
+                                : (int) $dayOfWeek,
+                            'starts_at' => substr((string) $block->starts_at, 0, 5),
+                            'ends_at' => substr((string) $block->ends_at, 0, 5),
+                        ];
+                    })
+                    ->values()
+                    ->all(),
             ])
             ->values()
             ->all();

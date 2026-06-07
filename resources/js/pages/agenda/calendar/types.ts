@@ -17,6 +17,7 @@ export type AppointmentFormDoctorOption = {
     id: string;
     label: string;
     service_ids: string[];
+    schedule_windows: AppointmentDoctorScheduleWindow[];
 };
 
 export type AppointmentFormServiceOption = {
@@ -71,6 +72,18 @@ export type AppointmentDetailPatient = {
     species_name: string | null;
 };
 
+export type AppointmentDoctorScheduleWindow = {
+    day_of_week: number;
+    starts_at: string;
+    ends_at: string;
+};
+
+export type AppointmentDetailDoctor = {
+    id: string;
+    label: string;
+    schedule_windows: AppointmentDoctorScheduleWindow[];
+};
+
 export type AppointmentDetailCustomer = {
     id: string;
     name: string;
@@ -97,7 +110,7 @@ export type AppointmentDetail = {
     status: AppointmentDetailStatus;
     patient: AppointmentDetailPatient;
     customer: AppointmentDetailCustomer;
-    doctor: { id: string; label: string };
+    doctor: AppointmentDetailDoctor;
     service: { id: string; name: string };
     office: { id: string; name: string } | null;
 };
@@ -137,6 +150,49 @@ export type AppointmentFormInitialState = {
     appointmentDate: string;
     startsAtTime: string;
 };
+
+export type AppointmentScheduleValue = {
+    appointmentDate: string;
+    startsAtTime: string;
+};
+
+export function parseAppointmentScheduleValue(
+    startsAt: string,
+): AppointmentScheduleValue {
+    const start = new Date(startsAt);
+
+    return {
+        appointmentDate: [
+            start.getFullYear(),
+            String(start.getMonth() + 1).padStart(2, '0'),
+            String(start.getDate()).padStart(2, '0'),
+        ].join('-'),
+        startsAtTime: [
+            String(start.getHours()).padStart(2, '0'),
+            String(start.getMinutes()).padStart(2, '0'),
+        ].join(':'),
+    };
+}
+
+export function appointmentScheduleValuesEqual(
+    left: AppointmentScheduleValue,
+    right: AppointmentScheduleValue,
+): boolean {
+    return (
+        left.appointmentDate === right.appointmentDate &&
+        left.startsAtTime === right.startsAtTime
+    );
+}
+
+export function resolveDoctorScheduleWindows(
+    doctors: AppointmentFormDoctorOption[],
+    doctorId: string,
+): AppointmentDoctorScheduleWindow[] {
+    return (
+        doctors.find((doctor) => doctor.id === doctorId)?.schedule_windows ??
+        []
+    );
+}
 
 export function buildDefaultAppointmentFormDefaults(): AppointmentFormDefaults {
     const now = new Date();

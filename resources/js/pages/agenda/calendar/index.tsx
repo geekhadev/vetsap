@@ -63,6 +63,7 @@ export default function CalendarIndex({
                 onOpenChange={setFormOpen}
                 formOptions={formOptions}
                 defaults={formDefaults}
+                holidays={holidays}
             />
 
             <AppointmentDetailModal
@@ -70,6 +71,7 @@ export default function CalendarIndex({
                 onOpenChange={handleDetailOpenChange}
                 appointmentId={selectedAppointmentId}
                 appointmentStatuses={appointmentStatuses}
+                holidays={holidays}
                 canUpdate={can.update}
             />
 

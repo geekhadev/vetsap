@@ -2,7 +2,9 @@
 
 namespace App\Actions\Agenda\Appointments;
 
+use App\Enums\Medic\DoctorScheduleDayOfWeek;
 use App\Models\Agenda\Appointment;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
 final class ShowAppointmentAction
@@ -16,6 +18,9 @@ final class ShowAppointmentAction
             'patient.species:id,name',
             'customer:id,name,phone,email,address,document_number',
             'doctor:id,first_name,last_name',
+            'doctor.scheduleBlocks' => fn ($query) => $query
+                ->orderBy('day_of_week')
+                ->orderBy('starts_at'),
             'service:id,name',
             'office:id,name',
             'appointmentStatus:id,name,color,is_terminal',
@@ -65,6 +70,20 @@ final class ShowAppointmentAction
             'doctor' => [
                 'id' => $doctor->id,
                 'label' => trim(sprintf('%s %s', $doctor->first_name, $doctor->last_name)),
+                'schedule_windows' => $doctor->scheduleBlocks
+                    ->map(static function ($block): array {
+                        $dayOfWeek = $block->day_of_week;
+
+                        return [
+                            'day_of_week' => $dayOfWeek instanceof DoctorScheduleDayOfWeek
+                                ? $dayOfWeek->value
+                                : (int) $dayOfWeek,
+                            'starts_at' => substr((string) $block->starts_at, 0, 5),
+                            'ends_at' => substr((string) $block->ends_at, 0, 5),
+                        ];
+                    })
+                    ->values()
+                    ->all(),
             ],
             'service' => [
                 'id' => $service->id,
@@ -76,7 +95,7 @@ final class ShowAppointmentAction
         ];
     }
 
-    private function resolveAgeYears(?Carbon $birthDate): ?int
+    private function resolveAgeYears(?CarbonInterface $birthDate): ?int
     {
         if ($birthDate === null) {
             return null;

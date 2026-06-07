@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Agenda;
 
 use App\Actions\Agenda\Appointments\ChangeAppointmentStatusAction;
 use App\Actions\Agenda\Appointments\CreateAppointmentAction;
+use App\Actions\Agenda\Appointments\RescheduleAppointmentAction;
 use App\Actions\Agenda\Appointments\ShowAppointmentAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Agenda\AppointmentRescheduleRequest;
 use App\Http\Requests\Agenda\AppointmentStatusChangeRequest;
 use App\Http\Requests\Agenda\AppointmentStoreRequest;
 use App\Models\Agenda\Appointment;
@@ -43,6 +45,28 @@ class AppointmentsController extends Controller
             $request->appointmentStatusId(),
             $user,
             $request->statusChangeNotes(),
+        );
+
+        return response()->json($show->execute($appointment));
+    }
+
+    public function updateSchedule(
+        AppointmentRescheduleRequest $request,
+        Appointment $appointment,
+        RescheduleAppointmentAction $reschedule,
+        ShowAppointmentAction $show,
+    ): JsonResponse {
+        $this->authorize('update', $appointment);
+
+        $user = $request->user();
+        if ($user === null) {
+            abort(403);
+        }
+
+        $appointment = $reschedule->execute(
+            $appointment,
+            $request->reschedulePayload(),
+            $user,
         );
 
         return response()->json($show->execute($appointment));
