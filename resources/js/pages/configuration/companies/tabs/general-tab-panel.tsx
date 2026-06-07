@@ -6,14 +6,19 @@ import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { DOCUMENT_OPTIONS } from '@/pages/configuration/companies/tabs/tab-config';
 import type { CompanyFormData } from '@/pages/configuration/companies/types';
-import { index as companiesIndex } from '@/routes/configuration/companies';
+import { dashboard } from '@/routes';
 
 type GeneralTabPanelProps = {
     form: InertiaFormProps<CompanyFormData>;
     isEdit: boolean;
+    hideCancel?: boolean;
 };
 
-export function GeneralTabPanel({ form, isEdit }: GeneralTabPanelProps) {
+export function GeneralTabPanel({
+    form,
+    isEdit,
+    hideCancel = false,
+}: GeneralTabPanelProps) {
     return (
         <>
             <div>
@@ -140,13 +145,15 @@ export function GeneralTabPanel({ form, isEdit }: GeneralTabPanelProps) {
                     labelLoading="Guardando…"
                     containerClassName="w-auto"
                 />
-                <FormLinkButton
-                    href={companiesIndex.url()}
-                    buttonVariant="outline"
-                    icon={<X />}
-                    label="Cancelar"
-                    containerClassName="w-auto"
-                />
+                {hideCancel ? null : (
+                    <FormLinkButton
+                        href={dashboard()}
+                        buttonVariant="outline"
+                        icon={<X />}
+                        label="Cancelar"
+                        containerClassName="w-auto"
+                    />
+                )}
             </div>
         </>
     );

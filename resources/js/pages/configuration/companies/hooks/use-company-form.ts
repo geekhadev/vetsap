@@ -1,22 +1,12 @@
-import { router, setLayoutProps, useForm, usePage } from '@inertiajs/react';
-import { useCallback, useLayoutEffect, useMemo } from 'react';
-import {
-    COMPANY_FORM_TAB_QUERY_KEY,
-    isCompanyFormTabId,
-    parseCompanyFormTabFromPageUrl,
-} from '@/pages/configuration/companies/company-form-tab-url';
+import { setLayoutProps, useForm } from '@inertiajs/react';
+import { useLayoutEffect, useMemo } from 'react';
+import { COMPANY_SETTINGS_PAGE } from '@/pages/configuration/companies/config';
 import type {
     CompaniesFormPageProps,
     CompanyFormData,
     CompanyFormRecord,
 } from '@/pages/configuration/companies/types';
-import { dashboard } from '@/routes';
-import {
-    edit,
-    index as companiesIndex,
-    store,
-    update,
-} from '@/routes/configuration/companies';
+import { store, update } from '@/routes/configuration/companies';
 
 function buildFormDefaults(company: CompanyFormRecord | null): CompanyFormData {
     return {
@@ -32,7 +22,6 @@ function buildFormDefaults(company: CompanyFormRecord | null): CompanyFormData {
 
 export function useCompanyForm({ company }: CompaniesFormPageProps) {
     const isEdit = company != null;
-    const page = usePage();
 
     const formDefaults = useMemo(() => buildFormDefaults(company), [company]);
 
@@ -46,114 +35,21 @@ export function useCompanyForm({ company }: CompaniesFormPageProps) {
         }
 
         form.transform((data) => {
-            const {
-                document_type: _documentType,
-                document_number: _documentNumber,
-                ...rest
-            } = data;
+            const rest = { ...data };
+            delete rest.document_type;
+            delete rest.document_number;
 
             return rest;
         });
     }, [company, form]);
 
-    const tab = useMemo(
-        () => parseCompanyFormTabFromPageUrl(page.url, isEdit),
-        [isEdit, page.url],
-    );
-
-    useLayoutEffect(() => {
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        if (!isEdit) {
-            const url = new URL(window.location.href);
-
-            if (!url.searchParams.has(COMPANY_FORM_TAB_QUERY_KEY)) {
-                return;
-            }
-
-            url.searchParams.delete(COMPANY_FORM_TAB_QUERY_KEY);
-            window.history.replaceState(
-                window.history.state,
-                '',
-                `${url.pathname}${url.search}${url.hash}`,
-            );
-
-            return;
-        }
-
-        if (company === null) {
-            return;
-        }
-
-        const raw = new URL(page.url, 'http://localhost').searchParams.get(
-            COMPANY_FORM_TAB_QUERY_KEY,
-        );
-
-        if (raw !== null && !isCompanyFormTabId(raw)) {
-            router.get(
-                edit.url({ company: company.id }),
-                {},
-                { preserveState: true, preserveScroll: true, replace: true },
-            );
-        }
-    }, [company, isEdit, page.url]);
-
-    const setTab = useCallback(
-        (next: CompanyFormTabId) => {
-            if (!isEdit && next !== 'general') {
-                return;
-            }
-
-            if (company === null) {
-                return;
-            }
-
-            const current = parseCompanyFormTabFromPageUrl(page.url, isEdit);
-
-            if (current === next) {
-                return;
-            }
-
-            const targetUrl =
-                next === 'general'
-                    ? edit.url({ company: company.id })
-                    : edit.url(
-                          { company: company.id },
-                          {
-                              query: {
-                                  [COMPANY_FORM_TAB_QUERY_KEY]: next,
-                              },
-                          },
-                      );
-
-            router.get(targetUrl, {}, {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            });
-        },
-        [company, isEdit, page.url],
-    );
-
-    const breadcrumbs = useMemo(
-        () => [
-            { title: 'Panel', href: dashboard() },
-            { title: 'Empresas', href: companiesIndex() },
-            {
-                title: isEdit && company ? company.name : 'Nueva',
-                href: companiesIndex(),
-            },
-        ],
-        [isEdit, company],
-    );
+    const breadcrumbs = useMemo(() => COMPANY_SETTINGS_PAGE.breadcrumbs(), []);
 
     useLayoutEffect(() => {
         setLayoutProps({ breadcrumbs });
     }, [breadcrumbs]);
 
-    const headTitle = isEdit ? 'Editar empresa' : 'Nueva empresa';
+    const headTitle = isEdit ? COMPANY_SETTINGS_PAGE.title : 'Nueva empresa';
 
     const submit = (e: React.FormEvent): void => {
         e.preventDefault();
@@ -168,8 +64,6 @@ export function useCompanyForm({ company }: CompaniesFormPageProps) {
     };
 
     return {
-        tab,
-        setTab,
         form,
         submit,
         headTitle,

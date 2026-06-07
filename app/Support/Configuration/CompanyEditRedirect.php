@@ -10,7 +10,7 @@ final class CompanyEditRedirect
     public static function back(Company $company): RedirectResponse
     {
         return redirect()->back(
-            fallback: route('configuration.companies.edit', $company),
+            fallback: route('configuration.companies.index'),
         );
     }
 }
