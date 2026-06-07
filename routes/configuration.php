@@ -6,6 +6,7 @@ use App\Http\Controllers\Configuration\CompanyOfficesController;
 use App\Http\Controllers\Configuration\CompanySiiIntegrationController;
 use App\Http\Controllers\Configuration\RolesController;
 use App\Http\Controllers\Configuration\UserController;
+use App\Http\Controllers\Configuration\WebsiteSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('calendar-settings', [CalendarSettingsController::class, 'index'])
@@ -24,11 +25,12 @@ Route::resource('companies.offices', CompanyOfficesController::class)
 Route::put('companies/{company}/slug', [CompaniesController::class, 'updateSlug'])
     ->name('companies.update-slug');
 
-Route::put('companies/{company}/web-settings', [CompaniesController::class, 'updateWebSettings'])
-    ->name('companies.web-settings.update');
-
-Route::post('companies/{company}/web-settings/logo', [CompaniesController::class, 'storeWebLogo'])
-    ->name('companies.web-settings.logo.store');
+Route::get('website-settings', [WebsiteSettingsController::class, 'index'])
+    ->name('website-settings.index');
+Route::put('website-settings', [WebsiteSettingsController::class, 'update'])
+    ->name('website-settings.update');
+Route::post('website-settings/logo', [WebsiteSettingsController::class, 'storeLogo'])
+    ->name('website-settings.logo.store');
 
 Route::patch('companies/{company}/integrations/sii', [CompanySiiIntegrationController::class, 'update'])
     ->name('companies.integrations.sii.update');

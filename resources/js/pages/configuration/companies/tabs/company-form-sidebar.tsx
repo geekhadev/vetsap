@@ -1,7 +1,6 @@
 import {
     Building2,
     ChevronLeft,
-    Globe,
     Plug2,
     ReceiptText,
     Trash2,
@@ -23,8 +22,6 @@ function companyFormTabIcon(tabId: CompanyFormTabId) {
             return <Plug2 aria-hidden className={className} />;
         case 'facturacion':
             return <ReceiptText aria-hidden className={className} />;
-        case 'web':
-            return <Globe aria-hidden className={className} />;
         case 'eliminar':
             return <Trash2 aria-hidden className={className} />;
     }

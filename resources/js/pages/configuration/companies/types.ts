@@ -36,8 +36,6 @@ export type CompanyFormRecord = {
     email: string | null;
     phone: string | null;
     address: string | null;
-    slug: string | null;
-    webSettings: Record<string, string | null>;
 };
 
 export type SiiEconomicActivityOption = {
@@ -63,7 +61,6 @@ export type CompanyFormTabId =
     | 'general'
     | 'integraciones'
     | 'facturacion'
-    | 'web'
     | 'eliminar';
 
 /** Campos enviados con `useForm` en el formulario de empresa. */

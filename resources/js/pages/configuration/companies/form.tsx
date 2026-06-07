@@ -7,7 +7,6 @@ import { GeneralTabPanel } from '@/pages/configuration/companies/tabs/general-ta
 import { buildEmptySiiIntegrationFormData } from '@/pages/configuration/companies/tabs/integrations/sii-integration-keys';
 import { IntegrationsTabPanel } from '@/pages/configuration/companies/tabs/integrations-tab-panel';
 import { PlaceholderTabPanel } from '@/pages/configuration/companies/tabs/placeholder-tab-panel';
-import { WebSiteTabPanel } from '@/pages/configuration/companies/tabs/web-site-tab-panel';
 import type { CompaniesFormPageProps } from '@/pages/configuration/companies/types';
 
 function CompanyForm(props: CompaniesFormPageProps) {
@@ -52,10 +51,6 @@ function CompanyForm(props: CompaniesFormPageProps) {
 
                     {tab === 'facturacion' ? (
                         <PlaceholderTabPanel message="Los datos de facturación se definirán más adelante." />
-                    ) : null}
-
-                    {tab === 'web' && props.company ? (
-                        <WebSiteTabPanel company={props.company} />
                     ) : null}
 
                     {tab === 'eliminar' && props.company ? (

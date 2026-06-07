@@ -6,7 +6,6 @@ const COMPANY_FORM_TAB_IDS = [
     'general',
     'integraciones',
     'facturacion',
-    'web',
     'eliminar',
 ] as const satisfies readonly CompanyFormTabId[];
 

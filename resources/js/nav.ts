@@ -37,6 +37,7 @@ import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as companyOfficesIndex } from '@/routes/configuration/company-offices';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
+import { index as websiteSettingsIndex } from '@/routes/configuration/website-settings';
 import { index as doctorsIndex } from '@/routes/medic/doctors';
 import { index as patientsIndex } from '@/routes/medic/patients';
 import { index as servicesIndex } from '@/routes/medic/services';
@@ -254,6 +255,11 @@ export const mainNavItems: NavItem[] = [
                 href: companyOfficesIndex(),
                 icon: MapPin,
                 permission: 'configuration.company-offices.list',
+            },
+            {
+                title: 'Sitio web',
+                href: websiteSettingsIndex(),
+                icon: Globe,
             },
             {
                 title: 'Calendario',

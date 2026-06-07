@@ -7,22 +7,15 @@ use App\Actions\Configuration\Companies\DeleteCompanyAction;
 use App\Actions\Configuration\Companies\ListCompaniesAction;
 use App\Actions\Configuration\Companies\ResolveManagedCompanySiiCertificateDiskPathAction;
 use App\Actions\Configuration\Companies\UpdateCompanyAction;
-use App\Actions\Web\StoreClinicWebImageAction;
-use App\Actions\Web\SyncClinicTextWebSettingsAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Configuration\CompaniesRequest;
 use App\Http\Requests\Configuration\CompanyListRequest;
-use App\Http\Requests\Web\StoreClinicWebLogoRequest;
-use App\Http\Requests\Web\UpdateClinicWebSettingsRequest;
 use App\Models\Company;
 use App\Models\Shared\SiiEconomicActivity;
 use App\Support\Configuration\CompanyEditRedirect;
 use App\Support\Integration\CompanySiiIntegrationSettingKeys;
-use App\Support\Storage\PublicStorageUrl;
-use App\Support\Web\ClinicWebSettingKeys;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -145,28 +138,6 @@ class CompaniesController extends Controller
         return CompanyEditRedirect::back($company);
     }
 
-    public function updateWebSettings(UpdateClinicWebSettingsRequest $request, Company $company, SyncClinicTextWebSettingsAction $action): RedirectResponse
-    {
-        $company->update(['slug' => $request->validated('slug')]);
-
-        $action->execute($company, $request->settingsPayload());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Configuración del sitio web actualizada.']);
-
-        return CompanyEditRedirect::back($company);
-    }
-
-    public function storeWebLogo(StoreClinicWebLogoRequest $request, Company $company, StoreClinicWebImageAction $action): RedirectResponse
-    {
-        /** @var UploadedFile $file */
-        $file = $request->file('logo');
-        $action->execute($company, ClinicWebSettingKeys::LOGO, $file);
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Logo actualizado.']);
-
-        return CompanyEditRedirect::back($company);
-    }
-
     public function destroy(Request $request, Company $company, DeleteCompanyAction $action): RedirectResponse
     {
         $this->authorize('delete', $company);
@@ -202,31 +173,7 @@ class CompaniesController extends Controller
             'email' => $company->email,
             'phone' => $company->phone,
             'address' => $company->address,
-            'slug' => $company->slug,
-            'webSettings' => $this->webSettingsFormProps($company),
         ];
-    }
-
-    /**
-     * @return array<string, string|null>
-     */
-    private function webSettingsFormProps(Company $company): array
-    {
-        $keys = ClinicWebSettingKeys::PANEL_TEXT_KEYS;
-        $values = $company->webSettings()
-            ->whereIn('key', $keys)
-            ->pluck('value', 'key');
-
-        $result = [];
-        foreach ($keys as $key) {
-            $result[$key] = $values[$key] ?? null;
-        }
-
-        // Resolve logo URL if present
-        $logoSetting = $company->webSettings()->where('key', ClinicWebSettingKeys::LOGO)->first();
-        $result[ClinicWebSettingKeys::LOGO] = PublicStorageUrl::fromRelativePath($logoSetting?->value);
-
-        return $result;
     }
 
     /**
