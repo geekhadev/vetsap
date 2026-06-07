@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
-import { Building2, ChevronsUpDown, Globe } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { Building2, ChevronsUpDown, Globe, Plus } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { CompanyCreateDialog } from '@/components/custom/company-switcher/company-create-dialog';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -42,15 +43,19 @@ function companyDocumentLine(row: {
 export function CompanySwitcher() {
     const page = usePage<{
         show_company_switcher: boolean;
+        can_create_company: boolean;
         company_selected: CompanySelectedSession | null;
         selectable_companies: SelectableCompanyOption[];
     }>();
 
     const {
         show_company_switcher: showSwitcher,
+        can_create_company: canCreateCompany,
         company_selected: selected,
         selectable_companies: options,
     } = page.props;
+
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
     const primaryLabel = useMemo(() => {
         if (!selected) {
@@ -83,78 +88,101 @@ export function CompanySwitcher() {
     }
 
     return (
-        <div className="flex shrink-0 items-center gap-1">
-            {clinicSlug ? (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="border-sidebar-border/70 text-muted-foreground size-9 shrink-0"
-                            asChild
-                        >
-                            <a
-                                href={clinicShow.url(clinicSlug)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label="Ver sitio web de la empresa"
+        <>
+            <div className="flex shrink-0 items-center gap-1">
+                {clinicSlug ? (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="border-sidebar-border/70 text-muted-foreground size-9 shrink-0"
+                                asChild
                             >
-                                <Globe className="size-4" />
-                            </a>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                        Sitio web de la empresa
-                    </TooltipContent>
-                </Tooltip>
-            ) : null}
-            {showSwitcher ? (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-sidebar-border/70 text-muted-foreground data-[state=open]:bg-sidebar-accent h-auto max-w-[220px] shrink-0 gap-2 py-2"
-                            aria-label="Cambiar empresa"
-                        >
-                            <Building2 className="size-4 shrink-0 self-center" />
-                            <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
-                                <span className="text-foreground w-full truncate font-medium">
-                                    {primaryLabel}
-                                </span>
-                            </div>
-                            <ChevronsUpDown className="size-4 shrink-0 self-center opacity-60" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64">
-                        <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
-                            Cambiar empresa
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {options.map((row) => (
-                            <DropdownMenuItem
-                                key={row.id}
-                                onSelect={() => selectCompany(row.id)}
-                                disabled={row.id === selected?.id}
-                                className={cn(
-                                    row.id === selected?.id
-                                        ? 'cursor-not-allowed font-bold text-blue-500'
-                                        : 'cursor-pointer',
-                                )}
+                                <a
+                                    href={clinicShow.url(clinicSlug)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="Ver sitio web de la empresa"
+                                >
+                                    <Globe className="size-4" />
+                                </a>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                            Sitio web de la empresa
+                        </TooltipContent>
+                    </Tooltip>
+                ) : null}
+                {showSwitcher ? (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-sidebar-border/70 text-muted-foreground data-[state=open]:bg-sidebar-accent h-auto max-w-[220px] shrink-0 gap-2 py-2"
+                                aria-label="Cambiar empresa"
                             >
-                                <div className="flex min-w-0 flex-col gap-0.5">
-                                    <span className="truncate font-medium">
-                                        {companyPrimaryLabel(row)}
-                                    </span>
-                                    <span className="text-muted-foreground truncate text-xs">
-                                        {companyDocumentLine(row)}
+                                <Building2 className="size-4 shrink-0 self-center" />
+                                <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
+                                    <span className="text-foreground w-full truncate font-medium">
+                                        {primaryLabel}
                                     </span>
                                 </div>
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                                <ChevronsUpDown className="size-4 shrink-0 self-center opacity-60" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64">
+                            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">
+                                Cambiar empresa
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {options.map((row) => (
+                                <DropdownMenuItem
+                                    key={row.id}
+                                    onSelect={() => selectCompany(row.id)}
+                                    disabled={row.id === selected?.id}
+                                    className={cn(
+                                        row.id === selected?.id
+                                            ? 'cursor-not-allowed font-bold text-blue-500'
+                                            : 'cursor-pointer',
+                                    )}
+                                >
+                                    <div className="flex min-w-0 flex-col gap-0.5">
+                                        <span className="truncate font-medium">
+                                            {companyPrimaryLabel(row)}
+                                        </span>
+                                        <span className="text-muted-foreground truncate text-xs">
+                                            {companyDocumentLine(row)}
+                                        </span>
+                                    </div>
+                                </DropdownMenuItem>
+                            ))}
+                            {canCreateCompany ? (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onSelect={() =>
+                                            setCreateDialogOpen(true)
+                                        }
+                                        className="cursor-pointer"
+                                    >
+                                        <Plus className="size-4" />
+                                        Crear nueva empresa
+                                    </DropdownMenuItem>
+                                </>
+                            ) : null}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                ) : null}
+            </div>
+
+            {canCreateCompany && createDialogOpen ? (
+                <CompanyCreateDialog
+                    open={createDialogOpen}
+                    onOpenChange={setCreateDialogOpen}
+                />
             ) : null}
-        </div>
+        </>
     );
 }

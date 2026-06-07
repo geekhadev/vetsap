@@ -13,6 +13,7 @@ declare module '@inertiajs/core' {
             company_selected: CompanySelectedSession | null;
             selectable_companies: SelectableCompanyOption[];
             show_company_switcher: boolean;
+            can_create_company: boolean;
             [key: string]: unknown;
         };
     }

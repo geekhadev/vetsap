@@ -6,6 +6,7 @@ use App\Actions\Configuration\Companies\CreateCompanyAction;
 use App\Actions\Configuration\Companies\DeleteCompanyAction;
 use App\Actions\Configuration\Companies\ListCompaniesAction;
 use App\Actions\Configuration\Companies\ResolveManagedCompanySiiCertificateDiskPathAction;
+use App\Actions\Configuration\Companies\SetSelectedCompanyAction;
 use App\Actions\Configuration\Companies\UpdateCompanyAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Configuration\CompaniesRequest;
@@ -77,11 +78,20 @@ class CompaniesController extends Controller
         ]);
     }
 
-    public function store(CompaniesRequest $request, CreateCompanyAction $action): RedirectResponse
-    {
+    public function store(
+        CompaniesRequest $request,
+        CreateCompanyAction $action,
+        SetSelectedCompanyAction $setSelected,
+    ): RedirectResponse {
         $company = $action->execute($request->user(), $request->companyPayload());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Empresa creada.']);
+
+        if ($request->boolean('select_after_create')) {
+            $setSelected->execute($request, $request->user(), $company);
+
+            return back();
+        }
 
         return to_route('configuration.companies.edit', $company);
     }

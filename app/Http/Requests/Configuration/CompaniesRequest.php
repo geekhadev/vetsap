@@ -50,6 +50,7 @@ class CompaniesRequest extends FormRequest
 
         if ($company === null) {
             $rules['owner_id'] = ['prohibited'];
+            $rules['select_after_create'] = ['sometimes', 'boolean'];
         }
 
         return $rules;

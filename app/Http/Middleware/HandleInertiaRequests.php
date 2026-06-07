@@ -47,9 +47,11 @@ class HandleInertiaRequests extends Middleware
         /** @var array<int, array<string, mixed>> $selectableCompanies */
         $selectableCompanies = [];
         $showCompanySwitcher = false;
+        $canCreateCompany = false;
 
         if ($user instanceof User) {
             $list = SelectedCompanySession::selectableCompaniesOrResolve($request);
+            $canCreateCompany = $user->can('create', Company::class);
 
             $selectableCompanies = $list
                 ->map(fn (Company $company): array => [
@@ -62,7 +64,7 @@ class HandleInertiaRequests extends Middleware
                 ])
                 ->values()
                 ->all();
-            $showCompanySwitcher = $list->count() > 1;
+            $showCompanySwitcher = $list->count() > 1 || $canCreateCompany;
             $companySelected = $request->session()->get('company_selected');
 
             if (is_array($companySelected) && is_string($companySelected['id'] ?? null) && $companySelected['id'] !== '') {
@@ -89,6 +91,7 @@ class HandleInertiaRequests extends Middleware
             'company_selected' => $companySelected,
             'selectable_companies' => $selectableCompanies,
             'show_company_switcher' => $showCompanySwitcher,
+            'can_create_company' => $canCreateCompany,
         ];
     }
 
