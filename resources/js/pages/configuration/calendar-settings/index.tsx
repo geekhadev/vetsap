@@ -1,83 +1,49 @@
-import { Head } from '@inertiajs/react';
-import { Save } from 'lucide-react';
-import { useState } from 'react';
+import { Head, usePage } from '@inertiajs/react';
+import { useMemo } from 'react';
 import { FormSelect } from '@/components/custom/form-select';
-import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { FormTimePickerField } from '@/components/custom/form-time-picker-field';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-    CALENDAR_SETTINGS_PAGE,
-    DEFAULT_SERVICE_OPTIONS,
-    TIME_BLOCK_OPTIONS,
-} from '@/pages/configuration/calendar-settings/config';
-import { GoogleCalendarConnectButton } from '@/pages/configuration/calendar-settings/google-calendar-connect-button';
+import { CALENDAR_SETTINGS_PAGE, TIME_BLOCK_OPTIONS } from '@/pages/configuration/calendar-settings/config';
+import { useCalendarSettingsForm } from '@/pages/configuration/calendar-settings/hooks/use-calendar-settings-form';
 import { SettingsSection } from '@/pages/configuration/calendar-settings/settings-section';
 import { SettingsSwitchField } from '@/pages/configuration/calendar-settings/settings-switch-field';
-import type { CalendarSettingsFormState } from '@/pages/configuration/calendar-settings/types';
-
-const INITIAL_FORM_STATE: CalendarSettingsFormState = {
-    startsAt: '09:00',
-    endsAt: '19:00',
-    timeBlockMinutes: '30',
-    defaultServiceId: '',
-    doctorNotifications: {
-        onCreate: false,
-        onConfirm: false,
-        onCancel: true,
-        onReschedule: true,
-    },
-    clientNotifications: {
-        onCreate: true,
-        onConfirm: true,
-        onCancel: true,
-        onReschedule: true,
-        onPaymentIssued: true,
-        onInvoiceIssued: true,
-        onMedicalRecordAfterVisit: true,
-        onPrescriptionAfterVisit: true,
-    },
-};
+import type { CalendarSettingsIndexPageProps } from '@/pages/configuration/calendar-settings/types';
 
 function CalendarSettingsIndex() {
-    const [form, setForm] = useState<CalendarSettingsFormState>(
-        INITIAL_FORM_STATE,
+    const { companyMissing, services } =
+        usePage<CalendarSettingsIndexPageProps>().props;
+    const { form } = useCalendarSettingsForm();
+
+    const serviceOptions = useMemo(
+        () => [
+            { value: '', label: 'Servicio por defecto' },
+            ...services.map((service) => ({
+                value: service.id,
+                label: service.label,
+            })),
+        ],
+        [services],
     );
 
-    const updateDoctorNotification = (
-        key: keyof CalendarSettingsFormState['doctorNotifications'],
-        checked: boolean,
-    ) => {
-        setForm((current) => ({
-            ...current,
-            doctorNotifications: {
-                ...current.doctorNotifications,
-                [key]: checked,
-            },
-        }));
-    };
-
-    const updateClientNotification = (
-        key: keyof CalendarSettingsFormState['clientNotifications'],
-        checked: boolean,
-    ) => {
-        setForm((current) => ({
-            ...current,
-            clientNotifications: {
-                ...current.clientNotifications,
-                [key]: checked,
-            },
-        }));
-    };
-
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-    };
+    if (companyMissing) {
+        return (
+            <>
+                <Head title={CALENDAR_SETTINGS_PAGE.title} />
+                <div className="p-4">
+                    <p className="text-muted-foreground text-sm">
+                        Debes seleccionar una empresa para configurar el
+                        calendario.
+                    </p>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
             <Head title={CALENDAR_SETTINGS_PAGE.title} />
 
-            <div className="flex min-w-0 flex-1 flex-col gap-8 p-4 lg:flex-row lg:items-start lg:gap-12 lg:max-w-[1400px]">
+            <div className="flex min-w-0 flex-1 flex-col gap-8 p-4 lg:max-w-[1400px] lg:flex-row lg:items-start lg:gap-12">
                 <div className="flex max-w-xs flex-col gap-4">
                     <h1 className="text-2xl font-semibold tracking-tight">
                         {CALENDAR_SETTINGS_PAGE.title}
@@ -89,7 +55,7 @@ function CalendarSettingsIndex() {
 
                 <Card className="min-w-0 flex-1 gap-0 py-0 shadow-xs">
                     <CardContent className="px-0">
-                        <form onSubmit={handleSubmit} className="space-y-6 p-6">
+                        <div className="space-y-6 p-6">
                             <SettingsSection
                                 title="Configuración del calendario"
                                 showSeparator={false}
@@ -99,56 +65,52 @@ function CalendarSettingsIndex() {
                                     <FormTimePickerField
                                         label="Hora de inicio"
                                         required
-                                        value={form.startsAt}
+                                        value={form.data.starts_at}
                                         onChange={(value) =>
-                                            setForm((current) => ({
-                                                ...current,
-                                                startsAt: value,
-                                            }))
+                                            form.setData('starts_at', value)
                                         }
+                                        error={form.errors.starts_at}
                                         minuteStep={15}
                                     />
                                     <FormTimePickerField
                                         label="Hora de cierre"
                                         required
-                                        value={form.endsAt}
+                                        value={form.data.ends_at}
                                         onChange={(value) =>
-                                            setForm((current) => ({
-                                                ...current,
-                                                endsAt: value,
-                                            }))
+                                            form.setData('ends_at', value)
                                         }
+                                        error={form.errors.ends_at}
                                         minuteStep={15}
                                     />
                                     <FormSelect
                                         label="Bloque de tiempo"
                                         options={[...TIME_BLOCK_OPTIONS]}
+                                        error={form.errors.time_block_minutes}
                                         selectProps={{
                                             id: 'time_block_minutes',
                                             name: 'time_block_minutes',
-                                            value: form.timeBlockMinutes,
+                                            value: form.data.time_block_minutes,
                                             onChange: (event) =>
-                                                setForm((current) => ({
-                                                    ...current,
-                                                    timeBlockMinutes:
-                                                        event.target.value,
-                                                })),
+                                                form.setData(
+                                                    'time_block_minutes',
+                                                    event.target.value,
+                                                ),
                                         }}
                                     />
                                     <FormSelect
                                         label="Servicio por defecto"
                                         placeholder=""
-                                        options={[...DEFAULT_SERVICE_OPTIONS]}
+                                        options={serviceOptions}
+                                        error={form.errors.default_service_id}
                                         selectProps={{
                                             id: 'default_service_id',
                                             name: 'default_service_id',
-                                            value: form.defaultServiceId,
+                                            value: form.data.default_service_id,
                                             onChange: (event) =>
-                                                setForm((current) => ({
-                                                    ...current,
-                                                    defaultServiceId:
-                                                        event.target.value,
-                                                })),
+                                                form.setData(
+                                                    'default_service_id',
+                                                    event.target.value,
+                                                ),
                                         }}
                                     />
                                 </div>
@@ -162,49 +124,68 @@ function CalendarSettingsIndex() {
                                     <SettingsSwitchField
                                         label="Enviar correo al crear una cita"
                                         checked={
-                                            form.doctorNotifications.onCreate
+                                            form.data.doctor_notifications
+                                                .on_create
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateDoctorNotification(
-                                                'onCreate',
-                                                checked,
+                                            form.setData(
+                                                'doctor_notifications',
+                                                {
+                                                    ...form.data
+                                                        .doctor_notifications,
+                                                    on_create: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo al confirmar una cita"
                                         checked={
-                                            form.doctorNotifications.onConfirm
+                                            form.data.doctor_notifications
+                                                .on_confirm
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateDoctorNotification(
-                                                'onConfirm',
-                                                checked,
+                                            form.setData(
+                                                'doctor_notifications',
+                                                {
+                                                    ...form.data
+                                                        .doctor_notifications,
+                                                    on_confirm: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo al cancelar una cita"
                                         checked={
-                                            form.doctorNotifications.onCancel
+                                            form.data.doctor_notifications
+                                                .on_cancel
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateDoctorNotification(
-                                                'onCancel',
-                                                checked,
+                                            form.setData(
+                                                'doctor_notifications',
+                                                {
+                                                    ...form.data
+                                                        .doctor_notifications,
+                                                    on_cancel: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo al reagendar una cita"
                                         checked={
-                                            form.doctorNotifications
-                                                .onReschedule
+                                            form.data.doctor_notifications
+                                                .on_reschedule
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateDoctorNotification(
-                                                'onReschedule',
-                                                checked,
+                                            form.setData(
+                                                'doctor_notifications',
+                                                {
+                                                    ...form.data
+                                                        .doctor_notifications,
+                                                    on_reschedule: checked,
+                                                },
                                             )
                                         }
                                     />
@@ -219,124 +200,145 @@ function CalendarSettingsIndex() {
                                     <SettingsSwitchField
                                         label="Enviar correo al crear una cita"
                                         checked={
-                                            form.clientNotifications.onCreate
+                                            form.data.client_notifications
+                                                .on_create
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateClientNotification(
-                                                'onCreate',
-                                                checked,
+                                            form.setData(
+                                                'client_notifications',
+                                                {
+                                                    ...form.data
+                                                        .client_notifications,
+                                                    on_create: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo al confirmar una cita"
                                         checked={
-                                            form.clientNotifications.onConfirm
+                                            form.data.client_notifications
+                                                .on_confirm
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateClientNotification(
-                                                'onConfirm',
-                                                checked,
+                                            form.setData(
+                                                'client_notifications',
+                                                {
+                                                    ...form.data
+                                                        .client_notifications,
+                                                    on_confirm: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo al cancelar una cita"
                                         checked={
-                                            form.clientNotifications.onCancel
+                                            form.data.client_notifications
+                                                .on_cancel
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateClientNotification(
-                                                'onCancel',
-                                                checked,
+                                            form.setData(
+                                                'client_notifications',
+                                                {
+                                                    ...form.data
+                                                        .client_notifications,
+                                                    on_cancel: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo al reagendar una cita"
                                         checked={
-                                            form.clientNotifications
-                                                .onReschedule
+                                            form.data.client_notifications
+                                                .on_reschedule
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateClientNotification(
-                                                'onReschedule',
-                                                checked,
+                                            form.setData(
+                                                'client_notifications',
+                                                {
+                                                    ...form.data
+                                                        .client_notifications,
+                                                    on_reschedule: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo al emitir un pago"
                                         checked={
-                                            form.clientNotifications
-                                                .onPaymentIssued
+                                            form.data.client_notifications
+                                                .on_payment_issued
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateClientNotification(
-                                                'onPaymentIssued',
-                                                checked,
+                                            form.setData(
+                                                'client_notifications',
+                                                {
+                                                    ...form.data
+                                                        .client_notifications,
+                                                    on_payment_issued: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo al emitir una factura"
                                         checked={
-                                            form.clientNotifications
-                                                .onInvoiceIssued
+                                            form.data.client_notifications
+                                                .on_invoice_issued
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateClientNotification(
-                                                'onInvoiceIssued',
-                                                checked,
+                                            form.setData(
+                                                'client_notifications',
+                                                {
+                                                    ...form.data
+                                                        .client_notifications,
+                                                    on_invoice_issued: checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo con ficha médica al finalizar la atención"
                                         checked={
-                                            form.clientNotifications
-                                                .onMedicalRecordAfterVisit
+                                            form.data.client_notifications
+                                                .on_medical_record_after_visit
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateClientNotification(
-                                                'onMedicalRecordAfterVisit',
-                                                checked,
+                                            form.setData(
+                                                'client_notifications',
+                                                {
+                                                    ...form.data
+                                                        .client_notifications,
+                                                    on_medical_record_after_visit:
+                                                        checked,
+                                                },
                                             )
                                         }
                                     />
                                     <SettingsSwitchField
                                         label="Enviar correo con receta al finalizar la atención"
                                         checked={
-                                            form.clientNotifications
-                                                .onPrescriptionAfterVisit
+                                            form.data.client_notifications
+                                                .on_prescription_after_visit
                                         }
                                         onCheckedChange={(checked) =>
-                                            updateClientNotification(
-                                                'onPrescriptionAfterVisit',
-                                                checked,
+                                            form.setData(
+                                                'client_notifications',
+                                                {
+                                                    ...form.data
+                                                        .client_notifications,
+                                                    on_prescription_after_visit:
+                                                        checked,
+                                                },
                                             )
                                         }
                                     />
                                 </div>
                             </SettingsSection>
 
-                            <SettingsSection
-                                title="Sincronización con Google Calendar"
-                                tooltip="Conecta tu cuenta de Google para sincronizar las citas con Google Calendar."
-                            >
-                                <GoogleCalendarConnectButton />
-                            </SettingsSection>
-
-                            <div className="flex justify-end pt-2">
-                                <FormSubmitButton
-                                    type="submit"
-                                    icon={<Save />}
-                                    label="Guardar configuración"
-                                    labelLoading="Guardando…"
-                                    containerClassName="w-auto"
-                                />
-                            </div>
-                        </form>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

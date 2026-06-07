@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('calendar-settings', [CalendarSettingsController::class, 'index'])
     ->name('calendar-settings.index');
+Route::put('calendar-settings', [CalendarSettingsController::class, 'update'])
+    ->name('calendar-settings.update');
 
 Route::resource('companies', CompaniesController::class)->except(['show']);
 

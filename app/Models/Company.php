@@ -124,6 +124,14 @@ class Company extends Model
     }
 
     /**
+     * @return HasMany<CompanySetting, $this>
+     */
+    public function settings(): HasMany
+    {
+        return $this->hasMany(CompanySetting::class, 'company_id');
+    }
+
+    /**
      * @return HasMany<CertificationSiiTicket, $this>
      */
     public function certificationSiiTickets(): HasMany

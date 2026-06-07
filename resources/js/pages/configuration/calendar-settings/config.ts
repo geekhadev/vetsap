@@ -21,7 +21,3 @@ export const TIME_BLOCK_OPTIONS = [
     { value: '45', label: '45 minutos' },
     { value: '60', label: '60 minutos' },
 ] as const;
-
-export const DEFAULT_SERVICE_OPTIONS = [
-    { value: '', label: 'Servicio por defecto' },
-] as const;
