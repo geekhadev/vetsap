@@ -473,7 +473,7 @@ function RolesMatrixPage() {
             <Head title="Roles" />
 
             <div className="flex w-full flex-col gap-4 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between overflow-y-auto">
                     <Heading
                         variant="small"
                         title="Roles y permisos"
@@ -582,7 +582,7 @@ function RolesMatrixPage() {
                     ) : null}
                 </div>
 
-                <div className="relative min-h-[calc(100vh-200px)] overflow-x-auto rounded-lg">
+                <div className="relative max-h-[calc(100vh-180px)] overflow-x-auto rounded-lg">
                     <table className="h-auto w-full min-w-max border-collapse text-xs">
                         <thead>
                             <tr className="bg-muted/40">
