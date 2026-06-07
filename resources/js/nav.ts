@@ -13,6 +13,7 @@ import {
     MapPin,
     Package,
     PawPrint,
+    Plug2,
     Receipt,
     Scissors,
     Share2,
@@ -35,6 +36,7 @@ import { index as holidaysIndex } from '@/routes/agenda/holidays';
 import { index as calendarSettingsIndex } from '@/routes/configuration/calendar-settings';
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as companyOfficesIndex } from '@/routes/configuration/company-offices';
+import { index as integrationSettingsIndex } from '@/routes/configuration/integration-settings';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { index as websiteSettingsIndex } from '@/routes/configuration/website-settings';
@@ -234,7 +236,7 @@ export const mainNavItems: NavItem[] = [
         icon: Boxes,
         items: [
             {
-                title: 'Empresas',
+                title: 'Empresa',
                 href: companiesIndex(),
                 icon: Building2,
                 permission: 'configuration.companies.list',
@@ -265,6 +267,11 @@ export const mainNavItems: NavItem[] = [
                 title: 'Calendario',
                 href: calendarSettingsIndex(),
                 icon: CalendarCog,
+            },
+            {
+                title: 'Integraciones',
+                href: integrationSettingsIndex(),
+                icon: Plug2,
             },
         ],
     },

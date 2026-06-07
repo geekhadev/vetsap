@@ -20,13 +20,6 @@ export type CompanyListItem = {
     };
 };
 
-export type CompaniesIndexPageProps = {
-    companies: CompanyListItem[];
-    can: {
-        create: boolean;
-    };
-};
-
 export type CompanyFormRecord = {
     id: string;
     document_type: string;
@@ -38,30 +31,13 @@ export type CompanyFormRecord = {
     address: string | null;
 };
 
-export type SiiEconomicActivityOption = {
-    id: number;
-    code: string;
-    description: string;
-};
-
 export type CompaniesFormPageProps = {
     company: CompanyFormRecord | null;
-    /** Valores actuales de integración SII (claves `configuration_integrations_sii_*`). */
-    siiIntegration?: Record<string, string>;
-    /** Catálogo SII para el selector ACTECO en integraciones. */
-    siiEconomicActivities?: SiiEconomicActivityOption[];
-    /** GET interno para descargar el certificado subido (solo si aplica); `null` si no hay archivo gestionado. */
-    siiCertificateDownloadUrl?: string | null;
+    companyMissing?: boolean;
     can: {
         delete: boolean;
     };
 };
-
-export type CompanyFormTabId =
-    | 'general'
-    | 'integraciones'
-    | 'facturacion'
-    | 'eliminar';
 
 /** Campos enviados con `useForm` en el formulario de empresa. */
 export type CompanyFormData = Record<string, string | number>;

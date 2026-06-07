@@ -1,6 +1,6 @@
 import { SiiIntegrationSubtab } from '@/pages/configuration/companies/tabs/integrations/sii-integration-subtab';
 import { useSiiIntegrationForm } from '@/pages/configuration/companies/tabs/integrations/use-sii-integration-form';
-import type { SiiEconomicActivityOption } from '@/pages/configuration/companies/types';
+import type { SiiEconomicActivityOption } from '@/pages/configuration/integration-settings/types';
 
 type SiiIntegrationFormSectionProps = {
     companyId: string;

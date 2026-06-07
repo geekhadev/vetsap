@@ -10,7 +10,7 @@ import { FormTextInput } from '@/components/custom/form-text-input';
 import { Separator } from '@/components/ui/separator';
 import type { SiiIntegrationFormData } from '@/pages/configuration/companies/tabs/integrations/sii-integration-keys';
 import { SII_CERTIFICATE_FILE_FIELD } from '@/pages/configuration/companies/tabs/integrations/sii-integration-keys';
-import type { SiiEconomicActivityOption } from '@/pages/configuration/companies/types';
+import type { SiiEconomicActivityOption } from '@/pages/configuration/integration-settings/types';
 
 type SiiIntegrationSubtabProps = {
     form: InertiaFormProps<SiiIntegrationFormData>;

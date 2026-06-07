@@ -4,17 +4,13 @@ namespace App\Http\Controllers\Configuration;
 
 use App\Actions\Configuration\Companies\CreateCompanyAction;
 use App\Actions\Configuration\Companies\DeleteCompanyAction;
-use App\Actions\Configuration\Companies\ListCompaniesAction;
-use App\Actions\Configuration\Companies\ResolveManagedCompanySiiCertificateDiskPathAction;
 use App\Actions\Configuration\Companies\SetSelectedCompanyAction;
 use App\Actions\Configuration\Companies\UpdateCompanyAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Configuration\CompaniesRequest;
-use App\Http\Requests\Configuration\CompanyListRequest;
 use App\Models\Company;
-use App\Models\Shared\SiiEconomicActivity;
 use App\Support\Configuration\CompanyEditRedirect;
-use App\Support\Integration\CompanySiiIntegrationSettingKeys;
+use App\Support\SelectedCompanySession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -23,45 +19,28 @@ use Inertia\Response;
 
 class CompaniesController extends Controller
 {
-    public function index(CompanyListRequest $request, ListCompaniesAction $action, DeleteCompanyAction $deleteCompanyAction): Response
+    public function index(Request $request, DeleteCompanyAction $deleteCompanyAction): Response
     {
         $this->authorize('viewAny', Company::class);
 
-        $user = $request->user();
-        $selectedFromSession = data_get($request->session()->get('company_selected'), 'id');
-        $sessionSelectedCompanyId = is_string($selectedFromSession) ? $selectedFromSession : null;
+        $companyId = SelectedCompanySession::selectedCompanyId($request);
+        $company = $companyId !== null
+            ? Company::query()->find($companyId)
+            : null;
 
-        $companies = $action->execute($user)->map(function (Company $company) use ($user, $deleteCompanyAction, $sessionSelectedCompanyId): array {
-            $ownerUser = $company->owner();
-
-            return [
-                'id' => $company->id,
-                'document_type' => $company->document_type->value,
-                'document_number' => $company->document_number,
-                'name' => $company->name,
-                'alias' => $company->alias,
-                'email' => $company->email,
-                'phone' => $company->phone,
-                'address' => $company->address,
-                'owner' => $ownerUser ? [
-                    'id' => $ownerUser->id,
-                    'name' => $ownerUser->name,
-                    'email' => $ownerUser->email,
-                ] : null,
+        if (! $company instanceof Company) {
+            return Inertia::render('configuration/companies/form', [
+                'company' => null,
+                'companyMissing' => true,
                 'can' => [
-                    'update' => $user->can('update', $company),
-                    'delete' => $user->can('delete', $company)
-                        && $deleteCompanyAction->deletionBlockedReason($user, $sessionSelectedCompanyId, $company) === null,
+                    'delete' => false,
                 ],
-            ];
-        })->values()->all();
+            ]);
+        }
 
-        return Inertia::render('configuration/companies/index', [
-            'companies' => $companies,
-            'can' => [
-                'create' => $user->can('create', Company::class),
-            ],
-        ]);
+        $this->authorize('update', $company);
+
+        return $this->companyFormResponse($request, $company, $deleteCompanyAction);
     }
 
     public function create(Request $request): Response
@@ -70,8 +49,6 @@ class CompaniesController extends Controller
 
         return Inertia::render('configuration/companies/form', [
             'company' => null,
-            'siiIntegration' => $this->emptySiiIntegrationFormProps(),
-            'siiCertificateDownloadUrl' => null,
             'can' => [
                 'delete' => false,
             ],
@@ -93,29 +70,14 @@ class CompaniesController extends Controller
             return back();
         }
 
-        return to_route('configuration.companies.edit', $company);
+        return to_route('configuration.companies.index');
     }
 
-    public function edit(Request $request, Company $company, DeleteCompanyAction $deleteCompanyAction): Response
+    public function edit(Request $request, Company $company): RedirectResponse
     {
         $this->authorize('update', $company);
 
-        $user = $request->user();
-        $sessionSelectedCompanyId = data_get($request->session()->get('company_selected'), 'id');
-        $sessionSelectedCompanyId = is_string($sessionSelectedCompanyId) ? $sessionSelectedCompanyId : null;
-
-        return Inertia::render('configuration/companies/form', [
-            'company' => $this->companyFormProps($company),
-            'siiIntegration' => $this->siiIntegrationFormProps($company),
-            'siiEconomicActivities' => SiiEconomicActivity::query()
-                ->orderBy('code')
-                ->get(['id', 'code', 'description']),
-            'siiCertificateDownloadUrl' => $this->siiCertificateDownloadUrl($company),
-            'can' => [
-                'delete' => $user->can('delete', $company)
-                    && $deleteCompanyAction->deletionBlockedReason($user, $sessionSelectedCompanyId, $company) === null,
-            ],
-        ]);
+        return to_route('configuration.companies.index');
     }
 
     public function update(CompaniesRequest $request, Company $company, UpdateCompanyAction $action): RedirectResponse
@@ -169,6 +131,24 @@ class CompaniesController extends Controller
         return to_route('configuration.companies.index');
     }
 
+    private function companyFormResponse(
+        Request $request,
+        Company $company,
+        DeleteCompanyAction $deleteCompanyAction,
+    ): Response {
+        $user = $request->user();
+        $sessionSelectedCompanyId = data_get($request->session()->get('company_selected'), 'id');
+        $sessionSelectedCompanyId = is_string($sessionSelectedCompanyId) ? $sessionSelectedCompanyId : null;
+
+        return Inertia::render('configuration/companies/form', [
+            'company' => $this->companyFormProps($company),
+            'can' => [
+                'delete' => $user->can('delete', $company)
+                    && $deleteCompanyAction->deletionBlockedReason($user, $sessionSelectedCompanyId, $company) === null,
+            ],
+        ]);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -184,41 +164,5 @@ class CompaniesController extends Controller
             'phone' => $company->phone,
             'address' => $company->address,
         ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function emptySiiIntegrationFormProps(): array
-    {
-        /** @var array<string, string> */
-        return array_fill_keys(CompanySiiIntegrationSettingKeys::all(), '');
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function siiIntegrationFormProps(Company $company): array
-    {
-        $keys = CompanySiiIntegrationSettingKeys::all();
-        $values = $company->integrationSettings()
-            ->whereIn('key', $keys)
-            ->pluck('value', 'key');
-
-        $props = [];
-        foreach ($keys as $key) {
-            $props[$key] = (string) ($values[$key] ?? '');
-        }
-
-        return $props;
-    }
-
-    private function siiCertificateDownloadUrl(Company $company): ?string
-    {
-        if (app(ResolveManagedCompanySiiCertificateDiskPathAction::class)->execute($company) === null) {
-            return null;
-        }
-
-        return route('configuration.companies.integrations.sii.certificate.download', $company);
     }
 }
