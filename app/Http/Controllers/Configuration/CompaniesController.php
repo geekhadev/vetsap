@@ -7,7 +7,6 @@ use App\Actions\Configuration\Companies\DeleteCompanyAction;
 use App\Actions\Configuration\Companies\ListCompaniesAction;
 use App\Actions\Configuration\Companies\ResolveManagedCompanySiiCertificateDiskPathAction;
 use App\Actions\Configuration\Companies\UpdateCompanyAction;
-use App\Actions\Configuration\CompanyOffices\ListCompanyOfficesAction;
 use App\Actions\Web\StoreClinicWebImageAction;
 use App\Actions\Web\SyncClinicTextWebSettingsAction;
 use App\Http\Controllers\Controller;
@@ -16,9 +15,7 @@ use App\Http\Requests\Configuration\CompanyListRequest;
 use App\Http\Requests\Web\StoreClinicWebLogoRequest;
 use App\Http\Requests\Web\UpdateClinicWebSettingsRequest;
 use App\Models\Company;
-use App\Models\CompanyOffice;
 use App\Models\Shared\SiiEconomicActivity;
-use App\Models\User;
 use App\Support\Configuration\CompanyEditRedirect;
 use App\Support\Integration\CompanySiiIntegrationSettingKeys;
 use App\Support\Storage\PublicStorageUrl;
@@ -79,7 +76,6 @@ class CompaniesController extends Controller
 
         return Inertia::render('configuration/companies/form', [
             'company' => null,
-            'offices' => [],
             'siiIntegration' => $this->emptySiiIntegrationFormProps(),
             'siiCertificateDownloadUrl' => null,
             'can' => [
@@ -97,7 +93,7 @@ class CompaniesController extends Controller
         return to_route('configuration.companies.edit', $company);
     }
 
-    public function edit(Request $request, Company $company, DeleteCompanyAction $deleteCompanyAction, ListCompanyOfficesAction $listOffices): Response
+    public function edit(Request $request, Company $company, DeleteCompanyAction $deleteCompanyAction): Response
     {
         $this->authorize('update', $company);
 
@@ -107,7 +103,6 @@ class CompaniesController extends Controller
 
         return Inertia::render('configuration/companies/form', [
             'company' => $this->companyFormProps($company),
-            'offices' => $this->companyOfficesFormProps($company, $user, $listOffices),
             'siiIntegration' => $this->siiIntegrationFormProps($company),
             'siiEconomicActivities' => SiiEconomicActivity::query()
                 ->orderBy('code')
@@ -191,26 +186,6 @@ class CompaniesController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Empresa eliminada.']);
 
         return to_route('configuration.companies.index');
-    }
-
-    /**
-     * @return list<array{id: string, name: string, email: string|null, phone: string|null, address: string|null, can: array{update: bool, delete: bool}}>
-     */
-    private function companyOfficesFormProps(Company $company, User $user, ListCompanyOfficesAction $listOffices): array
-    {
-        return $listOffices->execute($company)->map(function (CompanyOffice $office) use ($user): array {
-            return [
-                'id' => $office->id,
-                'name' => $office->name,
-                'email' => $office->email,
-                'phone' => $office->phone,
-                'address' => $office->address,
-                'can' => [
-                    'update' => $user->can('update', $office),
-                    'delete' => $user->can('delete', $office),
-                ],
-            ];
-        })->values()->all();
     }
 
     /**

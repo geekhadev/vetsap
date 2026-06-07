@@ -4,7 +4,6 @@ export const COMPANY_FORM_TAB_QUERY_KEY = 'tab' as const;
 
 const COMPANY_FORM_TAB_IDS = [
     'general',
-    'sucursales',
     'integraciones',
     'facturacion',
     'web',

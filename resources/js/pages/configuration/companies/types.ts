@@ -40,18 +40,6 @@ export type CompanyFormRecord = {
     webSettings: Record<string, string | null>;
 };
 
-export type CompanyOfficeListItem = {
-    id: string;
-    name: string;
-    email: string | null;
-    phone: string | null;
-    address: string | null;
-    can: {
-        update: boolean;
-        delete: boolean;
-    };
-};
-
 export type SiiEconomicActivityOption = {
     id: number;
     code: string;
@@ -60,8 +48,6 @@ export type SiiEconomicActivityOption = {
 
 export type CompaniesFormPageProps = {
     company: CompanyFormRecord | null;
-    /** Sucursales secundarias (`is_main = false`) para el tab Sucursales. */
-    offices: CompanyOfficeListItem[];
     /** Valores actuales de integración SII (claves `configuration_integrations_sii_*`). */
     siiIntegration?: Record<string, string>;
     /** Catálogo SII para el selector ACTECO en integraciones. */
@@ -75,7 +61,6 @@ export type CompaniesFormPageProps = {
 
 export type CompanyFormTabId =
     | 'general'
-    | 'sucursales'
     | 'integraciones'
     | 'facturacion'
     | 'web'

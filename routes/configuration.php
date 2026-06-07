@@ -13,6 +13,9 @@ Route::get('calendar-settings', [CalendarSettingsController::class, 'index'])
 Route::put('calendar-settings', [CalendarSettingsController::class, 'update'])
     ->name('calendar-settings.update');
 
+Route::get('company-offices', [CompanyOfficesController::class, 'index'])
+    ->name('company-offices.index');
+
 Route::resource('companies', CompaniesController::class)->except(['show']);
 
 Route::resource('companies.offices', CompanyOfficesController::class)

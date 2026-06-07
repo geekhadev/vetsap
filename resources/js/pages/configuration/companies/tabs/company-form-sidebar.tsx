@@ -4,7 +4,6 @@ import {
     Globe,
     Plug2,
     ReceiptText,
-    Store,
     Trash2,
 } from 'lucide-react';
 import { FormActionButton } from '@/components/custom/form-action-button';
@@ -20,8 +19,6 @@ function companyFormTabIcon(tabId: CompanyFormTabId) {
     switch (tabId) {
         case 'general':
             return <Building2 aria-hidden className={className} />;
-        case 'sucursales':
-            return <Store aria-hidden className={className} />;
         case 'integraciones':
             return <Plug2 aria-hidden className={className} />;
         case 'facturacion':

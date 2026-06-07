@@ -14,7 +14,6 @@ export type CompanyFormTabConfig = {
 
 export const COMPANY_FORM_TABS: ReadonlyArray<CompanyFormTabConfig> = [
     { id: 'general', label: 'Información general' },
-    { id: 'sucursales', label: 'Sucursales' },
     { id: 'integraciones', label: 'Integraciones' },
     { id: 'facturacion', label: 'Facturación' },
     { id: 'web', label: 'Sitio web', editOnly: true },

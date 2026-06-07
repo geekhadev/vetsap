@@ -6,7 +6,6 @@ import { CompanyFormSidebar } from '@/pages/configuration/companies/tabs/company
 import { GeneralTabPanel } from '@/pages/configuration/companies/tabs/general-tab-panel';
 import { buildEmptySiiIntegrationFormData } from '@/pages/configuration/companies/tabs/integrations/sii-integration-keys';
 import { IntegrationsTabPanel } from '@/pages/configuration/companies/tabs/integrations-tab-panel';
-import { OfficesTabPanel } from '@/pages/configuration/companies/tabs/offices/offices-tab-panel';
 import { PlaceholderTabPanel } from '@/pages/configuration/companies/tabs/placeholder-tab-panel';
 import { WebSiteTabPanel } from '@/pages/configuration/companies/tabs/web-site-tab-panel';
 import type { CompaniesFormPageProps } from '@/pages/configuration/companies/types';
@@ -36,13 +35,6 @@ function CompanyForm(props: CompaniesFormPageProps) {
                         <form onSubmit={submit} className="space-y-6">
                             <GeneralTabPanel form={form} isEdit={isEdit} />
                         </form>
-                    ) : null}
-
-                    {tab === 'sucursales' ? (
-                        <OfficesTabPanel
-                            companyId={props.company?.id ?? null}
-                            offices={props.offices}
-                        />
                     ) : null}
 
                     {tab === 'integraciones' ? (
