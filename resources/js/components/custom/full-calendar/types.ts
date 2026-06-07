@@ -32,6 +32,18 @@ export type CalendarHoliday = {
     date: string;
 };
 
+export type CalendarScheduleWindow = {
+    dayOfWeek: number;
+    startsAt: string;
+    endsAt: string;
+};
+
+export type CalendarScheduleWindowPayload = {
+    day_of_week: number;
+    starts_at: string;
+    ends_at: string;
+};
+
 export type CalendarAppointmentEvent = {
     id: string;
     title: string;
@@ -47,6 +59,8 @@ export type FullCalendarProps = {
     holidays?: CalendarHoliday[];
     /** ISO 1=lunes … 7=domingo con al menos un doctor activo con horario. */
     scheduledDaysOfWeek?: number[];
+    /** Ventanas horarias HH:MM de todos los doctores activos, por día ISO. */
+    scheduleWindows?: CalendarScheduleWindow[];
     appointments?: CalendarAppointmentEvent[];
     canCreate?: boolean;
     onNewAppointment?: (defaults?: {

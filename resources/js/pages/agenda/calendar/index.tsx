@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { VetsapFullCalendar } from '@/components/custom/full-calendar';
+import { mapScheduleWindowsFromPayload } from '@/components/custom/full-calendar/schedule-windows';
 import { AppointmentDetailModal } from '@/pages/agenda/calendar/appointment-detail-modal';
 import { AppointmentForm } from '@/pages/agenda/calendar/appointment-form';
 import { CALENDAR_PAGE } from '@/pages/agenda/calendar/config';
@@ -11,8 +12,10 @@ import { buildDefaultAppointmentFormDefaults } from '@/pages/agenda/calendar/typ
 export default function CalendarIndex({
     holidays,
     scheduled_days_of_week,
+    schedule_windows,
     appointments,
     formOptions,
+    appointmentStatuses,
     can,
 }: CalendarIndexPageProps) {
     const [formOpen, setFormOpen] = useState(false);
@@ -22,6 +25,11 @@ export default function CalendarIndex({
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<
         string | null
     >(null);
+
+    const scheduleWindows = useMemo(
+        () => mapScheduleWindowsFromPayload(schedule_windows),
+        [schedule_windows],
+    );
 
     const openCreateForm = useCallback((defaults?: AppointmentFormDefaults) => {
         setDetailOpen(false);
@@ -61,6 +69,7 @@ export default function CalendarIndex({
                 open={detailOpen}
                 onOpenChange={handleDetailOpenChange}
                 appointmentId={selectedAppointmentId}
+                appointmentStatuses={appointmentStatuses}
                 canUpdate={can.update}
             />
 
@@ -69,6 +78,7 @@ export default function CalendarIndex({
                     className="min-h-0 flex-1"
                     holidays={holidays}
                     scheduledDaysOfWeek={scheduled_days_of_week}
+                    scheduleWindows={scheduleWindows}
                     appointments={appointments}
                     canCreate={can.create}
                     onNewAppointment={openCreateForm}

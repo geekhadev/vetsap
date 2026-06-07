@@ -1,4 +1,7 @@
-import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
+import type {
+    CalendarHoliday,
+    CalendarScheduleWindowPayload,
+} from '@/components/custom/full-calendar/types';
 
 export type CalendarAppointmentEvent = {
     id: string;
@@ -102,6 +105,7 @@ export type AppointmentDetail = {
 export type CalendarIndexPageProps = {
     holidays: CalendarHoliday[];
     scheduled_days_of_week: number[];
+    schedule_windows: CalendarScheduleWindowPayload[];
     appointments: CalendarAppointmentEvent[];
     formOptions: AppointmentFormOptions;
     appointmentStatuses: AppointmentStatusOption[];

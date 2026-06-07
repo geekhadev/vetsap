@@ -48,6 +48,10 @@ import {
     isCalendarHolidayDate,
     toCalendarDateKey,
 } from './holidays';
+import {
+    buildUnavailableScheduleBackgroundEvents,
+    isDateTimeWithinSchedule,
+} from './schedule-windows';
 import type {
     CalendarViewId,
     CalendarViewOption,
@@ -165,6 +169,7 @@ export function VetsapFullCalendar({
     className,
     holidays = [],
     scheduledDaysOfWeek = [],
+    scheduleWindows = [],
     appointments = [],
     canCreate = false,
     onNewAppointment,
@@ -201,6 +206,35 @@ export function VetsapFullCalendar({
     const holidayBackgroundEvents = useMemo(
         () => buildHolidayBackgroundEvents(holidays),
         [holidays],
+    );
+
+    const scheduleBlockedEventsRange = useMemo(() => {
+        const rangeStart = new Date();
+        rangeStart.setMonth(rangeStart.getMonth() - 1);
+        rangeStart.setHours(0, 0, 0, 0);
+
+        const rangeEnd = new Date();
+        rangeEnd.setMonth(rangeEnd.getMonth() + 3);
+        rangeEnd.setHours(23, 59, 59, 999);
+
+        return { rangeStart, rangeEnd };
+    }, []);
+
+    const scheduleBlockedBackgroundEvents = useMemo(
+        () =>
+            buildUnavailableScheduleBackgroundEvents(
+                scheduleWindows,
+                holidayDates,
+                scheduledDays,
+                scheduleBlockedEventsRange.rangeStart,
+                scheduleBlockedEventsRange.rangeEnd,
+            ),
+        [
+            scheduleWindows,
+            holidayDates,
+            scheduledDays,
+            scheduleBlockedEventsRange,
+        ],
     );
 
     const appointmentEvents = useMemo(
@@ -248,8 +282,12 @@ export function VetsapFullCalendar({
     }, []);
 
     const events = useMemo(
-        () => [...holidayBackgroundEvents, ...appointmentEvents],
-        [holidayBackgroundEvents, appointmentEvents],
+        () => [
+            ...holidayBackgroundEvents,
+            ...scheduleBlockedBackgroundEvents,
+            ...appointmentEvents,
+        ],
+        [holidayBackgroundEvents, scheduleBlockedBackgroundEvents, appointmentEvents],
     );
 
     const dayHeaderContent = useCallback(
@@ -311,8 +349,13 @@ export function VetsapFullCalendar({
 
     const selectAllow = useCallback(
         (selectInfo: DateSpanApi) =>
-            !isCalendarBlockedDate(selectInfo.start, holidayDates, scheduledDays),
-        [holidayDates, scheduledDays],
+            isDateTimeWithinSchedule(
+                selectInfo.start,
+                scheduleWindows,
+                scheduledDays,
+                holidayDates,
+            ),
+        [scheduleWindows, scheduledDays, holidayDates],
     );
 
     const handleAppointmentPointerUp = useCallback(
@@ -366,13 +409,32 @@ export function VetsapFullCalendar({
                 return;
             }
 
-            if (isCalendarBlockedDate(arg.date, holidayDates, scheduledDays)) {
+            if (isTimeGridView(arg.view.type)) {
+                if (
+                    !isDateTimeWithinSchedule(
+                        arg.date,
+                        scheduleWindows,
+                        scheduledDays,
+                        holidayDates,
+                    )
+                ) {
+                    return;
+                }
+            } else if (
+                isCalendarBlockedDate(arg.date, holidayDates, scheduledDays)
+            ) {
                 return;
             }
 
             onNewAppointment(buildSlotDefaultsFromDate(arg.date));
         },
-        [canCreate, holidayDates, onNewAppointment, scheduledDays],
+        [
+            canCreate,
+            holidayDates,
+            onNewAppointment,
+            scheduleWindows,
+            scheduledDays,
+        ],
     );
 
     const handleEventClick = useCallback(
@@ -428,6 +490,15 @@ export function VetsapFullCalendar({
                 const holidayName = arg.event.extendedProps.holidayName as string;
 
                 applyBlockedDayReason(arg.el, `Día feriado: ${holidayName}`);
+
+                return;
+            }
+
+            if (arg.event.extendedProps.isScheduleBlocked) {
+                applyBlockedDayReason(
+                    arg.el,
+                    String(arg.event.extendedProps.blockedReason),
+                );
 
                 return;
             }

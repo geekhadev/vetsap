@@ -15,6 +15,8 @@
     --fc-holiday-stripe: color-mix(in oklch, var(--muted) 65%, transparent);
     --fc-unscheduled-bg: color-mix(in oklch, var(--muted) 38%, var(--card));
     --fc-unscheduled-stripe: color-mix(in oklch, var(--muted) 58%, transparent);
+    --fc-schedule-blocked-bg: color-mix(in oklch, var(--muted) 42%, var(--card));
+    --fc-schedule-blocked-stripe: color-mix(in oklch, var(--muted) 62%, transparent);
     --fc-event-gap: 0.25rem;
     --fc-event-inset: 0.3125rem;
 
@@ -32,6 +34,8 @@
     --fc-holiday-stripe: color-mix(in oklch, var(--muted) 75%, transparent);
     --fc-unscheduled-bg: color-mix(in oklch, var(--muted) 48%, var(--card));
     --fc-unscheduled-stripe: color-mix(in oklch, var(--muted) 68%, transparent);
+    --fc-schedule-blocked-bg: color-mix(in oklch, var(--muted) 52%, var(--card));
+    --fc-schedule-blocked-stripe: color-mix(in oklch, var(--muted) 72%, transparent);
 }
 
 /* Días feriados */
@@ -50,6 +54,24 @@
     height: auto;
     overflow: visible;
     padding: 0.5rem 0.625rem;
+}
+
+/* Bloques fuera del horario de atención */
+.vetsap-full-calendar .fc-bg-event.schedule-blocked {
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--fc-schedule-blocked-bg),
+        var(--fc-schedule-blocked-bg) 6px,
+        var(--fc-schedule-blocked-stripe) 6px,
+        var(--fc-schedule-blocked-stripe) 12px
+    );
+    cursor: help;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.vetsap-full-calendar .fc-bg-event.schedule-blocked .fc-event-main {
+    pointer-events: none;
 }
 
 .vetsap-full-calendar .fc-holiday-label {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Agenda;
 use App\Actions\Agenda\Appointments\BuildAppointmentFormOptionsAction;
 use App\Actions\Agenda\Appointments\ListAppointmentsForCalendarAction;
 use App\Actions\Agenda\AppointmentStatuses\ListActiveAppointmentStatusesForCalendarAction;
+use App\Actions\Agenda\Calendar\ListDoctorScheduleWindowsForCompanyAction;
 use App\Actions\Agenda\Calendar\ListScheduledDaysOfWeekForCompanyAction;
 use App\Actions\Agenda\Holidays\ListActiveHolidaysForCalendarAction;
 use App\Http\Controllers\Controller;
@@ -24,6 +25,7 @@ class CalendarController extends Controller
         BuildAppointmentFormOptionsAction $buildFormOptions,
         ListActiveAppointmentStatusesForCalendarAction $listAppointmentStatuses,
         ListScheduledDaysOfWeekForCompanyAction $listScheduledDaysOfWeek,
+        ListDoctorScheduleWindowsForCompanyAction $listDoctorScheduleWindows,
     ): Response {
         $this->authorize('viewAny', Calendar::class);
 
@@ -36,6 +38,9 @@ class CalendarController extends Controller
                 : [],
             'scheduled_days_of_week' => $company instanceof Company
                 ? $listScheduledDaysOfWeek->execute($company->id)
+                : [],
+            'schedule_windows' => $company instanceof Company
+                ? $listDoctorScheduleWindows->execute($company->id)
                 : [],
             'appointments' => $company instanceof Company
                 ? $listAppointments->execute($company->id)
