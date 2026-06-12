@@ -24,7 +24,7 @@ export function LandingFeaturePanel({ feature }: LandingFeaturePanelProps) {
                 alt={feature.imageAlt}
                 width={1200}
                 height={720}
-                className="aspect-4/3 w-full min-h-[15rem] object-cover object-center sm:min-h-[17rem] lg:aspect-16/9 lg:min-h-[22rem] xl:min-h-[26rem]"
+                className="aspect-4/3 w-full min-h-[15rem] sm:min-h-[17rem] lg:aspect-16/9 lg:min-h-[22rem] xl:min-h-[26rem]"
             />
         </div>
     );

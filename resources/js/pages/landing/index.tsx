@@ -1,4 +1,3 @@
-import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { LandingCta } from '@/pages/landing/landing-cta';
 import { LandingFaq } from '@/pages/landing/landing-faq';
@@ -30,13 +29,6 @@ export default function LandingIndex({
 
     return (
         <div id="top" className="landing-page flex min-h-screen flex-col bg-white text-gray-900 [&_[id]]:scroll-mt-24">
-            <Head>
-                <title>Vetsap — ERP para veterinarios</title>
-                <meta
-                    name="description"
-                    content="Software para clínicas veterinarias: página web, citas en línea, gestión de pacientes y boletas electrónicas SII."
-                />
-            </Head>
             <main className="flex flex-col">
                 <div className="relative">
                     <LandingHeader canRegister={canRegister} />

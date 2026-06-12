@@ -22,7 +22,7 @@ export const landingFeatures: readonly LandingFeature[] = [
             'Secciones de servicios, galería y contacto',
             'Diseño alineado a la experiencia de tus clientes',
         ],
-        imageSrc: 'https://placehold.co/1200x720/e0f7fa/00838f?text=Web+p%C3%BAblica',
+        imageSrc: '/images/landing/feature-web.png',
         imageAlt: 'Vista de la página web pública de una clínica veterinaria',
     },
     {
@@ -37,7 +37,7 @@ export const landingFeatures: readonly LandingFeature[] = [
             'Bloques según disponibilidad real',
             'Confirmación clara para el dueño de la mascota',
         ],
-        imageSrc: 'https://placehold.co/1200x720/b2ebf2/00838f?text=Agenda+en+l%C3%ADnea',
+        imageSrc: '/images/landing/feature-calendario.png',
         imageAlt: 'Formulario de reserva de citas en línea',
     },
     {
@@ -52,7 +52,7 @@ export const landingFeatures: readonly LandingFeature[] = [
             'Fichas de pacientes y historial',
             'Roles y permisos por sucursal',
         ],
-        imageSrc: 'https://placehold.co/1200x720/e0f7fa/006978?text=Panel+de+gesti%C3%B3n',
+        imageSrc: '/images/landing/feature-services.png',
         imageAlt: 'Panel de gestión de clínica veterinaria',
     },
     {
