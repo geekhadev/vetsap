@@ -1,14 +1,20 @@
 import {
     Boxes,
     Building2,
+    Calendar,
     CalendarCog,
     CalendarDays,
     CalendarOff,
+    ChartLine,
     ClipboardList,
+    ClipboardPlus,
+    Cog,
     FileType,
     Globe,
+    GraduationCap,
+    Heart,
     KeyRound,
-    LayoutGrid,
+    LayoutTemplate,
     ListChecks,
     MapPin,
     Package,
@@ -16,6 +22,7 @@ import {
     Plug2,
     Receipt,
     Scissors,
+    Server,
     Share2,
     ShoppingCart,
     Stethoscope,
@@ -40,6 +47,8 @@ import { index as integrationSettingsIndex } from '@/routes/configuration/integr
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { index as websiteSettingsIndex } from '@/routes/configuration/website-settings';
+import { index as clinicalAttentionsIndex } from '@/routes/medic/clinical-attentions';
+import { index as clinicalTemplatesIndex } from '@/routes/medic/clinical-templates';
 import { index as doctorsIndex } from '@/routes/medic/doctors';
 import { index as patientsIndex } from '@/routes/medic/patients';
 import { index as servicesIndex } from '@/routes/medic/services';
@@ -61,28 +70,171 @@ import type { NavItem } from '@/types';
 
 export const mainNavItems: NavItem[] = [
     {
-        title: 'Panel',
+        title: 'KPIs',
         href: dashboard(),
-        icon: LayoutGrid,
+        icon: ChartLine,
     },
     {
-        title: 'Administración',
-        icon: Boxes,
+        title: 'Agenda',
+        icon: CalendarDays,
         items: [
             {
-                title: 'Sistemas',
-                href: systemsIndex(),
-                icon: Boxes,
+                title: 'Calendario',
+                href: calendarIndex(),
+                icon: Calendar,
+                permission: 'agenda.calendar.list',
             },
             {
-                title: 'Módulos',
-                href: modulesIndex(),
+                title: 'Días feriados',
+                href: holidaysIndex(),
+                icon: CalendarOff,
+                permission: 'agenda.holidays.list',
+            },
+            {
+                title: 'Estados de cita',
+                href: appointmentStatusesIndex(),
+                icon: ListChecks,
+                permission: 'agenda.appointment-statuses.list',
+            },
+        ],
+    },
+    {
+        title: 'Medicina',
+        icon: Stethoscope,
+        items: [
+            {
+                title: 'Pacientes',
+                href: patientsIndex(),
+                icon: Heart,
+                permission: 'medic.patients.list',
+            },
+            {
+                title: 'Doctores',
+                href: doctorsIndex(),
+                icon: UserRound,
+                permission: 'medic.doctors.list',
+            },
+            {
+                title: 'Atenciones',
+                href: clinicalAttentionsIndex(),
+                icon: ClipboardPlus,
+                permission: 'medic.clinical-attentions.list',
+            },
+            {
+                title: 'Servicios',
+                href: servicesIndex(),
+                icon: Scissors,
+                permission: 'medic.services.list',
+            },
+            {
+                title: 'Fichas médicas',
+                href: clinicalTemplatesIndex(),
+                icon: LayoutTemplate,
+                permission: 'medic.clinical-templates.list',
+            },
+            {
+                title: 'Especialidades',
+                href: specialtiesIndex(),
+                icon: GraduationCap,
+                permission: 'medic.specialties.list',
+            },
+            {
+                title: 'Especies',
+                href: speciesIndex(),
+                icon: PawPrint,
+                permission: 'medic.species.list',
+            },
+        ],
+    },
+    {
+        title: 'Ventas',
+        icon: ShoppingCart,
+        items: [
+            {
+                title: 'Clientes',
+                href: customersIndex(),
+                icon: Users,
+                permission: 'sale.customers.list',
+            },
+            {
+                title: 'SII CAFs',
+                href: siiCafsIndex(),
+                icon: FileType,
+                permission: 'sale.sii-cafs.view',
+            },
+            {
+                title: 'SII Cert. Boletas',
+                href: certificationSiiTicketsIndex(),
+                icon: Receipt,
+                permission: 'sale.sii-certification-tickets.list',
+            },
+        ],
+    },
+    {
+        title: 'Almacén',
+        icon: Warehouse,
+        items: [
+            {
+                title: 'Productos',
+                href: productsIndex(),
                 icon: Package,
+                permission: 'store.products.list',
             },
             {
-                title: 'Permisos',
-                href: permissionsIndex(),
-                icon: KeyRound,
+                title: 'Categorías de productos',
+                href: productCategoriesIndex(),
+                icon: Tags,
+                permission: 'store.product-categories.list',
+            },
+            {
+                title: 'Tipos de productos',
+                href: productTypesIndex(),
+                icon: Tag,
+                permission: 'store.product-types.list',
+            },
+        ],
+    },
+    {
+        title: 'Configuración',
+        icon: Cog,
+        items: [
+            {
+                title: 'Empresa',
+                href: companiesIndex(),
+                icon: Building2,
+                permission: 'configuration.companies.list',
+            },
+            {
+                title: 'Sucursales',
+                href: companyOfficesIndex(),
+                icon: MapPin,
+                permission: 'configuration.company-offices.list',
+            },
+            {
+                title: 'Sitio web',
+                href: websiteSettingsIndex(),
+                icon: Globe,
+            },
+            {
+                title: 'Calendario',
+                href: calendarSettingsIndex(),
+                icon: CalendarCog,
+            },
+            {
+                title: 'Integraciones',
+                href: integrationSettingsIndex(),
+                icon: Plug2,
+            },
+            {
+                title: 'Roles',
+                href: rolesIndex(),
+                icon: UserRound,
+                permission: 'configuration.roles.list',
+            },
+            {
+                title: 'Usuarios',
+                href: usersIndex(),
+                icon: Users,
             },
         ],
     },
@@ -117,161 +269,30 @@ export const mainNavItems: NavItem[] = [
                 icon: ClipboardList,
             },
             {
-                title: 'SII tipos de documento tributario',
+                title: 'SII tipos de documento',
                 href: siiTaxDocumentTypesIndex(),
                 icon: FileType,
             },
         ],
     },
     {
-        title: 'Ventas',
-        icon: ShoppingCart,
-        items: [
-            {
-                title: 'Clientes',
-                href: customersIndex(),
-                icon: Users,
-                permission: 'sale.customers.list',
-            },
-            {
-                title: 'SII Cert. Boletas',
-                href: certificationSiiTicketsIndex(),
-                icon: Receipt,
-                permission: 'sale.sii-certification-tickets.list',
-            },
-            {
-                title: 'SII CAFs',
-                href: siiCafsIndex(),
-                icon: FileType,
-                permission: 'sale.sii-cafs.view',
-            },
-        ],
-    },
-    {
-        title: 'Almacén',
-        icon: Warehouse,
-        items: [
-            {
-                title: 'Tipos de productos',
-                href: productTypesIndex(),
-                icon: Tag,
-                permission: 'store.product-types.list',
-            },
-            {
-                title: 'Categorías de productos',
-                href: productCategoriesIndex(),
-                icon: Tags,
-                permission: 'store.product-categories.list',
-            },
-            {
-                title: 'Productos',
-                href: productsIndex(),
-                icon: Package,
-                permission: 'store.products.list',
-            },
-        ],
-    },
-    {
-        title: 'Medicina',
-        icon: Stethoscope,
-        items: [
-            {
-                title: 'Especialidades',
-                href: specialtiesIndex(),
-                icon: Stethoscope,
-                permission: 'medic.specialties.list',
-            },
-            {
-                title: 'Servicios',
-                href: servicesIndex(),
-                icon: Scissors,
-                permission: 'medic.services.list',
-            },
-            {
-                title: 'Especies',
-                href: speciesIndex(),
-                icon: PawPrint,
-                permission: 'medic.species.list',
-            },
-            {
-                title: 'Doctores',
-                href: doctorsIndex(),
-                icon: UserRound,
-                permission: 'medic.doctors.list',
-            },
-            {
-                title: 'Pacientes',
-                href: patientsIndex(),
-                icon: PawPrint,
-                permission: 'medic.patients.list',
-            },
-        ],
-    },
-    {
-        title: 'Agenda',
-        icon: CalendarDays,
-        items: [
-            {
-                title: 'Calendario',
-                href: calendarIndex(),
-                icon: CalendarDays,
-                permission: 'agenda.calendar.list',
-            },
-            {
-                title: 'Días feriados',
-                href: holidaysIndex(),
-                icon: CalendarOff,
-                permission: 'agenda.holidays.list',
-            },
-            {
-                title: 'Estados de cita',
-                href: appointmentStatusesIndex(),
-                icon: ListChecks,
-                permission: 'agenda.appointment-statuses.list',
-            },
-        ],
-    },
-    {
-        title: 'Configuración',
+        title: 'Administración',
         icon: Boxes,
         items: [
             {
-                title: 'Empresa',
-                href: companiesIndex(),
-                icon: Building2,
-                permission: 'configuration.companies.list',
+                title: 'Sistemas',
+                href: systemsIndex(),
+                icon: Server,
             },
             {
-                title: 'Roles',
-                href: rolesIndex(),
-                icon: UserRound,
-                permission: 'configuration.roles.list',
+                title: 'Módulos',
+                href: modulesIndex(),
+                icon: Package,
             },
             {
-                title: 'Usuarios',
-                href: usersIndex(),
-                icon: Users,
-            },
-            {
-                title: 'Sucursales',
-                href: companyOfficesIndex(),
-                icon: MapPin,
-                permission: 'configuration.company-offices.list',
-            },
-            {
-                title: 'Sitio web',
-                href: websiteSettingsIndex(),
-                icon: Globe,
-            },
-            {
-                title: 'Calendario',
-                href: calendarSettingsIndex(),
-                icon: CalendarCog,
-            },
-            {
-                title: 'Integraciones',
-                href: integrationSettingsIndex(),
-                icon: Plug2,
+                title: 'Permisos',
+                href: permissionsIndex(),
+                icon: KeyRound,
             },
         ],
     },
