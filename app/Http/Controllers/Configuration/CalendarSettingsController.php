@@ -55,6 +55,8 @@ class CalendarSettingsController extends Controller
 
         $action->execute($company, $request->calendarSettingsPayload());
 
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Configuración del calendario actualizada.']);
+
         return to_route('configuration.calendar-settings.index');
     }
 }
