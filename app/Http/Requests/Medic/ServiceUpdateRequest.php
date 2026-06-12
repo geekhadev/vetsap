@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Medic;
 
+use App\Models\Company;
 use App\Models\Medic\Service;
 use App\Support\Validation\ServicePayloadValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -35,7 +36,13 @@ class ServiceUpdateRequest extends FormRequest
             return ['name' => ['required']];
         }
 
-        return ServicePayloadValidationRules::updateRules($companyId, (string) $service->id);
+        return ServicePayloadValidationRules::updateRules(
+            $companyId,
+            (string) $service->id,
+            ServicePayloadValidationRules::resolveTimeBlockMinutes(
+                Company::query()->find($companyId),
+            ),
+        );
     }
 
     /**
@@ -44,7 +51,7 @@ class ServiceUpdateRequest extends FormRequest
      *     name: string,
      *     description: string|null,
      *     price: string|null,
-     *     duration_minutes: int|null,
+     *     duration_minutes: int,
      *     is_active: bool
      * }
      */

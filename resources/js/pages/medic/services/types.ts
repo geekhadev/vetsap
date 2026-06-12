@@ -91,3 +91,24 @@ export function formatDuration(minutes: number | null): string {
 
     return `${minutes} min`;
 }
+
+export function formatServiceDuration(
+    minutes: number | null,
+    timeBlockMinutes: number,
+): string {
+    if (minutes === null) {
+        return '—';
+    }
+
+    if (
+        timeBlockMinutes > 0 &&
+        minutes % timeBlockMinutes === 0
+    ) {
+        const blocks = minutes / timeBlockMinutes;
+        const blockLabel = blocks === 1 ? '1 bloque' : `${blocks} bloques`;
+
+        return `${blockLabel} (${minutes} min)`;
+    }
+
+    return formatDuration(minutes);
+}

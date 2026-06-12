@@ -37,6 +37,14 @@ final class CalendarSettingKeys
     public const CLIENT_NOTIFY_ON_PRESCRIPTION_AFTER_VISIT = 'calendar_client_notify_on_prescription_after_visit';
 
     /**
+     * @return list<int>
+     */
+    public static function allowedTimeBlockMinutes(): array
+    {
+        return [15, 30, 45, 60];
+    }
+
+    /**
      * @return list<string>
      */
     public static function all(): array

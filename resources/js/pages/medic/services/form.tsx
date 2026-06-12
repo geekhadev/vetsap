@@ -5,6 +5,7 @@ import { FormSelect } from '@/components/custom/form-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
+import { buildServiceDurationBlockOptions } from '@/pages/medic/services/config';
 import { useServiceForm } from '@/pages/medic/services/hooks/use-form';
 import { ServiceUseWebSwitch } from '@/pages/medic/services/service-use-web-switch';
 import type { Service, SpecialtyOption } from '@/pages/medic/services/types';
@@ -14,6 +15,7 @@ type ServiceFormProps = {
     onOpenChange: (open: boolean) => void;
     entity: Service | null;
     specialties: SpecialtyOption[];
+    timeBlockMinutes: number;
 };
 
 type ServiceFormFields = Pick<
@@ -32,6 +34,7 @@ export function ServiceForm({
     onOpenChange,
     entity,
     specialties,
+    timeBlockMinutes,
 }: ServiceFormProps) {
     const { isEdit, formProps, headTitle, description } = useServiceForm(entity);
 
@@ -44,6 +47,15 @@ export function ServiceForm({
                     label: s.is_active ? s.name : `${s.name} (inactiva)`,
                 })),
         [specialties, entity?.specialty_id],
+    );
+
+    const durationBlockOptions = useMemo(
+        () =>
+            buildServiceDurationBlockOptions(
+                timeBlockMinutes,
+                entity?.duration_minutes,
+            ),
+        [entity?.duration_minutes, timeBlockMinutes],
     );
 
     return (
@@ -111,16 +123,16 @@ export function ServiceForm({
                             }}
                         />
 
-                        <FormTextInput
-                            label="Duración (minutos)"
-                            placeholder="Ej. 30"
+                        <FormSelect
+                            label="Bloques de tiempo"
+                            required
+                            placeholder="Selecciona bloques de tiempo…"
+                            options={durationBlockOptions}
                             error={errors.duration_minutes}
-                            inputProps={{
+                            selectProps={{
                                 id: 'service-duration_minutes',
                                 name: 'duration_minutes',
-                                type: 'number',
-                                min: 1,
-                                max: 1440,
+                                required: true,
                                 defaultValue:
                                     entity?.duration_minutes != null
                                         ? String(entity.duration_minutes)

@@ -2,15 +2,20 @@
 
 namespace App\Support\Validation;
 
+use App\Actions\Configuration\CalendarSettings\ResolveCalendarTimeBlockMinutesAction;
+use App\Models\Company;
+use App\Support\Configuration\CalendarSettingKeys;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
 final class ServicePayloadValidationRules
 {
+    public const DURATION_MAX_BLOCKS = 6;
+
     /**
      * @return array<string, ValidationRule|array<int, mixed|string>|string>
      */
-    public static function storeRules(string $companyId): array
+    public static function storeRules(string $companyId, int $timeBlockMinutes): array
     {
         return [
             'specialty_id' => [
@@ -28,7 +33,7 @@ final class ServicePayloadValidationRules
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
-            'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'duration_minutes' => self::durationMinutesRules($timeBlockMinutes),
             'is_active' => ['required', 'boolean'],
             'use_web' => ['required', 'boolean'],
         ];
@@ -37,8 +42,11 @@ final class ServicePayloadValidationRules
     /**
      * @return array<string, ValidationRule|array<int, mixed|string>|string>
      */
-    public static function updateRules(string $companyId, string $serviceId): array
-    {
+    public static function updateRules(
+        string $companyId,
+        string $serviceId,
+        int $timeBlockMinutes,
+    ): array {
         return [
             'specialty_id' => [
                 'required',
@@ -56,10 +64,45 @@ final class ServicePayloadValidationRules
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
-            'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'duration_minutes' => self::durationMinutesRules($timeBlockMinutes),
             'is_active' => ['required', 'boolean'],
             'use_web' => ['required', 'boolean'],
         ];
+    }
+
+    /**
+     * @return list<int>
+     */
+    public static function allowedDurationMinutes(int $timeBlockMinutes): array
+    {
+        $allowed = [];
+
+        for ($blocks = 1; $blocks <= self::DURATION_MAX_BLOCKS; $blocks += 1) {
+            $allowed[] = $blocks * max(1, $timeBlockMinutes);
+        }
+
+        return $allowed;
+    }
+
+    /**
+     * @return array<int, ValidationRule|string>
+     */
+    private static function durationMinutesRules(int $timeBlockMinutes): array
+    {
+        return [
+            'required',
+            'integer',
+            Rule::in(self::allowedDurationMinutes($timeBlockMinutes)),
+        ];
+    }
+
+    public static function resolveTimeBlockMinutes(?Company $company): int
+    {
+        if (! $company instanceof Company) {
+            return (int) CalendarSettingKeys::defaults()[CalendarSettingKeys::TIME_BLOCK_MINUTES];
+        }
+
+        return app(ResolveCalendarTimeBlockMinutesAction::class)->execute($company);
     }
 
     /**
@@ -68,7 +111,7 @@ final class ServicePayloadValidationRules
      */
     public static function mergeNormalizedNullableFields(array $input): array
     {
-        $nullable = ['description', 'price', 'duration_minutes'];
+        $nullable = ['description', 'price'];
         $merged = $input;
 
         foreach ($nullable as $field) {
@@ -86,7 +129,7 @@ final class ServicePayloadValidationRules
      *     name: string,
      *     description: string|null,
      *     price: string|null,
-     *     duration_minutes: int|null,
+     *     duration_minutes: int,
      *     is_active: bool,
      *     use_web: bool
      * }
@@ -99,7 +142,7 @@ final class ServicePayloadValidationRules
             'name' => (string) $validated['name'],
             'description' => $validated['description'] ?? null,
             'price' => self::normalizePrice($validated['price'] ?? null),
-            'duration_minutes' => self::normalizeDuration($validated['duration_minutes'] ?? null),
+            'duration_minutes' => self::normalizeDuration($validated['duration_minutes']),
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
             'use_web' => filter_var($validated['use_web'], FILTER_VALIDATE_BOOLEAN),
         ];
@@ -111,7 +154,7 @@ final class ServicePayloadValidationRules
      *     name: string,
      *     description: string|null,
      *     price: string|null,
-     *     duration_minutes: int|null,
+     *     duration_minutes: int,
      *     is_active: bool,
      *     use_web: bool
      * }
@@ -123,7 +166,7 @@ final class ServicePayloadValidationRules
             'name' => (string) $validated['name'],
             'description' => $validated['description'] ?? null,
             'price' => self::normalizePrice($validated['price'] ?? null),
-            'duration_minutes' => self::normalizeDuration($validated['duration_minutes'] ?? null),
+            'duration_minutes' => self::normalizeDuration($validated['duration_minutes']),
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
             'use_web' => filter_var($validated['use_web'], FILTER_VALIDATE_BOOLEAN),
         ];
@@ -138,12 +181,8 @@ final class ServicePayloadValidationRules
         return (string) (int) round((float) $value);
     }
 
-    private static function normalizeDuration(mixed $value): ?int
+    private static function normalizeDuration(mixed $value): int
     {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
         return (int) $value;
     }
 }

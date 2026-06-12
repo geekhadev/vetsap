@@ -19,13 +19,14 @@ import { ServicesIndexFilters } from '@/pages/medic/services/filters';
 import { ServiceForm } from '@/pages/medic/services/form';
 import { useServicesIndex } from '@/pages/medic/services/hooks/use-index';
 import {
-    formatDuration,
     formatPrice,
+    formatServiceDuration,
 } from '@/pages/medic/services/types';
 import type { Service, ServiceListFilters, ServicesIndexFiltersDraftFull } from '@/pages/medic/services/types';
 
 function ServicesIndex() {
-    const { can, specialties } = usePage<ServicesIndexPageProps>().props;
+    const { can, specialties, time_block_minutes: timeBlockMinutes } =
+        usePage<ServicesIndexPageProps>().props;
     const { deleteRow } = useServicesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Service>();
@@ -48,7 +49,7 @@ function ServicesIndex() {
                 key: 'duration_minutes',
                 label: 'Duración',
                 sortable: true,
-                render: (row) => formatDuration(row.duration_minutes),
+                render: (row) => formatServiceDuration(row.duration_minutes, timeBlockMinutes),
             },
             {
                 key: 'price',
@@ -64,7 +65,7 @@ function ServicesIndex() {
                 onDelete: deleteRow,
             }),
         ],
-        [can, deleteRow, openEdit],
+        [can, deleteRow, openEdit, timeBlockMinutes],
     );
 
     return (
@@ -76,6 +77,7 @@ function ServicesIndex() {
                 onOpenChange={handleFormOpenChange}
                 entity={editingEntity}
                 specialties={specialties}
+                timeBlockMinutes={timeBlockMinutes}
             />
 
             <TabledataProvider<Service, ServiceListFilters, ServicesIndexFiltersDraftFull>

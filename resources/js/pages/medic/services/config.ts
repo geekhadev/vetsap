@@ -17,8 +17,42 @@ export type ServicesIndexPageProps = {
     data: Paginated<Service>;
     filters: ServicesIndexFiltersDraftFull;
     specialties: SpecialtyOption[];
+    time_block_minutes: number;
     can: ServicesIndexCan;
 };
+
+export const SERVICE_DURATION_MAX_BLOCKS = 6;
+
+export function buildServiceDurationBlockOptions(
+    timeBlockMinutes: number,
+    currentDurationMinutes?: number | null,
+): { id: string; label: string }[] {
+    const safeBlockMinutes = Math.max(1, timeBlockMinutes);
+    const options: { id: string; label: string }[] = [];
+
+    for (let blocks = 1; blocks <= SERVICE_DURATION_MAX_BLOCKS; blocks += 1) {
+        const minutes = blocks * safeBlockMinutes;
+        const blockLabel = blocks === 1 ? '1 bloque' : `${blocks} bloques`;
+
+        options.push({
+            id: String(minutes),
+            label: `${blockLabel} (${minutes} min)`,
+        });
+    }
+
+    if (
+        currentDurationMinutes != null &&
+        currentDurationMinutes > 0 &&
+        !options.some((option) => option.id === String(currentDurationMinutes))
+    ) {
+        options.unshift({
+            id: String(currentDurationMinutes),
+            label: `${currentDurationMinutes} min (valor actual)`,
+        });
+    }
+
+    return options;
+}
 
 const PAGE = {
     storageKey: 'services-index',

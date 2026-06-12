@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Medic;
 
+use App\Actions\Configuration\CalendarSettings\ResolveCalendarTimeBlockMinutesAction;
 use App\Actions\Medic\Services\CreateServiceAction;
 use App\Actions\Medic\Services\DeleteServiceAction;
 use App\Actions\Medic\Services\ListServicesForCompanyAction;
@@ -13,6 +14,7 @@ use App\Http\Requests\Medic\ServiceUpdateRequest;
 use App\Models\Company;
 use App\Models\Medic\Service;
 use App\Models\Medic\Specialty;
+use App\Support\Configuration\CalendarSettingKeys;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
@@ -23,6 +25,7 @@ class ServicesController extends Controller
     public function index(
         ServiceListRequest $request,
         ListServicesForCompanyAction $list,
+        ResolveCalendarTimeBlockMinutesAction $resolveTimeBlockMinutes,
     ): Response {
         $this->authorize('viewAny', Service::class);
 
@@ -38,6 +41,9 @@ class ServicesController extends Controller
             ]);
 
         $user = $request->user();
+        $timeBlockMinutes = $company instanceof Company
+            ? $resolveTimeBlockMinutes->execute($company)
+            : (int) CalendarSettingKeys::defaults()[CalendarSettingKeys::TIME_BLOCK_MINUTES];
 
         return Inertia::render('medic/services/index', [
             'data' => $data,
@@ -48,6 +54,7 @@ class ServicesController extends Controller
                     ->orderBy('name')
                     ->get(['id', 'name', 'is_active'])
                 : [],
+            'time_block_minutes' => $timeBlockMinutes,
             'can' => [
                 'create' => $user?->can('create', Service::class) ?? false,
                 'update' => $user?->can('updateAny', Service::class) ?? false,

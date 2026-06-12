@@ -7,7 +7,7 @@ export function useServiceForm(entity: Service | null) {
     const headTitle = isEdit ? 'Editar servicio' : 'Nuevo servicio';
     const description = isEdit
         ? 'Modifica los datos del servicio. Si tiene citas asociadas, no podrás eliminarlo; desactívalo en su lugar.'
-        : 'Define la especialidad, nombre, precio y duración del servicio.';
+        : 'Define la especialidad, nombre, precio y bloques de tiempo del servicio según la configuración del calendario.';
 
     const formProps = useMemo(() => {
         if (isEdit && entity) {

@@ -36,7 +36,10 @@ class ServiceStoreRequest extends FormRequest
             return ['name' => ['required']];
         }
 
-        return ServicePayloadValidationRules::storeRules($companyId);
+        return ServicePayloadValidationRules::storeRules(
+            $companyId,
+            ServicePayloadValidationRules::resolveTimeBlockMinutes($this->selectedCompany()),
+        );
     }
 
     /**
@@ -46,7 +49,7 @@ class ServiceStoreRequest extends FormRequest
      *     name: string,
      *     description: string|null,
      *     price: string|null,
-     *     duration_minutes: int|null,
+     *     duration_minutes: int,
      *     is_active: bool
      * }
      */
