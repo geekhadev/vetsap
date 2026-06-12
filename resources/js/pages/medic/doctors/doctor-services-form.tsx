@@ -9,6 +9,7 @@ type DoctorServicesFormProps = {
     onOpenChange: (open: boolean) => void;
     doctor: Doctor | null;
     serviceOptions: ServiceOption[];
+    timeBlockMinutes: number;
 };
 
 export function DoctorServicesForm({
@@ -16,6 +17,7 @@ export function DoctorServicesForm({
     onOpenChange,
     doctor,
     serviceOptions,
+    timeBlockMinutes,
 }: DoctorServicesFormProps) {
     const { formProps, headTitle, description, clearServices, isClearing } =
         useDoctorServicesForm(doctor, () => onOpenChange(false));
@@ -39,6 +41,7 @@ export function DoctorServicesForm({
                     <DoctorServicesEditor
                         serviceOptions={serviceOptions}
                         assigned={doctor.services}
+                        timeBlockMinutes={timeBlockMinutes}
                     />
 
                     <FormDialogFooter

@@ -39,7 +39,8 @@ import type {
 } from '@/pages/medic/doctors/types';
 
 function DoctorsIndex() {
-    const { can, services } = usePage<DoctorsIndexPageProps>().props;
+    const { can, services, calendar_time_block_minutes } =
+        usePage<DoctorsIndexPageProps>().props;
     const { deleteRow } = useDoctorsIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Doctor>();
@@ -212,6 +213,7 @@ function DoctorsIndex() {
                 onOpenChange={handleServicesFormOpenChange}
                 doctor={servicesDoctor}
                 serviceOptions={services}
+                timeBlockMinutes={calendar_time_block_minutes}
             />
 
             <DoctorScheduleForm

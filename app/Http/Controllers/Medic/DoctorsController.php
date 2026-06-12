@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Medic;
 
+use App\Actions\Configuration\CalendarSettings\ResolveCalendarTimeBlockMinutesAction;
 use App\Actions\Medic\Doctors\CreateDoctorAction;
 use App\Actions\Medic\Doctors\DeleteDoctorAction;
 use App\Actions\Medic\Doctors\ListDoctorsForCompanyAction;
@@ -27,6 +28,7 @@ class DoctorsController extends Controller
     public function index(
         DoctorListRequest $request,
         ListDoctorsForCompanyAction $list,
+        ResolveCalendarTimeBlockMinutesAction $resolveCalendarTimeBlockMinutes,
     ): Response {
         $this->authorize('viewAny', Doctor::class);
 
@@ -54,6 +56,9 @@ class DoctorsController extends Controller
                     ->orderBy('name')
                     ->get(['id', 'name', 'duration_minutes', 'price', 'specialty_id'])
                 : [],
+            'calendar_time_block_minutes' => $company instanceof Company
+                ? $resolveCalendarTimeBlockMinutes->execute($company)
+                : 30,
             'can' => [
                 'create' => $user?->can('create', Doctor::class) ?? false,
                 'update' => $user?->can('updateAny', Doctor::class) ?? false,

@@ -17,6 +17,7 @@ export type DoctorsIndexPageProps = {
     data: Paginated<Doctor>;
     filters: DoctorsIndexFiltersDraftFull;
     services: ServiceOption[];
+    calendar_time_block_minutes: number;
     can: DoctorsIndexCan;
 };
 

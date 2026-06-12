@@ -8,16 +8,22 @@ import {
     formatDuration,
     formatPrice,
 } from '@/pages/medic/services/types';
+import {
+    buildDurationBlockOptions,
+    durationBlockCountToMinutes,
+    resolveDurationBlockCount,
+} from './types';
 import type { DoctorServiceAssignment, ServiceOption } from './types';
 
 type DoctorServicesEditorProps = {
     serviceOptions: ServiceOption[];
     assigned?: DoctorServiceAssignment[];
+    timeBlockMinutes: number;
 };
 
 type RowState = {
     selected: boolean;
-    durationOverride: string;
+    durationBlockCount: string;
     priceOverride: string;
 };
 
@@ -39,15 +45,16 @@ function matchesServiceSearch(service: ServiceOption, term: string): boolean {
 function buildInitialState(
     serviceOptions: ServiceOption[],
     assigned: DoctorServiceAssignment[] | undefined,
+    timeBlockMinutes: number,
 ): Record<string, RowState> {
     const assignedMap = new Map(
         (assigned ?? []).map((s) => [
             s.id,
             {
-                durationOverride:
-                    s.pivot.duration_override_minutes != null
-                        ? String(s.pivot.duration_override_minutes)
-                        : '',
+                durationBlockCount: resolveDurationBlockCount(
+                    s.pivot.duration_override_minutes,
+                    timeBlockMinutes,
+                ),
                 priceOverride:
                     s.pivot.price_override != null && s.pivot.price_override !== ''
                         ? String(s.pivot.price_override)
@@ -62,7 +69,7 @@ function buildInitialState(
         const assignedRow = assignedMap.get(option.id);
         state[option.id] = {
             selected: assignedRow !== undefined,
-            durationOverride: assignedRow?.durationOverride ?? '',
+            durationBlockCount: assignedRow?.durationBlockCount ?? '',
             priceOverride: assignedRow?.priceOverride ?? '',
         };
     }
@@ -73,12 +80,18 @@ function buildInitialState(
 export function DoctorServicesEditor({
     serviceOptions,
     assigned,
+    timeBlockMinutes,
 }: DoctorServicesEditorProps) {
     const baseId = useId();
     const searchInputId = `${baseId}-search`;
     const [search, setSearch] = useState('');
     const [rows, setRows] = useState(() =>
-        buildInitialState(serviceOptions, assigned),
+        buildInitialState(serviceOptions, assigned, timeBlockMinutes),
+    );
+
+    const durationBlockOptions = useMemo(
+        () => buildDurationBlockOptions(timeBlockMinutes),
+        [timeBlockMinutes],
     );
 
     const normalizedSearch = useMemo(() => normalizeSearchTerm(search), [search]);
@@ -107,12 +120,12 @@ export function DoctorServicesEditor({
         }));
     };
 
-    const setDurationOverride = (serviceId: string, durationOverride: string) => {
+    const setDurationBlockCount = (serviceId: string, durationBlockCount: string) => {
         setRows((prev) => ({
             ...prev,
             [serviceId]: {
                 ...prev[serviceId],
-                durationOverride,
+                durationBlockCount,
             },
         }));
     };
@@ -143,7 +156,9 @@ export function DoctorServicesEditor({
                 <Label>Servicios que presta</Label>
                 <p className="text-muted-foreground text-sm">
                     Activa los servicios con el interruptor y, si aplica,
-                    define duración o precio distintos al catálogo.
+                    define bloques de tiempo o precio distintos al catálogo.
+                    Cada bloque equivale a {timeBlockMinutes} minutos según la
+                    configuración del calendario.
                 </p>
             </div>
 
@@ -177,7 +192,7 @@ export function DoctorServicesEditor({
                     filteredServiceOptions.map((service) => {
                         const row = rows[service.id];
                         const switchId = `${baseId}-service-${service.id}`;
-                        const durationOverrideId = `${baseId}-duration-${service.id}`;
+                        const durationBlockCountId = `${baseId}-duration-${service.id}`;
                         const priceOverrideId = `${baseId}-price-${service.id}`;
                         const isSelected = row?.selected ?? false;
 
@@ -205,26 +220,38 @@ export function DoctorServicesEditor({
                                     {isSelected ? (
                                         <>
                                             <Label
-                                                htmlFor={durationOverrideId}
+                                                htmlFor={durationBlockCountId}
                                                 className="sr-only"
                                             >
-                                                Duración override para {service.name}
+                                                Bloques de tiempo para {service.name}
                                             </Label>
-                                            <Input
-                                                id={durationOverrideId}
-                                                type="number"
-                                                min={1}
-                                                max={1440}
-                                                placeholder="Min"
-                                                value={row.durationOverride}
-                                                className="w-20"
+                                            <select
+                                                id={durationBlockCountId}
+                                                value={row.durationBlockCount}
                                                 onChange={(e) =>
-                                                    setDurationOverride(
+                                                    setDurationBlockCount(
                                                         service.id,
                                                         e.target.value,
                                                     )
                                                 }
-                                            />
+                                                className={cn(
+                                                    'border-input bg-transparent h-9 rounded-md border px-2 text-sm shadow-xs',
+                                                    'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none',
+                                                    'max-w-[11rem] truncate',
+                                                )}
+                                            >
+                                                <option value="">
+                                                    Bloques de tiempo
+                                                </option>
+                                                {durationBlockOptions.map((option) => (
+                                                    <option
+                                                        key={option.value}
+                                                        value={option.value}
+                                                    >
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
                                             <Label
                                                 htmlFor={priceOverrideId}
                                                 className="sr-only"
@@ -272,7 +299,10 @@ export function DoctorServicesEditor({
                     <input
                         type="hidden"
                         name={`services[${index}][duration_override_minutes]`}
-                        value={row.durationOverride}
+                        value={durationBlockCountToMinutes(
+                            row.durationBlockCount,
+                            timeBlockMinutes,
+                        )}
                     />
                     <input
                         type="hidden"

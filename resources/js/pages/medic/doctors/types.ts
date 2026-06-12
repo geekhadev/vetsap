@@ -141,3 +141,73 @@ export function hasDoctorScheduleConfigured(
 ): boolean {
     return (doctor.schedule_blocks?.length ?? 0) > 0;
 }
+
+export const DOCTOR_SERVICE_DURATION_MAX_BLOCKS = 6;
+
+export function resolveDurationBlockCount(
+    durationMinutes: number | null,
+    blockMinutes: number,
+): string {
+    if (durationMinutes === null || durationMinutes <= 0 || blockMinutes <= 0) {
+        return '';
+    }
+
+    return String(
+        Math.min(
+            Math.ceil(durationMinutes / blockMinutes),
+            DOCTOR_SERVICE_DURATION_MAX_BLOCKS,
+        ),
+    );
+}
+
+export function durationBlockCountToMinutes(
+    blockCount: string,
+    blockMinutes: number,
+): string {
+    if (blockCount === '' || blockMinutes <= 0) {
+        return '';
+    }
+
+    const blocks = Math.min(
+        Number(blockCount),
+        DOCTOR_SERVICE_DURATION_MAX_BLOCKS,
+    );
+
+    if (!Number.isFinite(blocks) || blocks <= 0) {
+        return '';
+    }
+
+    return String(blocks * blockMinutes);
+}
+
+export function buildDurationBlockOptions(
+    blockMinutes: number,
+    maxBlocks: number = DOCTOR_SERVICE_DURATION_MAX_BLOCKS,
+): { value: string; label: string }[] {
+    return Array.from({ length: maxBlocks }, (_, index) => {
+        const blocks = index + 1;
+        const minutes = blocks * blockMinutes;
+
+        return {
+            value: String(blocks),
+            label:
+                blocks === 1
+                    ? `1 bloque (${minutes} min)`
+                    : `${blocks} bloques (${minutes} min)`,
+        };
+    });
+}
+
+export function formatDurationBlocks(
+    durationMinutes: number | null,
+    blockMinutes: number,
+): string {
+    if (durationMinutes === null || durationMinutes <= 0 || blockMinutes <= 0) {
+        return '—';
+    }
+
+    const blocks = Math.ceil(durationMinutes / blockMinutes);
+    const blockLabel = blocks === 1 ? 'bloque' : 'bloques';
+
+    return `${blocks} ${blockLabel} (${durationMinutes} min)`;
+}

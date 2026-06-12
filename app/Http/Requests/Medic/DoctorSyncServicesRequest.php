@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Medic;
 
+use App\Actions\Configuration\CalendarSettings\ResolveCalendarTimeBlockMinutesAction;
+use App\Models\Company;
 use App\Support\Validation\DoctorPayloadValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -53,7 +55,14 @@ class DoctorSyncServicesRequest extends FormRequest
             return ['services' => ['required']];
         }
 
-        return DoctorPayloadValidationRules::syncServicesRules($companyId);
+        $timeBlockMinutes = 30;
+        $company = Company::query()->find($companyId);
+
+        if ($company instanceof Company) {
+            $timeBlockMinutes = app(ResolveCalendarTimeBlockMinutesAction::class)->execute($company);
+        }
+
+        return DoctorPayloadValidationRules::syncServicesRules($companyId, $timeBlockMinutes);
     }
 
     /**

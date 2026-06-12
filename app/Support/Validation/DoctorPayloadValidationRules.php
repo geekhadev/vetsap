@@ -9,6 +9,8 @@ use Illuminate\Validation\Rule;
 
 final class DoctorPayloadValidationRules
 {
+    private const MAX_DURATION_BLOCKS = 6;
+
     /**
      * @return array<string, ValidationRule|array<int, mixed|string>|string>
      */
@@ -50,7 +52,7 @@ final class DoctorPayloadValidationRules
     /**
      * @return array<string, ValidationRule|array<int, mixed|string>|string>
      */
-    public static function syncServicesRules(string $companyId): array
+    public static function syncServicesRules(string $companyId, int $timeBlockMinutes): array
     {
         return [
             'services' => ['required', 'array'],
@@ -60,7 +62,27 @@ final class DoctorPayloadValidationRules
                 'distinct',
                 Rule::exists('medic_services', 'id')->where('company_id', $companyId),
             ],
-            'services.*.duration_override_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'services.*.duration_override_minutes' => [
+                'nullable',
+                'integer',
+                'min:'.$timeBlockMinutes,
+                'max:'.($timeBlockMinutes * self::MAX_DURATION_BLOCKS),
+                static function (string $attribute, mixed $value, \Closure $fail) use ($timeBlockMinutes): void {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+
+                    $minutes = (int) $value;
+
+                    if ($minutes % $timeBlockMinutes !== 0) {
+                        $fail("La duración debe ser múltiplo de {$timeBlockMinutes} minutos (bloque del calendario).");
+                    }
+
+                    if ($minutes > $timeBlockMinutes * self::MAX_DURATION_BLOCKS) {
+                        $fail('La duración no puede superar '.self::MAX_DURATION_BLOCKS.' bloques de tiempo.');
+                    }
+                },
+            ],
             'services.*.price_override' => ['nullable', 'numeric', 'min:0', 'max:999999999'],
         ];
     }
