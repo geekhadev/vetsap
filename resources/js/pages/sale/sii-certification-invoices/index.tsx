@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -272,14 +273,19 @@ const TIPO_LABEL: Record<number, string> = {
 
 function countDisponiblesByTipo(cafs: CafRow[]): Record<number, number> {
     const counts: Record<number, number> = {};
+
     for (const caf of cafs) {
         counts[caf.tipo] = (counts[caf.tipo] ?? 0) + caf.folios.length;
     }
+
     return counts;
 }
 
 function StatusIcon({ ok }: { ok: boolean }) {
-    if (ok) return <CheckCircle2 className="mx-auto size-4 text-emerald-600" />;
+    if (ok) {
+return <CheckCircle2 className="mx-auto size-4 text-emerald-600" />;
+}
+
     return <span className="block text-center text-muted-foreground">—</span>;
 }
 
@@ -291,6 +297,7 @@ function FolioStatusBadge({ status }: { status: FolioStatus }) {
             </Badge>
         );
     }
+
     if (status === 'assigned-debug') {
         return (
             <Badge variant="outline" className="border-cyan-500/40 bg-cyan-500/10 text-cyan-800 dark:text-cyan-200">
@@ -298,6 +305,7 @@ function FolioStatusBadge({ status }: { status: FolioStatus }) {
             </Badge>
         );
     }
+
     return <Badge variant="outline" className="text-muted-foreground">Disponible</Badge>;
 }
 
@@ -338,9 +346,13 @@ function CafTable({
                         const canDelete = sentCount === 0;
 
                         const bySet: Record<string, number> = {};
+
                         for (const f of caf.folios) {
-                            if (f.assignedSet) bySet[f.assignedSet] = (bySet[f.assignedSet] ?? 0) + 1;
+                            if (f.assignedSet) {
+bySet[f.assignedSet] = (bySet[f.assignedSet] ?? 0) + 1;
+}
                         }
+
                         const assignmentSummary = Object.entries(bySet)
                             .map(([s, n]) => `${n} ${s}`)
                             .join(', ');
@@ -374,7 +386,9 @@ function CafTable({
                                             type="button"
                                             disabled={!canDelete}
                                             title={canDelete ? 'Eliminar CAF' : 'No se puede eliminar: tiene folios enviados'}
-                                            onClick={(e) => { e.stopPropagation(); onDeleteCaf(caf.id); }}
+                                            onClick={(e) => {
+ e.stopPropagation(); onDeleteCaf(caf.id); 
+}}
                                             className="text-destructive hover:text-destructive"
                                         >
                                             <Trash2 className="size-3" />
@@ -489,7 +503,10 @@ function HistorialEnvios({
     showLibro?: boolean;
     libroLabel?: string;
 }) {
-    if (envios.length === 0) return null;
+    if (envios.length === 0) {
+return null;
+}
+
     return (
         <div className="space-y-2 border-t pt-4">
             <p className="text-sm font-medium">Historial de envíos en producción</p>
@@ -715,7 +732,9 @@ function LoadSetDialog({
                     <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
                         Cancelar
                     </Button>
-                    <Button type="button" onClick={() => { onLoad(); onOpenChange(false); }}>
+                    <Button type="button" onClick={() => {
+ onLoad(); onOpenChange(false); 
+}}>
                         Guardar y parsear
                     </Button>
                 </DialogFooter>
@@ -946,8 +965,8 @@ export default function SiiCertificationInvoicesIndex() {
 }
 
 SiiCertificationInvoicesIndex.layout = {
-    breadcrumbs: [
-        { title: 'Panel', href: '/dashboard' },
-        { title: 'SII Certificación Facturas', href: '/sale/sii-certification-invoices/prototype' },
-    ],
+    breadcrumbs: buildModuleBreadcrumbs(
+        'SII Certificación Facturas',
+        '/sale/sii-certification-invoices/prototype',
+    ),
 };

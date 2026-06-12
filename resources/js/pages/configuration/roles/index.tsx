@@ -17,6 +17,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import { cn } from '@/lib/utils';
 import {
     flattenPermissionsTree,
@@ -28,7 +29,6 @@ import type {
     PermissionTreeSystem,
     RolesMatrixPageProps,
 } from '@/pages/configuration/roles/types';
-import { dashboard } from '@/routes';
 import { destroy, index as rolesIndex, store, sync } from '@/routes/configuration/roles';
 
 const AUTOSAVE_MS = 280;
@@ -975,10 +975,7 @@ function RolesMatrixPage() {
 }
 
 RolesMatrixPage.layout = {
-    breadcrumbs: [
-        { title: 'Panel', href: dashboard() },
-        { title: 'Roles', href: rolesIndex() },
-    ],
+    breadcrumbs: buildModuleBreadcrumbs('Roles', rolesIndex()),
 };
 
 export default RolesMatrixPage;

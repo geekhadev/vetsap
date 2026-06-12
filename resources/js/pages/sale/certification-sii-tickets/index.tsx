@@ -20,8 +20,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type { CertificationSiiTicketsIndexPageProps } from '@/pages/sale/certification-sii-tickets/types';
-import { dashboard } from '@/routes';
 import {
     download,
     index as certificationIndex,
@@ -253,8 +253,8 @@ export default function CertificationSiiTicketsIndex({
 }
 
 CertificationSiiTicketsIndex.layout = {
-    breadcrumbs: [
-        { title: 'Panel', href: dashboard() },
-        { title: 'SII Certificación Boletas', href: certificationIndex() },
-    ],
+    breadcrumbs: buildModuleBreadcrumbs(
+        'SII Certificación Boletas',
+        certificationIndex(),
+    ),
 };

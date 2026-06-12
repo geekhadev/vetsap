@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-import { dashboard } from '@/routes';
+import { buildAppRootBreadcrumbs } from '@/lib/module-breadcrumbs';
 
 export default function Dashboard() {
     return (
@@ -27,10 +27,5 @@ export default function Dashboard() {
 }
 
 Dashboard.layout = {
-    breadcrumbs: [
-        {
-            title: 'Panel',
-            href: dashboard(),
-        },
-    ],
+    breadcrumbs: buildAppRootBreadcrumbs(),
 };
