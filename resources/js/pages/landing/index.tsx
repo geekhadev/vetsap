@@ -8,6 +8,7 @@ import { LandingHeader } from '@/pages/landing/landing-header';
 import { LandingHero } from '@/pages/landing/landing-hero';
 import { LandingPricing } from '@/pages/landing/landing-pricing';
 import { LandingSection } from '@/pages/landing/landing-section';
+import { LandingWhatsappButton } from '@/pages/landing/landing-whatsapp-button';
 
 export default function LandingIndex({
     canRegister = true,
@@ -55,6 +56,7 @@ export default function LandingIndex({
                 </LandingSection>
             </main>
             <LandingFooter />
+            <LandingWhatsappButton />
         </div>
     );
 }
