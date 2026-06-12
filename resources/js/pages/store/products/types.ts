@@ -72,24 +72,6 @@ export function formatIsActive(value: boolean): string {
     return formatIsActiveBase(value, 'm');
 }
 
-export function formatPrice(price: string | null): string {
-    if (price === null || price === '') {
-        return '—';
-    }
-
-    const amount = Number(price);
-
-    if (Number.isNaN(amount)) {
-        return '—';
-    }
-
-    return new Intl.NumberFormat('es-CL', {
-        style: 'currency',
-        currency: 'CLP',
-        maximumFractionDigits: 0,
-    }).format(amount);
-}
-
 export function formatMasterLabel(option: MasterOption, selectedId?: string): string {
     const inactive = !option.is_active && option.id !== selectedId;
     const suffix = inactive ? ' (inactivo)' : '';

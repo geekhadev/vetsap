@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { CirclePlus } from 'lucide-react';
 import { useMemo } from 'react';
+import { formatCurrencyDisplay } from '@/components/custom/currency-display';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
@@ -19,7 +20,6 @@ import { ServicesIndexFilters } from '@/pages/medic/services/filters';
 import { ServiceForm } from '@/pages/medic/services/form';
 import { useServicesIndex } from '@/pages/medic/services/hooks/use-index';
 import {
-    formatPrice,
     formatServiceDuration,
 } from '@/pages/medic/services/types';
 import type { Service, ServiceListFilters, ServicesIndexFiltersDraftFull } from '@/pages/medic/services/types';
@@ -55,7 +55,10 @@ function ServicesIndex() {
                 key: 'price',
                 label: 'Precio',
                 sortable: true,
-                render: (row) => formatPrice(row.price),
+                render: (row) =>
+                    formatCurrencyDisplay(row.price, {
+                        empty: 'Consultar precio',
+                    }),
             },
             buildTabledataWebVisibilityColumn<Service>(),
             buildTabledataIsActiveStatusColumn<Service>(),

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { formatCurrencyDisplay } from '@/components/custom/currency-display';
 import { FormCombobox } from '@/components/custom/form-combobox';
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormTextarea } from '@/components/custom/form-textarea';
@@ -212,9 +213,10 @@ export function AppointmentForm({
                         <InfoBadge>
                             Duración:{' '}
                             {selectedService.duration_minutes ?? '—'} min
-                            {selectedService.price
-                                ? ` · Precio: $${selectedService.price}`
-                                : null}
+                            {' · Precio: '}
+                            {formatCurrencyDisplay(selectedService.price, {
+                                empty: 'Consultar precio',
+                            })}
                         </InfoBadge>
                     ) : null}
 

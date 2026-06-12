@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { CirclePlus } from 'lucide-react';
 import { useMemo } from 'react';
+import { formatCurrencyDisplay } from '@/components/custom/currency-display';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
@@ -17,7 +18,6 @@ import type { ProductsIndexPageProps } from '@/pages/store/products/config';
 import { ProductsIndexFilters } from '@/pages/store/products/filters';
 import { ProductForm } from '@/pages/store/products/form';
 import { useProductsIndex } from '@/pages/store/products/hooks/use-index';
-import { formatPrice } from '@/pages/store/products/types';
 import type { Product, ProductListFilters, ProductsIndexFiltersDraftFull } from '@/pages/store/products/types';
 
 function ProductsIndex() {
@@ -51,7 +51,7 @@ function ProductsIndex() {
                 key: 'price',
                 label: 'Precio',
                 sortable: true,
-                render: (row) => formatPrice(row.price),
+                render: (row) => formatCurrencyDisplay(row.price),
             },
             buildTabledataIsActiveStatusColumn<Product>(),
             buildTabledataCrudActionsColumn<Product>({

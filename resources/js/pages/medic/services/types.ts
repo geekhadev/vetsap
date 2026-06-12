@@ -66,24 +66,6 @@ export function formatUseWeb(value: boolean): string {
     return value ? 'Sí' : 'No';
 }
 
-export function formatPrice(price: string | null): string {
-    if (price === null || price === '') {
-        return 'Consultar precio';
-    }
-
-    const amount = Number(price);
-
-    if (Number.isNaN(amount)) {
-        return 'Consultar precio';
-    }
-
-    return new Intl.NumberFormat('es-CL', {
-        style: 'currency',
-        currency: 'CLP',
-        maximumFractionDigits: 0,
-    }).format(amount);
-}
-
 export function formatDuration(minutes: number | null): string {
     if (minutes === null) {
         return '—';

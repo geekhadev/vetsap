@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { CurrencyDisplay } from '@/components/custom/currency-display';
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge/types';
 import { Button } from '@/components/ui/button';
@@ -44,14 +45,6 @@ type AppointmentDetailModalProps = {
     canUpdate: boolean;
     canDelete: boolean;
 };
-
-function formatPriceClp(price: string | null): string {
-    if (price === null || price.trim() === '') {
-        return '—';
-    }
-
-    return `${Number(price).toLocaleString('es-CL')} CLP`;
-}
 
 function formatBirthDate(value: string | null): string {
     if (value === null || value.trim() === '') {
@@ -251,9 +244,10 @@ function AppointmentDetailContent({
                 <DetailRow className="border-b font-medium">Servicio</DetailRow>
                 <DetailRow className="flex items-center justify-between gap-3">
                     <span>{appointment.service.name}</span>
-                    <span className="shrink-0 font-medium">
-                        {formatPriceClp(appointment.price)}
-                    </span>
+                    <CurrencyDisplay
+                        value={appointment.price}
+                        className="shrink-0 font-medium"
+                    />
                 </DetailRow>
             </DetailSection>
 

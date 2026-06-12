@@ -1,13 +1,11 @@
 import { Search } from 'lucide-react';
 import { useId, useMemo, useState } from 'react';
+import { CurrencyDisplay } from '@/components/custom/currency-display';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import {
-    formatDuration,
-    formatPrice,
-} from '@/pages/medic/services/types';
+import { formatDuration } from '@/pages/medic/services/types';
 import {
     buildDurationBlockOptions,
     durationBlockCountToMinutes,
@@ -213,7 +211,10 @@ export function DoctorServicesEditor({
                                         {' · '}
                                         {formatDuration(service.duration_minutes)}
                                         {' · '}
-                                        {formatPrice(service.price)}
+                                        <CurrencyDisplay
+                                            value={service.price}
+                                            empty="Consultar precio"
+                                        />
                                     </span>
                                 </div>
                                 <div className="flex shrink-0 items-center gap-2">
