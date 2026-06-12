@@ -4,6 +4,9 @@ import type { CurrencyDisplayProps } from './types';
 
 export type { CurrencyDisplayProps } from './types';
 
+/** Clases de presentación para montos (JetBrains Mono + dígitos tabulares). */
+export const currencyDisplayClassName = 'font-currency tabular-nums';
+
 const DEFAULT_LOCALE = 'es-CL';
 const DEFAULT_CURRENCY = 'CLP';
 const DEFAULT_EMPTY = '—';
@@ -23,6 +26,7 @@ function parseAmount(
 
 /**
  * Formato de moneda con `Intl.NumberFormat` (locale y código ISO 4217).
+ * En JSX usa `CurrencyDisplay` para aplicar la tipografía de montos (JetBrains Mono).
  */
 export function formatCurrencyDisplay(
     value: string | number | null | undefined,
@@ -67,5 +71,7 @@ export function CurrencyDisplay({
         maximumFractionDigits,
     });
 
-    return <span className={cn(className)}>{text}</span>;
+    return (
+        <span className={cn(currencyDisplayClassName, className)}>{text}</span>
+    );
 }

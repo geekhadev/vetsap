@@ -1,7 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import { CirclePlus } from 'lucide-react';
 import { useMemo } from 'react';
-import { formatCurrencyDisplay } from '@/components/custom/currency-display';
+import { CurrencyDisplay } from '@/components/custom/currency-display';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
@@ -55,10 +55,12 @@ function ServicesIndex() {
                 key: 'price',
                 label: 'Precio',
                 sortable: true,
-                render: (row) =>
-                    formatCurrencyDisplay(row.price, {
-                        empty: 'Consultar precio',
-                    }),
+                render: (row) => (
+                    <CurrencyDisplay
+                        value={row.price}
+                        empty="Consultar precio"
+                    />
+                ),
             },
             buildTabledataWebVisibilityColumn<Service>(),
             buildTabledataIsActiveStatusColumn<Service>(),
