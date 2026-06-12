@@ -32,6 +32,11 @@ class AppointmentPolicy
         return $this->canUpdate($user);
     }
 
+    public function deleteAny(User $user): bool
+    {
+        return $this->canDelete($user);
+    }
+
     public function update(User $user, Appointment $appointment): bool
     {
         return $this->canUpdate($user)

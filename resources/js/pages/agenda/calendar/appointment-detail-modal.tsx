@@ -4,6 +4,7 @@ import {
     Mail,
     MapPin,
     Phone,
+    Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -26,6 +27,7 @@ import { AppointmentScheduleAutosaveField } from '@/pages/agenda/calendar/appoin
 import { AppointmentStatusSelector } from '@/pages/agenda/calendar/appointment-status-selector';
 import { useAppointmentDetail } from '@/pages/agenda/calendar/hooks/use-appointment-detail';
 import { useChangeAppointmentStatus } from '@/pages/agenda/calendar/hooks/use-change-appointment-status';
+import { useDeleteAppointment } from '@/pages/agenda/calendar/hooks/use-delete-appointment';
 import { useRescheduleAppointment } from '@/pages/agenda/calendar/hooks/use-reschedule-appointment';
 import type {
     AppointmentDetail,
@@ -40,6 +42,7 @@ type AppointmentDetailModalProps = {
     appointmentStatuses: AppointmentStatusOption[];
     holidays: CalendarHoliday[];
     canUpdate: boolean;
+    canDelete: boolean;
 };
 
 function formatPriceClp(price: string | null): string {
@@ -101,26 +104,34 @@ function AppointmentDetailContent({
     appointment,
     appointmentStatuses,
     canUpdate,
+    canDelete,
     statusChanging,
     statusChangeError,
     rescheduling,
     rescheduleError,
+    deleting,
+    deleteError,
     holidays,
     onStatusChange,
     onScheduleChange,
+    onDelete,
     scheduleFieldKey,
 }: {
     appointment: AppointmentDetail;
     appointmentStatuses: AppointmentStatusOption[];
     canUpdate: boolean;
+    canDelete: boolean;
     statusChanging: boolean;
     statusChangeError: string | null;
     rescheduling: boolean;
     rescheduleError: string | null;
+    deleting: boolean;
+    deleteError: string | null;
     holidays: CalendarHoliday[];
     scheduleFieldKey: number;
     onStatusChange: (statusId: string) => void;
     onScheduleChange: (schedule: AppointmentScheduleValue) => void;
+    onDelete: () => void;
 }) {
     const patientMeta = joinDetailParts([
         formatPatientSexLabel(appointment.patient.sex),
@@ -257,7 +268,28 @@ function AppointmentDetailContent({
                 </DetailSection>
             ) : null}
 
-            <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                {canDelete ? (
+                    <div className="space-y-1">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="gap-2 border-destructive/40 text-destructive hover:bg-destructive/10"
+                            disabled={deleting}
+                            onClick={onDelete}
+                        >
+                            <Trash2 aria-hidden className="size-4" />
+                            Eliminar cita
+                        </Button>
+                        {deleteError ? (
+                            <p className="text-destructive text-xs" role="alert">
+                                {deleteError}
+                            </p>
+                        ) : null}
+                    </div>
+                ) : (
+                    <span aria-hidden />
+                )}
                 <Button type="button" className="gap-2">
                     Iniciar atención
                     <ArrowRight aria-hidden className="size-4" />
@@ -287,6 +319,7 @@ export function AppointmentDetailModal({
     appointmentStatuses,
     holidays,
     canUpdate,
+    canDelete,
 }: AppointmentDetailModalProps) {
     const { appointment, setAppointment, loading, error, fetchAppointment, reset } =
         useAppointmentDetail();
@@ -302,6 +335,16 @@ export function AppointmentDetailModal({
         error: rescheduleError,
         clearError: clearRescheduleError,
     } = useRescheduleAppointment();
+    const {
+        deleteAppointment,
+        deleting,
+        error: deleteError,
+        clearError: clearDeleteError,
+    } = useDeleteAppointment({
+        onDeleted: () => {
+            onOpenChange(false);
+        },
+    });
     const [scheduleFieldKey, setScheduleFieldKey] = useState(0);
 
     const handleStatusChange = useCallback(
@@ -336,6 +379,22 @@ export function AppointmentDetailModal({
         [appointment, appointmentId, reschedule, setAppointment],
     );
 
+    const handleDelete = useCallback(() => {
+        if (appointment === null || appointmentId === null) {
+            return;
+        }
+
+        const startsAt = new Date(appointment.starts_at);
+        const formattedDate = Number.isNaN(startsAt.getTime())
+            ? appointment.starts_at
+            : format(startsAt, "dd/MM/yyyy 'a las' HH:mm");
+
+        deleteAppointment(
+            appointmentId,
+            `¿Eliminar la cita de ${appointment.patient.name} del ${formattedDate}? Esta acción no se puede deshacer.`,
+        );
+    }, [appointment, appointmentId, deleteAppointment]);
+
     useEffect(() => {
         if (!open || appointmentId === null) {
             return;
@@ -343,6 +402,7 @@ export function AppointmentDetailModal({
 
         clearStatusChangeError();
         clearRescheduleError();
+        clearDeleteError();
         void fetchAppointment(appointmentId);
     }, [
         open,
@@ -350,6 +410,7 @@ export function AppointmentDetailModal({
         fetchAppointment,
         clearStatusChangeError,
         clearRescheduleError,
+        clearDeleteError,
     ]);
 
     useEffect(() => {
@@ -381,14 +442,18 @@ export function AppointmentDetailModal({
                         appointment={appointment}
                         appointmentStatuses={appointmentStatuses}
                         canUpdate={canUpdate}
+                        canDelete={canDelete}
                         statusChanging={statusChanging}
                         statusChangeError={statusChangeError}
                         rescheduling={rescheduling}
                         rescheduleError={rescheduleError}
+                        deleting={deleting}
+                        deleteError={deleteError}
                         holidays={holidays}
                         scheduleFieldKey={scheduleFieldKey}
                         onStatusChange={handleStatusChange}
                         onScheduleChange={handleScheduleChange}
+                        onDelete={handleDelete}
                     />
                 ) : null}
             </DialogContent>

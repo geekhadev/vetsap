@@ -50,6 +50,7 @@ export type CalendarIndexCan = {
     create: boolean;
     view: boolean;
     update: boolean;
+    delete: boolean;
 };
 
 export type AppointmentStatusOption = {

@@ -60,6 +60,7 @@ class CalendarController extends Controller
                 'create' => $user?->can('create', Appointment::class) ?? false,
                 'view' => $user?->can('viewAny', Appointment::class) ?? false,
                 'update' => $user?->can('updateAny', Appointment::class) ?? false,
+                'delete' => $user?->can('deleteAny', Appointment::class) ?? false,
             ],
         ]);
     }

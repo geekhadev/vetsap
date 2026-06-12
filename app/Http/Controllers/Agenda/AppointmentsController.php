@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Agenda;
 
 use App\Actions\Agenda\Appointments\ChangeAppointmentStatusAction;
 use App\Actions\Agenda\Appointments\CreateAppointmentAction;
+use App\Actions\Agenda\Appointments\DeleteAppointmentAction;
 use App\Actions\Agenda\Appointments\RescheduleAppointmentAction;
 use App\Actions\Agenda\Appointments\ShowAppointmentAction;
 use App\Http\Controllers\Controller;
@@ -93,5 +94,18 @@ class AppointmentsController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Cita creada correctamente.']);
 
         return to_route('agenda.calendar.index');
+    }
+
+    public function destroy(
+        Appointment $appointment,
+        DeleteAppointmentAction $action,
+    ): RedirectResponse {
+        $this->authorize('delete', $appointment);
+
+        $action->execute($appointment);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Cita eliminada.']);
+
+        return back();
     }
 }
