@@ -6,6 +6,7 @@ import type {
 } from '@/pages/configuration/website-settings/types';
 import { update as updateWebsiteSettings } from '@/routes/configuration/website-settings';
 import { store as storeWebsiteLogo } from '@/routes/configuration/website-settings/logo';
+import { store as storeWebsiteOgImage } from '@/routes/configuration/website-settings/og-image';
 
 function withCacheVersion(url: string, version: number): string {
     const separator = url.includes('?') ? '&' : '?';
@@ -13,11 +14,61 @@ function withCacheVersion(url: string, version: number): string {
     return `${url}${separator}v=${version}`;
 }
 
+function useImageUpload(serverUrl: string | null, uploadUrl: string) {
+    const imageForm = useForm<{ [key: string]: File | null }>({});
+    const localPreviewRef = useRef<string | null>(null);
+    const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+    const [cacheVersion, setCacheVersion] = useState(0);
+
+    const revokeLocalPreview = (): void => {
+        if (localPreviewRef.current !== null) {
+            URL.revokeObjectURL(localPreviewRef.current);
+            localPreviewRef.current = null;
+        }
+    };
+
+    useEffect(() => revokeLocalPreview, []);
+
+    const previewUrl =
+        localPreviewUrl ??
+        (serverUrl ? withCacheVersion(serverUrl, cacheVersion) : null);
+
+    const upload = (fieldName: string, file: File, input: HTMLInputElement): void => {
+        revokeLocalPreview();
+
+        const objectUrl = URL.createObjectURL(file);
+        localPreviewRef.current = objectUrl;
+        setLocalPreviewUrl(objectUrl);
+
+        imageForm.clearErrors();
+        imageForm.transform(() => ({
+            [fieldName]: file,
+        }));
+        imageForm.post(uploadUrl, {
+            preserveScroll: true,
+            forceFormData: true,
+            onSuccess: () => {
+                imageForm.transform((data) => data);
+                revokeLocalPreview();
+                setLocalPreviewUrl(null);
+                setCacheVersion((v) => v + 1);
+                imageForm.setData(fieldName, null);
+                input.value = '';
+            },
+            onError: () => {
+                imageForm.transform((data) => data);
+                revokeLocalPreview();
+                setLocalPreviewUrl(null);
+            },
+        });
+    };
+
+    return { imageForm, previewUrl, upload };
+}
+
 export function useWebsiteSettingsForm() {
     const { slug, webSettings } =
         usePage<WebsiteSettingsIndexPageProps>().props;
-
-    const serverLogoUrl = webSettings?.['logo'] ?? null;
 
     const form = useForm<WebsiteSettingsFormState>({
         slug: slug ?? '',
@@ -28,27 +79,15 @@ export function useWebsiteSettingsForm() {
         contact_map_url: webSettings?.['contact_map_url'] ?? '',
     });
 
-    const logoForm = useForm<{ logo: File | null }>({ logo: null });
-    const localLogoPreviewRef = useRef<string | null>(null);
-    const [localLogoPreviewUrl, setLocalLogoPreviewUrl] = useState<string | null>(
-        null,
+    const logo = useImageUpload(
+        webSettings?.['logo'] ?? null,
+        storeWebsiteLogo.url(),
     );
-    const [logoCacheVersion, setLogoCacheVersion] = useState(0);
 
-    const revokeLocalLogoPreview = (): void => {
-        if (localLogoPreviewRef.current !== null) {
-            URL.revokeObjectURL(localLogoPreviewRef.current);
-            localLogoPreviewRef.current = null;
-        }
-    };
-
-    useEffect(() => revokeLocalLogoPreview, []);
-
-    const logoPreviewUrl =
-        localLogoPreviewUrl ??
-        (serverLogoUrl
-            ? withCacheVersion(serverLogoUrl, logoCacheVersion)
-            : null);
+    const ogImage = useImageUpload(
+        webSettings?.['og_image'] ?? null,
+        storeWebsiteOgImage.url(),
+    );
 
     const submit = (e: React.FormEvent): void => {
         e.preventDefault();
@@ -56,35 +95,21 @@ export function useWebsiteSettingsForm() {
     };
 
     const uploadLogo = (file: File, input: HTMLInputElement): void => {
-        revokeLocalLogoPreview();
+        logo.upload('logo', file, input);
+    };
 
-        const objectUrl = URL.createObjectURL(file);
-        localLogoPreviewRef.current = objectUrl;
-        setLocalLogoPreviewUrl(objectUrl);
-
-        logoForm.setData('logo', file);
-        logoForm.post(storeWebsiteLogo.url(), {
-            preserveScroll: true,
-            forceFormData: true,
-            onSuccess: () => {
-                revokeLocalLogoPreview();
-                setLocalLogoPreviewUrl(null);
-                setLogoCacheVersion((version) => version + 1);
-                logoForm.setData('logo', null);
-                input.value = '';
-            },
-            onError: () => {
-                revokeLocalLogoPreview();
-                setLocalLogoPreviewUrl(null);
-            },
-        });
+    const uploadOgImage = (file: File, input: HTMLInputElement): void => {
+        ogImage.upload('og_image', file, input);
     };
 
     return {
         form,
-        logoForm,
-        logoPreviewUrl,
+        logoForm: logo.imageForm,
+        logoPreviewUrl: logo.previewUrl,
+        ogImageForm: ogImage.imageForm,
+        ogImagePreviewUrl: ogImage.previewUrl,
         submit,
         uploadLogo,
+        uploadOgImage,
     };
 }
