@@ -5,8 +5,6 @@ import {
 } from '@/types/active-record';
 import type { PaginatedListFilters } from '@/types/list-filters';
 
-export { isGlobalRecord } from '@/lib/store-master-record';
-
 export type ProductType = {
     id: string;
     company_id: string | null;

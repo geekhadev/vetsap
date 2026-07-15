@@ -2,7 +2,7 @@ import { FormBooleanSwitch } from '@/components/custom/form-boolean-switch';
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { isGlobalRecord } from '@/lib/store-master-record';
+import { isGlobalRecord } from '@/lib/global-record';
 import { useProductTypeForm } from '@/pages/store/product-types/hooks/use-form';
 import type { ProductType } from '@/pages/store/product-types/types';
 
