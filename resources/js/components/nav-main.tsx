@@ -8,6 +8,14 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
@@ -18,11 +26,6 @@ import {
     SidebarMenuSubItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
 import { isNavParent } from '@/types';
@@ -113,6 +116,10 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 asChild
                                 isActive={isCurrentUrl(item.href)}
                                 tooltip={{ children: item.title }}
+                                className={cn(
+                                    isCurrentUrl(item.href) &&
+                                        'bg-primary text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-primary hover:text-primary-foreground',
+                                )}
                             >
                                 <Link href={item.href} prefetch>
                                     {item.icon && <item.icon />}
@@ -126,7 +133,6 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         </SidebarGroup>
     );
 }
-
 function NavMainCollapsibleParent({
     item,
     isCurrentOrParentUrl,
@@ -152,6 +158,56 @@ function NavMainCollapsibleParent({
         (childActive && !sectionDismissed) ||
         (manualOpenApplies && manualOpenParentTitle === item.title);
 
+    if (state === 'collapsed' && !isMobile) {
+        return (
+            <SidebarMenuItem>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <SidebarMenuButton
+                            isActive={childActive}
+                            className={cn(
+                                'w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+                                childActive &&
+                                    'bg-primary text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-primary hover:text-primary-foreground data-[state=open]:bg-primary data-[state=open]:text-primary-foreground',
+                            )}
+                        >
+                            {item.icon && <item.icon />}
+                            <span>{item.title}</span>
+                        </SidebarMenuButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        side="right"
+                        align="start"
+                        sideOffset={4}
+                        className="min-w-48 rounded-lg"
+                    >
+                        <DropdownMenuLabel>{item.title}</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {item.items.map((child) => {
+                            const isActive = isCurrentOrParentUrl(child.href);
+
+                            return (
+                                <DropdownMenuItem
+                                    key={child.title}
+                                    asChild
+                                    className={cn(
+                                        isActive &&
+                                            'bg-primary text-primary-foreground focus:bg-primary focus:text-primary-foreground [&_svg]:text-primary-foreground',
+                                    )}
+                                >
+                                    <Link href={child.href} prefetch>
+                                        {child.icon && <child.icon />}
+                                        <span>{child.title}</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                            );
+                        })}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </SidebarMenuItem>
+        );
+    }
+
     return (
         <SidebarMenuItem>
             <Collapsible
@@ -159,47 +215,41 @@ function NavMainCollapsibleParent({
                 open={isOpen}
                 onOpenChange={onOpenChange}
             >
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <CollapsibleTrigger asChild>
-                            <SidebarMenuButton
-                                isActive={childActive}
-                                className="w-full"
-                            >
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
-                                <ChevronRight
-                                    className={cn(
-                                        'ml-auto transition-transform duration-200',
-                                        isOpen && 'rotate-90',
-                                    )}
-                                />
-                            </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent
-                        side="right"
-                        align="center"
-                        hidden={state !== 'collapsed' || isMobile}
-                    >
-                        {item.title}
-                    </TooltipContent>
-                </Tooltip>
+                <CollapsibleTrigger asChild>
+                    <SidebarMenuButton isActive={childActive} className="w-full">
+                        {item.icon && <item.icon />}
+                        <span>{item.title}</span>
+                        <ChevronRight
+                            className={cn(
+                                'ml-auto transition-transform duration-200',
+                                isOpen && 'rotate-90',
+                            )}
+                        />
+                    </SidebarMenuButton>
+                </CollapsibleTrigger>
                 <CollapsibleContent>
                     <SidebarMenuSub>
-                        {item.items.map((child) => (
-                            <SidebarMenuSubItem key={child.title}>
-                                <SidebarMenuSubButton
-                                    asChild
-                                    isActive={isCurrentOrParentUrl(child.href)}
-                                >
-                                    <Link href={child.href} prefetch>
-                                        {child.icon && <child.icon />}
-                                        <span>{child.title}</span>
-                                    </Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                        ))}
+                        {item.items.map((child) => {
+                            const isActive = isCurrentOrParentUrl(child.href);
+
+                            return (
+                                <SidebarMenuSubItem key={child.title}>
+                                    <SidebarMenuSubButton
+                                        asChild
+                                        isActive={isActive}
+                                        className={cn(
+                                            isActive &&
+                                                'bg-primary text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground [&>svg]:text-primary-foreground',
+                                        )}
+                                    >
+                                        <Link href={child.href} prefetch>
+                                            {child.icon && <child.icon />}
+                                            <span>{child.title}</span>
+                                        </Link>
+                                    </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                            );
+                        })}
                     </SidebarMenuSub>
                 </CollapsibleContent>
             </Collapsible>
