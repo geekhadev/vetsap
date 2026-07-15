@@ -8,6 +8,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -117,6 +118,9 @@ function RolesMatrixPage() {
     const [hiddenRoleColumnIds, setHiddenRoleColumnIds] = useState<string[]>(
         [],
     );
+    const [pendingDeleteRole, setPendingDeleteRole] =
+        useState<MatrixRole | null>(null);
+    const [deletingRole, setDeletingRole] = useState(false);
 
     const rolesMatrixRef = useRef(rolesMatrix);
     const lastSyncedSerializedRef = useRef(
@@ -404,19 +408,27 @@ function RolesMatrixPage() {
             return;
         }
 
-        const message = role.is_public
-            ? `¿Eliminar el rol global «${role.name}»? Esto afecta a todas las empresas.`
-            : `¿Eliminar el rol «${role.name}»?`;
+        setPendingDeleteRole(role);
+    }, []);
 
-        if (!window.confirm(message)) {
+    const handleConfirmDeleteRole = useCallback(() => {
+        if (pendingDeleteRole === null) {
             return;
         }
 
-        router.delete(destroy.url(role.id), {
+        setDeletingRole(true);
+
+        router.delete(destroy.url(pendingDeleteRole.id), {
             preserveScroll: true,
             only: ['roles', 'permissionsTree', 'canEditPublicRoles'],
+            onSuccess: () => {
+                setPendingDeleteRole(null);
+            },
+            onFinish: () => {
+                setDeletingRole(false);
+            },
         });
-    }, []);
+    }, [pendingDeleteRole]);
 
     const draftHeader = (
         <th
@@ -970,6 +982,31 @@ function RolesMatrixPage() {
                     </table>
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={pendingDeleteRole !== null}
+                onOpenChange={(open) => {
+                    if (!open && !deletingRole) {
+                        setPendingDeleteRole(null);
+                    }
+                }}
+                title={
+                    pendingDeleteRole?.is_public
+                        ? '¿Eliminar el rol global?'
+                        : '¿Eliminar el rol?'
+                }
+                description={
+                    pendingDeleteRole
+                        ? pendingDeleteRole.is_public
+                            ? `Se eliminará el rol global «${pendingDeleteRole.name}». Esto afecta a todas las empresas.`
+                            : `Se eliminará el rol «${pendingDeleteRole.name}». Esta acción no se puede deshacer.`
+                        : ''
+                }
+                confirmLabel={deletingRole ? 'Eliminando…' : 'Eliminar'}
+                confirmVariant="destructive"
+                confirming={deletingRole}
+                onConfirm={handleConfirmDeleteRole}
+            />
         </>
     );
 }

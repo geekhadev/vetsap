@@ -9,6 +9,7 @@ export function useDoctorScheduleForm(
     onCleared?: () => void,
 ) {
     const [isClearing, setIsClearing] = useState(false);
+    const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
     const formProps = useMemo(() => {
         if (doctor === null) {
@@ -25,16 +26,16 @@ export function useDoctorScheduleForm(
     const description =
         'Configura rangos horarios y selecciona a qué días de la semana aplica cada uno.';
 
-    const clearSchedule = useCallback(() => {
+    const requestClearSchedule = useCallback(() => {
         if (doctor === null) {
             return;
         }
 
-        if (
-            !window.confirm(
-                '¿Quitar todos los horarios de este doctor? Esta acción no se puede deshacer.',
-            )
-        ) {
+        setConfirmClearOpen(true);
+    }, [doctor]);
+
+    const confirmClearSchedule = useCallback(() => {
+        if (doctor === null) {
             return;
         }
 
@@ -48,7 +49,10 @@ export function useDoctorScheduleForm(
                 preserveScroll: true,
                 onStart: () => setIsClearing(true),
                 onFinish: () => setIsClearing(false),
-                onSuccess: () => onCleared?.(),
+                onSuccess: () => {
+                    setConfirmClearOpen(false);
+                    onCleared?.();
+                },
             },
         );
     }, [doctor, onCleared]);
@@ -57,7 +61,10 @@ export function useDoctorScheduleForm(
         formProps,
         headTitle,
         description,
-        clearSchedule,
+        requestClearSchedule,
+        confirmClearSchedule,
+        confirmClearOpen,
+        setConfirmClearOpen,
         isClearing,
     };
 }

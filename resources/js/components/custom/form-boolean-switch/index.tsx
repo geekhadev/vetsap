@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-
+import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import InputError from '@/components/input-error';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -7,7 +7,9 @@ import { cn } from '@/lib/utils';
 
 export type FormBooleanSwitchConfirmUncheck = {
     when: boolean;
+    title?: string;
     message: string;
+    confirmLabel?: string;
 };
 
 export type FormBooleanSwitchProps = {
@@ -48,12 +50,13 @@ export function FormBooleanSwitch({
     const trimmedError = error?.trim() ?? '';
     const hasError = trimmedError.length > 0;
     const [checked, setChecked] = useState(defaultChecked);
+    const [confirmOpen, setConfirmOpen] = useState(false);
 
     const handleCheckedChange = (next: boolean) => {
         if (!next && confirmUncheck?.when) {
-            if (!window.confirm(confirmUncheck.message)) {
-                return;
-            }
+            setConfirmOpen(true);
+
+            return;
         }
 
         setChecked(next);
@@ -89,6 +92,19 @@ export function FormBooleanSwitch({
                 id={errorMessageId}
                 message={hasError ? trimmedError : undefined}
                 className={errorClassName}
+            />
+
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title={confirmUncheck?.title ?? '¿Desactivar?'}
+                description={confirmUncheck?.message ?? ''}
+                confirmLabel={confirmUncheck?.confirmLabel ?? 'Desactivar'}
+                confirmVariant="destructive"
+                onConfirm={() => {
+                    setConfirmOpen(false);
+                    setChecked(false);
+                }}
             />
         </div>
     );

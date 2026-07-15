@@ -1,6 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import { Mail, MapPin, Pencil, Phone, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -29,6 +30,9 @@ export function OfficesSettingsPanel({
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
     const [editingOfficeId, setEditingOfficeId] = useState<string | null>(null);
+    const [pendingDeleteOffice, setPendingDeleteOffice] =
+        useState<CompanyOfficeListItem | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const form = useForm(emptyOfficeForm);
 
@@ -88,20 +92,30 @@ export function OfficesSettingsPanel({
     };
 
     const requestDelete = (office: CompanyOfficeListItem) => {
-        if (
-            !window.confirm(
-                `¿Eliminar la sucursal «${office.name}»? Esta acción no se puede deshacer.`,
-            )
-        ) {
+        setPendingDeleteOffice(office);
+    };
+
+    const handleConfirmDelete = () => {
+        if (pendingDeleteOffice === null) {
             return;
         }
+
+        setDeleting(true);
 
         router.delete(
             companyOfficeRoutes.destroy.url({
                 company: companyId,
-                office: office.id,
+                office: pendingDeleteOffice.id,
             }),
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setPendingDeleteOffice(null);
+                },
+                onFinish: () => {
+                    setDeleting(false);
+                },
+            },
         );
     };
 
@@ -217,6 +231,25 @@ export function OfficesSettingsPanel({
                 form={form}
                 onSubmit={submitOffice}
                 onCancel={closeDialog}
+            />
+
+            <ConfirmDialog
+                open={pendingDeleteOffice !== null}
+                onOpenChange={(open) => {
+                    if (!open && !deleting) {
+                        setPendingDeleteOffice(null);
+                    }
+                }}
+                title="¿Eliminar la sucursal?"
+                description={
+                    pendingDeleteOffice
+                        ? `Se eliminará la sucursal «${pendingDeleteOffice.name}». Esta acción no se puede deshacer.`
+                        : ''
+                }
+                confirmLabel={deleting ? 'Eliminando…' : 'Eliminar'}
+                confirmVariant="destructive"
+                confirming={deleting}
+                onConfirm={handleConfirmDelete}
             />
         </div>
     );

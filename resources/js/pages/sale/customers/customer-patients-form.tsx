@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { CirclePlus, PencilIcon, TrashIcon } from 'lucide-react';
 import { useCallback, useState } from 'react';
+import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { PatientRecordBadge } from '@/components/custom/patient-record-badge';
 import { PatientSexBadge } from '@/components/custom/patient-sex-badge';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,9 @@ export function CustomerPatientsForm({
     can,
 }: CustomerPatientsFormProps) {
     const [patientFormOpen, setPatientFormOpen] = useState(false);
+    const [pendingDeletePatient, setPendingDeletePatient] =
+        useState<Patient | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const patients = customer?.patients ?? [];
 
@@ -63,21 +67,32 @@ export function CustomerPatientsForm({
         setPatientFormOpen(nextOpen);
     }, []);
 
-    const deletePatient = useCallback(
-        (patient: Patient) => {
-            if (!window.confirm(`¿Eliminar al paciente «${patient.name}»?`)) {
-                return;
-            }
+    const deletePatient = useCallback((patient: Patient) => {
+        setPendingDeletePatient(patient);
+    }, []);
 
-            router.delete(
-                destroy.url(patient.id, {
-                    query: { redirect_to: 'customers' },
-                }),
-                { preserveScroll: true },
-            );
-        },
-        [],
-    );
+    const handleConfirmDelete = useCallback(() => {
+        if (pendingDeletePatient === null) {
+            return;
+        }
+
+        setDeleting(true);
+
+        router.delete(
+            destroy.url(pendingDeletePatient.id, {
+                query: { redirect_to: 'customers' },
+            }),
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setPendingDeletePatient(null);
+                },
+                onFinish: () => {
+                    setDeleting(false);
+                },
+            },
+        );
+    }, [pendingDeletePatient]);
 
     if (customer === null) {
         return null;
@@ -184,6 +199,25 @@ export function CustomerPatientsForm({
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={pendingDeletePatient !== null}
+                onOpenChange={(open) => {
+                    if (!open && !deleting) {
+                        setPendingDeletePatient(null);
+                    }
+                }}
+                title="¿Eliminar al paciente?"
+                description={
+                    pendingDeletePatient
+                        ? `Se eliminará al paciente «${pendingDeletePatient.name}». Esta acción no se puede deshacer.`
+                        : ''
+                }
+                confirmLabel={deleting ? 'Eliminando…' : 'Eliminar'}
+                confirmVariant="destructive"
+                confirming={deleting}
+                onConfirm={handleConfirmDelete}
+            />
         </>
     );
 }

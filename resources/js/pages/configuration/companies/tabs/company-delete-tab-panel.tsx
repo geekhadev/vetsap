@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Info, TrashIcon } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { FormActionButton } from '@/components/custom/form-action-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { CompanyFormRecord } from '@/pages/configuration/companies/types';
@@ -15,23 +16,30 @@ export function CompanyDeleteTabPanel({
     company,
     canDelete,
 }: CompanyDeleteTabPanelProps) {
-    const handleDelete = useCallback(() => {
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+
+    const requestDelete = useCallback(() => {
         if (!canDelete) {
             return;
         }
 
-        if (
-            !window.confirm(
-                `¿Eliminar la empresa «${company.name}»? Esta acción no se puede deshacer.`,
-            )
-        ) {
-            return;
-        }
+        setConfirmOpen(true);
+    }, [canDelete]);
+
+    const handleConfirm = useCallback(() => {
+        setDeleting(true);
 
         router.delete(destroy.url(company.id), {
             preserveScroll: true,
+            onSuccess: () => {
+                setConfirmOpen(false);
+            },
+            onFinish: () => {
+                setDeleting(false);
+            },
         });
-    }, [canDelete, company.id, company.name]);
+    }, [company.id]);
 
     return (
         <div className="space-y-4">
@@ -64,9 +72,24 @@ export function CompanyDeleteTabPanel({
                     icon={<TrashIcon className="size-4" />}
                     label="Eliminar empresa"
                     containerClassName="w-auto"
-                    onClick={handleDelete}
+                    onClick={requestDelete}
                 />
             </div>
+
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={(open) => {
+                    if (!deleting) {
+                        setConfirmOpen(open);
+                    }
+                }}
+                title="¿Eliminar la empresa?"
+                description={`Se solicitará la baja de la empresa «${company.name}». Esta acción no se puede deshacer.`}
+                confirmLabel={deleting ? 'Eliminando…' : 'Eliminar empresa'}
+                confirmVariant="destructive"
+                confirming={deleting}
+                onConfirm={handleConfirm}
+            />
         </div>
     );
 }

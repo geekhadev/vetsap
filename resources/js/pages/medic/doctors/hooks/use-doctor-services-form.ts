@@ -9,6 +9,7 @@ export function useDoctorServicesForm(
     onCleared?: () => void,
 ) {
     const [isClearing, setIsClearing] = useState(false);
+    const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
     const formProps = useMemo(() => {
         if (doctor === null) {
@@ -25,16 +26,16 @@ export function useDoctorServicesForm(
     const description =
         'Marca los servicios que presta este profesional y, si aplica, define una duración distinta a la del catálogo.';
 
-    const clearServices = useCallback(() => {
+    const requestClearServices = useCallback(() => {
         if (doctor === null) {
             return;
         }
 
-        if (
-            !window.confirm(
-                '¿Quitar todos los servicios asignados a este doctor? Esta acción no se puede deshacer.',
-            )
-        ) {
+        setConfirmClearOpen(true);
+    }, [doctor]);
+
+    const confirmClearServices = useCallback(() => {
+        if (doctor === null) {
             return;
         }
 
@@ -48,7 +49,10 @@ export function useDoctorServicesForm(
                 preserveScroll: true,
                 onStart: () => setIsClearing(true),
                 onFinish: () => setIsClearing(false),
-                onSuccess: () => onCleared?.(),
+                onSuccess: () => {
+                    setConfirmClearOpen(false);
+                    onCleared?.();
+                },
             },
         );
     }, [doctor, onCleared]);
@@ -57,7 +61,10 @@ export function useDoctorServicesForm(
         formProps,
         headTitle,
         description,
-        clearServices,
+        requestClearServices,
+        confirmClearServices,
+        confirmClearOpen,
+        setConfirmClearOpen,
         isClearing,
     };
 }
