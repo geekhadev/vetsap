@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
 export type FormSelectOption = {
     id: string | number;
@@ -9,7 +9,7 @@ export type FormSelectProps = {
     options: FormSelectOption[];
     /** Texto de la primera opción con `value=""` (vacío). No cuenta como valor válido si el select es `required`. */
     placeholder?: string;
-    label?: string;
+    label?: ReactNode;
     /** Muestra " (*)" en el label; debe coincidir con `required` en el select cuando el campo sea obligatorio. */
     required?: boolean;
     error?: string;

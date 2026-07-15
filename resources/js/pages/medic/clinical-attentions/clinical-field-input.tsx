@@ -1,4 +1,5 @@
-import type { ChangeEvent } from 'react';
+import { Check } from 'lucide-react';
+import type { ChangeEvent, ReactNode } from 'react';
 import { FormSelect } from '@/components/custom/form-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
@@ -11,6 +12,25 @@ type ClinicalFieldInputProps = {
     onValueChange?: (value: string) => void;
     error?: string;
 };
+
+function fieldLabel(text: string, isFilled: boolean): ReactNode {
+    if (!isFilled) {
+        return text;
+    }
+
+    return (
+        <span className="inline-flex items-center gap-1.5">
+            {text}
+            <span
+                className="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white dark:bg-emerald-500"
+                aria-hidden
+            >
+                <Check className="size-2.5 stroke-[3]" />
+            </span>
+            <span className="sr-only">(completado)</span>
+        </span>
+    );
+}
 
 export function ClinicalFieldInput({
     fieldKey,
@@ -29,15 +49,23 @@ export function ClinicalFieldInput({
     const inputId = `attention-value-${fieldKey}`;
     const isControlled = value !== undefined && onValueChange !== undefined;
     const strDefault = defaultValue != null ? String(defaultValue) : '';
+    const resolvedValue = isControlled ? (value ?? '') : strDefault;
+    const isFilled = resolvedValue.trim().length > 0;
+    const label = fieldLabel(catalogEntry.label, isFilled);
 
     const commonChange = isControlled
-        ? { value, onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onValueChange(e.target.value) }
+        ? {
+              value,
+              onChange: (
+                  e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+              ) => onValueChange(e.target.value),
+          }
         : { defaultValue: strDefault };
 
     if (catalogEntry.type === 'textarea') {
         return (
             <FormTextarea
-                label={catalogEntry.label}
+                label={label}
                 error={error}
                 textareaProps={{
                     id: inputId,
@@ -57,7 +85,7 @@ export function ClinicalFieldInput({
 
         return (
             <FormSelect
-                label={catalogEntry.label}
+                label={label}
                 placeholder="Selecciona…"
                 options={options}
                 error={error}
@@ -74,7 +102,7 @@ export function ClinicalFieldInput({
 
         return (
             <FormSelect
-                label={catalogEntry.label}
+                label={label}
                 placeholder="Selecciona…"
                 options={options}
                 error={error}
@@ -91,7 +119,7 @@ export function ClinicalFieldInput({
 
         return (
             <FormSelect
-                label={catalogEntry.label}
+                label={label}
                 placeholder="Selecciona…"
                 options={options}
                 error={error}
@@ -103,7 +131,7 @@ export function ClinicalFieldInput({
     if (catalogEntry.type === 'number') {
         return (
             <FormTextInput
-                label={catalogEntry.label}
+                label={label}
                 error={error}
                 inputProps={{
                     id: inputId,
@@ -119,7 +147,7 @@ export function ClinicalFieldInput({
 
     return (
         <FormTextInput
-            label={catalogEntry.label}
+            label={label}
             error={error}
             inputProps={{ id: inputId, name: inputName, ...commonChange }}
         />
