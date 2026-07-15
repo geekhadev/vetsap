@@ -17,4 +17,15 @@ enum AppointmentSource: string
     {
         return array_column(self::cases(), 'value');
     }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Internal => 'Interno',
+            self::Web => 'Web',
+            self::Phone => 'Teléfono',
+            self::WalkIn => 'Presencial',
+            self::System => 'Sistema',
+        };
+    }
 }

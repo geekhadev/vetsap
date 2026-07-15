@@ -115,3 +115,33 @@ const APPOINTMENT_STATUS_DOT_CLASS: Record<
 export function appointmentStatusColorToDotClass(color: string): string {
     return APPOINTMENT_STATUS_DOT_CLASS[resolveAppointmentStatusColor(color)];
 }
+
+/**
+ * Misma familia de color que badges / eventos de cita
+ * (`border-*-200` + `bg-*-50` en AppointmentStatusColorBadge).
+ */
+const APPOINTMENT_STATUS_CHART_COLOR: Record<
+    AppointmentStatusColorValue,
+    string
+> = {
+    slate: '#e2e8f0',
+    blue: '#bfdbfe',
+    sky: '#bae6fd',
+    cyan: '#a5f3fc',
+    teal: '#99f6e4',
+    green: '#bbf7d0',
+    emerald: '#a7f3d0',
+    lime: '#d9f99d',
+    amber: '#fde68a',
+    orange: '#fed7aa',
+    rose: '#fecdd3',
+    pink: '#fbcfe8',
+    purple: '#e9d5ff',
+    violet: '#ddd6fe',
+    indigo: '#c7d2fe',
+    red: '#fecaca',
+};
+
+export function appointmentStatusColorToChartColor(color: string): string {
+    return APPOINTMENT_STATUS_CHART_COLOR[resolveAppointmentStatusColor(color)];
+}
