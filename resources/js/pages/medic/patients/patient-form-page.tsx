@@ -84,10 +84,13 @@ export function PatientFormPage({
                 redirectTo={redirectTo}
             />
 
-            <SplitSettingsLayout className="lg:max-w-none lg:gap-x-4">
+            <SplitSettingsLayout className="lg:max-w-none lg:min-h-0 lg:flex-1 lg:items-stretch lg:gap-x-4 lg:overflow-hidden">
                 <PatientEditSidebar patient={patient} onEdit={handleEdit} />
 
-                <SplitSettingsPanel>
+                <SplitSettingsPanel
+                    className="flex max-h-[calc(100svh-7.5rem)] min-h-0 flex-col overflow-hidden"
+                    contentClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
+                >
                     <PatientEditTabPanel
                         patient={patient}
                         activeTab={activeTab}

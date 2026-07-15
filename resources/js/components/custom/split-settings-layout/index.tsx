@@ -61,7 +61,7 @@ export function SplitSettingsPanel({
             {unwrapped ? (
                 <CardContent className={cn('p-6', contentClassName)}>{children}</CardContent>
             ) : (
-                <CardContent className="px-0">
+                <CardContent className="flex min-h-0 flex-1 flex-col px-0">
                     <div className={cn('p-6', contentClassName)}>{children}</div>
                 </CardContent>
             )}

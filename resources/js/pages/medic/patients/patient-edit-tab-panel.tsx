@@ -160,8 +160,8 @@ export function PatientEditTabPanel({
     const timelineCount = attentions.length + futureAppointments.length;
 
     return (
-        <div className="flex min-w-0 flex-col gap-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
+            <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                     <h2 className="text-base font-medium">Historial clínico</h2>
                     <p className="text-muted-foreground text-sm">
@@ -243,13 +243,15 @@ export function PatientEditTabPanel({
                 </div>
             </div>
 
-            <PatientClinicalTimeline
-                attentions={attentions}
-                futureAppointments={futureAppointments}
-                onAttentionSelect={setViewAttention}
-                onDraftSelect={openDraftSheet}
-                onAppointmentSelect={openAppointmentDetail}
-            />
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                <PatientClinicalTimeline
+                    attentions={attentions}
+                    futureAppointments={futureAppointments}
+                    onAttentionSelect={setViewAttention}
+                    onDraftSelect={openDraftSheet}
+                    onAppointmentSelect={openAppointmentDetail}
+                />
+            </div>
 
             <PatientAttentionViewDialog
                 attention={viewAttention}
