@@ -54,6 +54,7 @@ export function PatientEditTabPanel({
     can,
 }: PatientEditTabPanelProps) {
     const [hasDraftAttention, setHasDraftAttention] = useState(draftAttention !== null);
+    const [draftFormKey, setDraftFormKey] = useState(0);
     const [viewAttention, setViewAttention] = useState<AttentionSummary | null>(null);
 
     useEffect(() => {
@@ -63,6 +64,12 @@ export function PatientEditTabPanel({
     const handleDraftSaved = useCallback(() => {
         setHasDraftAttention(true);
     }, []);
+
+    const handleDraftCompleted = useCallback(() => {
+        setHasDraftAttention(false);
+        setDraftFormKey((key) => key + 1);
+        onTabChange('historial');
+    }, [onTabChange]);
 
     const draftActionLabel = getDraftAttentionActionLabel(hasDraftAttention);
     const DraftActionIcon = PATIENT_DRAFT_ATTENTION_ACTION.icon;
@@ -189,7 +196,7 @@ export function PatientEditTabPanel({
                     modal={false}
                 >
                     <SheetContent
-                        side="right"
+                        side="left"
                         showOverlay={false}
                         showCloseButton={false}
                         className="w-full gap-0 overflow-y-auto p-0 sm:max-w-xl md:max-w-2xl"
@@ -202,7 +209,7 @@ export function PatientEditTabPanel({
                             <SheetDescription>Completa los datos de la atención</SheetDescription>
                         </SheetHeader>
                         <PatientDraftAttentionForm
-                            key={`${patient.id}-${draftAttention?.id ?? 'new'}`}
+                            key={`${patient.id}-${draftAttention?.id ?? 'new'}-${draftFormKey}`}
                             patientId={patient.id}
                             draftAttention={draftAttention}
                             templates={templates}
@@ -210,6 +217,7 @@ export function PatientEditTabPanel({
                             title={draftActionLabel}
                             description="Completa los datos de la atención"
                             onDraftSaved={handleDraftSaved}
+                            onDraftCompleted={handleDraftCompleted}
                             onDismiss={dismissDraftSheet}
                         />
                     </SheetContent>

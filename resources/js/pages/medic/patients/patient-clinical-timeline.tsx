@@ -19,14 +19,14 @@ export function PatientClinicalTimeline({
 }: PatientClinicalTimelineProps) {
     if (attentions.length === 0) {
         return (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground mx-auto w-full max-w-2xl text-center text-sm">
                 Sin atenciones ni exámenes registrados.
             </p>
         );
     }
 
     return (
-        <ol className="flex flex-col">
+        <ol className="mx-auto flex w-full max-w-2xl flex-col">
             {attentions.map((attention, index) => {
                 const isFirst = index === 0;
                 const isLast = index === attentions.length - 1;
@@ -41,11 +41,11 @@ export function PatientClinicalTimeline({
                     <li
                         key={attention.id}
                         className={cn(
-                            'grid grid-cols-[9.5rem_1rem_minmax(0,1fr)] items-center gap-x-6',
+                            'grid grid-cols-[minmax(0,9.5rem)_1rem_minmax(0,1fr)] items-center gap-x-4 sm:gap-x-6',
                             !isLast && 'mb-6',
                         )}
                     >
-                        <div className="flex flex-col items-end justify-center gap-1 text-right">
+                        <div className="flex min-w-0 flex-col items-end justify-center gap-1 text-right">
                             <time
                                 dateTime={timelineMoment}
                                 className="text-muted-foreground text-sm leading-none font-medium whitespace-nowrap tabular-nums"
@@ -78,10 +78,10 @@ export function PatientClinicalTimeline({
                             />
                         </div>
 
-                        <div className="flex items-center">
+                        <div className="flex min-w-0 items-center">
                             <button
                                 type="button"
-                                className="bg-card hover:bg-accent cursor-pointer focus-visible:ring-ring inline-flex max-w-full items-center gap-3 rounded-xl border p-3 text-left shadow-xs transition-colors hover:border-border focus-visible:ring-2 focus-visible:outline-hidden"
+                                className="bg-card hover:bg-accent cursor-pointer focus-visible:ring-ring inline-flex w-full items-center gap-3 rounded-xl border p-3 text-left shadow-xs transition-colors hover:border-border focus-visible:ring-2 focus-visible:outline-hidden"
                                 onClick={() => onAttentionSelect?.(attention)}
                                 aria-label={`Ver atención: ${templateLabel}`}
                             >
@@ -94,7 +94,7 @@ export function PatientClinicalTimeline({
                                     <Stethoscope className="size-4" aria-hidden />
                                 </div>
 
-                                <div className="min-w-0">
+                                <div className="min-w-0 flex-1">
                                     <h3 className="truncate text-sm font-medium">
                                         {templateLabel}
                                     </h3>

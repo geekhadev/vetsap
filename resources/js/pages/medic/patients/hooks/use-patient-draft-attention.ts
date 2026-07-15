@@ -30,10 +30,11 @@ function valuesFromAttention(attention: ClinicalAttention | null): Record<string
 function buildInitialState(
     draftAttention: ClinicalAttention | null,
     defaultTemplateId: string,
+    defaultDoctorId: string,
 ): DraftAttentionFormState {
     return {
         template_id: draftAttention?.template_id ?? defaultTemplateId,
-        doctor_id: draftAttention?.doctor_id ?? '',
+        doctor_id: draftAttention?.doctor_id ?? defaultDoctorId,
         values: valuesFromAttention(draftAttention),
     };
 }
@@ -58,16 +59,20 @@ type UsePatientDraftAttentionOptions = {
     patientId: string;
     draftAttention: ClinicalAttention | null;
     defaultTemplateId: string;
+    defaultDoctorId: string;
     onDraftSaved?: () => void;
+    onDraftCompleted?: () => void;
 };
 
 export function usePatientDraftAttention({
     patientId,
     draftAttention,
     defaultTemplateId,
+    defaultDoctorId,
     onDraftSaved,
+    onDraftCompleted,
 }: UsePatientDraftAttentionOptions) {
-    const initialState = buildInitialState(draftAttention, defaultTemplateId);
+    const initialState = buildInitialState(draftAttention, defaultTemplateId, defaultDoctorId);
 
     const [formState, setFormState] = useState<DraftAttentionFormState>(initialState);
     const [draftId, setDraftId] = useState<string | null>(draftAttention?.id ?? null);
@@ -88,10 +93,15 @@ export function usePatientDraftAttention({
     }, [formState]);
 
     const onDraftSavedRef = useRef(onDraftSaved);
+    const onDraftCompletedRef = useRef(onDraftCompleted);
 
     useEffect(() => {
         onDraftSavedRef.current = onDraftSaved;
     }, [onDraftSaved]);
+
+    useEffect(() => {
+        onDraftCompletedRef.current = onDraftCompleted;
+    }, [onDraftCompleted]);
 
     const persistDraft = useCallback(async (): Promise<boolean> => {
         const current = formStateRef.current;
@@ -206,6 +216,10 @@ export function usePatientDraftAttention({
             },
             {
                 preserveScroll: true,
+                onSuccess: () => {
+                    setDraftId(null);
+                    onDraftCompletedRef.current?.();
+                },
                 onError: (errors) => {
                     setCloseErrors(errors as Record<string, string>);
                     setClosing(false);

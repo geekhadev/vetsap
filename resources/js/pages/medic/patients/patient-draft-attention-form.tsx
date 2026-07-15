@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { FormSelect } from '@/components/custom/form-select';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { ClinicalFieldInput } from '@/pages/medic/clinical-attentions/clinical-field-input';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
 import type { ClinicalFieldKey } from '@/pages/medic/clinical-templates/types';
@@ -18,6 +19,7 @@ type PatientDraftAttentionFormProps = {
     title: string;
     description: string;
     onDraftSaved?: () => void;
+    onDraftCompleted?: () => void;
     onDismiss?: () => void;
 };
 
@@ -29,13 +31,22 @@ export function PatientDraftAttentionForm({
     title,
     description,
     onDraftSaved,
+    onDraftCompleted,
     onDismiss,
 }: PatientDraftAttentionFormProps) {
     const [confirmOpen, setConfirmOpen] = useState(false);
 
+    const showDoctorSelect = doctors.length > 1;
+    const showTemplateSelect = templates.length > 1;
+
     const defaultTemplateId = useMemo(
         () => templates.find((t) => t.is_default)?.id ?? templates[0]?.id ?? '',
         [templates],
+    );
+
+    const defaultDoctorId = useMemo(
+        () => (doctors.length === 1 ? doctors[0].id : ''),
+        [doctors],
     );
 
     const {
@@ -50,7 +61,9 @@ export function PatientDraftAttentionForm({
         patientId,
         draftAttention,
         defaultTemplateId,
+        defaultDoctorId,
         onDraftSaved,
+        onDraftCompleted,
     });
 
     const selectedTemplate = useMemo(
@@ -136,44 +149,53 @@ export function PatientDraftAttentionForm({
             </div>
 
             <div className="flex flex-col gap-4 p-4 sm:p-6">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <FormSelect
-                        label="Médico"
-                        required
-                        placeholder="Selecciona un médico…"
-                        options={doctorOptions}
-                        error={closeErrors.doctor_id}
-                        selectProps={{
-                            id: 'draft-attention-doctor_id',
-                            value: formState.doctor_id,
-                            onChange: (e) => setDoctorId(e.target.value),
-                        }}
-                    />
-                    <FormSelect
-                        label="Plantilla de ficha"
-                        required
-                        placeholder="Selecciona una plantilla…"
-                        options={templateOptions}
-                        error={closeErrors.template_id}
-                        selectProps={{
-                            id: 'draft-attention-template_id',
-                            value: formState.template_id,
-                            onChange: (e) => setTemplateId(e.target.value),
-                        }}
-                    />
-                </div>
+                {showDoctorSelect || showTemplateSelect ? (
+                    <div
+                        className={cn(
+                            'grid grid-cols-1 gap-4',
+                            showDoctorSelect && showTemplateSelect && 'sm:grid-cols-2',
+                        )}
+                    >
+                        {showDoctorSelect ? (
+                            <FormSelect
+                                label="Médico"
+                                required
+                                placeholder="Selecciona un médico…"
+                                options={doctorOptions}
+                                error={closeErrors.doctor_id}
+                                selectProps={{
+                                    id: 'draft-attention-doctor_id',
+                                    value: formState.doctor_id,
+                                    onChange: (e) => setDoctorId(e.target.value),
+                                }}
+                            />
+                        ) : null}
+                        {showTemplateSelect ? (
+                            <FormSelect
+                                label="Plantilla de ficha"
+                                required
+                                placeholder="Selecciona una plantilla…"
+                                options={templateOptions}
+                                error={closeErrors.template_id}
+                                selectProps={{
+                                    id: 'draft-attention-template_id',
+                                    value: formState.template_id,
+                                    onChange: (e) => setTemplateId(e.target.value),
+                                }}
+                            />
+                        ) : null}
+                    </div>
+                ) : null}
 
-                {!selectedTemplate && (
+                {!selectedTemplate && showTemplateSelect ? (
                     <p className="text-muted-foreground text-sm">
                         Selecciona una plantilla para registrar los datos clínicos.
                     </p>
-                )}
+                ) : null}
 
                 {vitalFields.length > 0 && (
-                    <div className="flex flex-col gap-4">
-                        <div>
-                            <h3 className="text-base font-semibold">Signos vitales</h3>
-                        </div>
+                    <section className="flex flex-col gap-4">
+                        <h3 className="text-base font-semibold">Signos vitales</h3>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                             {vitalFields.map((field) => (
                                 <ClinicalFieldInput
@@ -187,14 +209,16 @@ export function PatientDraftAttentionForm({
                                 />
                             ))}
                         </div>
-                    </div>
+                    </section>
                 )}
 
+                {vitalFields.length > 0 && otherFields.length > 0 ? (
+                    <div className="border-border border-t" role="separator" />
+                ) : null}
+
                 {otherFields.length > 0 && (
-                    <div className="flex flex-col gap-4">
-                        <div>
-                            <h3 className="text-base font-semibold">Datos clínicos</h3>
-                        </div>
+                    <section className="flex flex-col gap-4">
+                        <h3 className="text-base font-semibold">Datos clínicos</h3>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                             {otherFields.map((field) => (
                                 <ClinicalFieldInput
@@ -208,7 +232,7 @@ export function PatientDraftAttentionForm({
                                 />
                             ))}
                         </div>
-                    </div>
+                    </section>
                 )}
             </div>
 
