@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Http\Requests\Medic;
+
+use App\Http\Requests\Concerns\InteractsWithSelectedCompanyRequest;
+use App\Support\Validation\ClinicalTemplatePayloadValidationRules;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+
+class ClinicalTemplateUpdateRequest extends FormRequest
+{
+    use InteractsWithSelectedCompanyRequest;
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge(ClinicalTemplatePayloadValidationRules::mergeNormalizedNullableFields([
+            'species_ids' => $this->input('species_ids'),
+            'description' => $this->input('description'),
+        ]));
+    }
+
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        $companyId = $this->selectedCompanyId();
+
+        if ($companyId === null) {
+            return ['name' => ['required']];
+        }
+
+        return ClinicalTemplatePayloadValidationRules::updateRules($companyId);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function templatePayload(): array
+    {
+        /** @var array<string, mixed> $validated */
+        $validated = $this->validated();
+
+        $payload = ClinicalTemplatePayloadValidationRules::payload(
+            (string) $this->selectedCompanyId(),
+            $validated,
+        );
+
+        unset($payload['company_id']);
+
+        return $payload;
+    }
+}

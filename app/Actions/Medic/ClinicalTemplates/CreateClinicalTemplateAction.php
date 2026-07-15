@@ -10,7 +10,7 @@ final class CreateClinicalTemplateAction
     /**
      * @param  array{
      *     company_id: string,
-     *     species_id: string|null,
+     *     species_ids: list<string>,
      *     name: string,
      *     description: string|null,
      *     is_default: bool,
@@ -22,7 +22,8 @@ final class CreateClinicalTemplateAction
     {
         return DB::transaction(function () use ($data): ClinicalTemplate {
             $fields = $data['fields'] ?? [];
-            unset($data['fields']);
+            $speciesIds = $data['species_ids'] ?? [];
+            unset($data['fields'], $data['species_ids']);
 
             if ($data['is_default']) {
                 ClinicalTemplate::clearOtherDefaults($data['company_id']);
@@ -31,11 +32,13 @@ final class CreateClinicalTemplateAction
             /** @var ClinicalTemplate $template */
             $template = ClinicalTemplate::query()->create($data);
 
+            $template->species()->sync($speciesIds);
+
             foreach ($fields as $field) {
                 $template->fields()->create($field);
             }
 
-            return $template->load('fields');
+            return $template->load(['fields', 'species:id,name']);
         });
     }
 }

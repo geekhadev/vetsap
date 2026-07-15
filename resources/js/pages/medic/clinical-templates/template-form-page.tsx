@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { useCallback, useMemo } from 'react';
-import { FormSelect } from '@/components/custom/form-select';
+import { FormMultiSelect } from '@/components/custom/form-multi-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
 import { Button } from '@/components/ui/button';
@@ -9,14 +9,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import {
-    CLINICAL_FIELD_CATALOG
-    
-    
-    
-    
+import { CLINICAL_FIELD_CATALOG } from '@/pages/medic/clinical-templates/types';
+import type {
+    ClinicalFieldKey,
+    ClinicalTemplate,
+    ClinicalTemplateField,
+    SpeciesOption,
 } from '@/pages/medic/clinical-templates/types';
-import type {ClinicalFieldKey, ClinicalTemplate, ClinicalTemplateField, SpeciesOption} from '@/pages/medic/clinical-templates/types';
 
 type SelectedField = {
     field_key: ClinicalFieldKey;
@@ -27,7 +26,7 @@ type SelectedField = {
 type FormData = {
     name: string;
     description: string;
-    species_id: string;
+    species_ids: string[];
     is_default: boolean;
     is_active: boolean;
     fields: SelectedField[];
@@ -78,14 +77,14 @@ export function TemplateFormPage({
     const form = useForm<FormData>({
         name: template?.name ?? '',
         description: template?.description ?? '',
-        species_id: template?.species_id ?? '',
+        species_ids: template?.species?.map((item) => item.id) ?? [],
         is_default: template?.is_default ?? false,
         is_active: template?.is_active ?? true,
         fields: buildInitialFields(template?.fields),
     });
 
     const speciesOptions = useMemo(
-        () => species.map((s) => ({ id: s.id, label: s.name })),
+        () => species.map((s) => ({ value: s.id, label: s.name })),
         [species],
     );
 
@@ -175,17 +174,17 @@ export function TemplateFormPage({
                                 }}
                             />
 
-                            <FormSelect
-                                label="Especie (opcional)"
+                            <FormMultiSelect
+                                id="template-species_ids"
+                                label="Especies (opcional)"
                                 placeholder="Cualquier especie"
+                                searchPlaceholder="Buscar especie…"
                                 options={speciesOptions}
-                                error={form.errors.species_id}
-                                selectProps={{
-                                    id: 'template-species_id',
-                                    name: 'species_id',
-                                    value: form.data.species_id,
-                                    onChange: (e) => form.setData('species_id', e.target.value),
-                                }}
+                                values={form.data.species_ids}
+                                onValuesChange={(values) =>
+                                    form.setData('species_ids', values)
+                                }
+                                error={form.errors.species_ids}
                             />
 
                             <Separator />

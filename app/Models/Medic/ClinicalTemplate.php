@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'company_id',
-    'species_id',
     'name',
     'description',
     'is_default',
@@ -40,11 +40,16 @@ class ClinicalTemplate extends Model
     }
 
     /**
-     * @return BelongsTo<Species, $this>
+     * @return BelongsToMany<Species, $this>
      */
-    public function species(): BelongsTo
+    public function species(): BelongsToMany
     {
-        return $this->belongsTo(Species::class, 'species_id');
+        return $this->belongsToMany(
+            Species::class,
+            'medic_clinical_template_species',
+            'clinical_template_id',
+            'species_id',
+        )->orderBy('name');
     }
 
     /**
@@ -73,7 +78,14 @@ class ClinicalTemplate extends Model
             return $query;
         }
 
-        return $query->where('species_id', $speciesId);
+        return $query->where(function (Builder $inner) use ($speciesId): void {
+            $inner
+                ->whereDoesntHave('species')
+                ->orWhereHas(
+                    'species',
+                    fn (Builder $speciesQuery) => $speciesQuery->where('medic_species.id', $speciesId),
+                );
+        });
     }
 
     /**

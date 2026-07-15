@@ -2,6 +2,7 @@ import { GripVertical, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { FormBooleanSwitch } from '@/components/custom/form-boolean-switch';
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
+import { FormMultiSelect } from '@/components/custom/form-multi-select';
 import { FormSelect } from '@/components/custom/form-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
@@ -11,14 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useClinicalTemplateForm } from '@/pages/medic/clinical-templates/hooks/use-form';
-import {
-    CLINICAL_FIELD_CATALOG
-    
-    
-    
-    
+import { CLINICAL_FIELD_CATALOG } from '@/pages/medic/clinical-templates/types';
+import type {
+    ClinicalFieldKey,
+    ClinicalTemplate,
+    ClinicalTemplateField,
+    SpeciesOption,
 } from '@/pages/medic/clinical-templates/types';
-import type {ClinicalFieldKey, ClinicalTemplate, ClinicalTemplateField, SpeciesOption} from '@/pages/medic/clinical-templates/types';
 
 type ClinicalTemplateFormProps = {
     open: boolean;
@@ -35,8 +35,8 @@ type SelectedField = {
 
 function buildSelectedFields(fields: ClinicalTemplateField[] | undefined): SelectedField[] {
     if (!fields?.length) {
-return [];
-}
+        return [];
+    }
 
     return [...fields]
         .sort((a, b) => a.field_order - b.field_order)
@@ -46,20 +46,6 @@ return [];
             is_required: f.is_required,
         }));
 }
-
-// Agrupa el catálogo por grupo para el selector
-const CATALOG_BY_GROUP = CLINICAL_FIELD_CATALOG.reduce<Record<string, typeof CLINICAL_FIELD_CATALOG[number][]>>(
-    (acc, field) => {
-        if (!acc[field.group]) {
-acc[field.group] = [];
-}
-
-        acc[field.group].push(field);
-
-        return acc;
-    },
-    {},
-);
 
 export function ClinicalTemplateForm({
     open,
@@ -73,8 +59,12 @@ export function ClinicalTemplateForm({
         buildSelectedFields(entity?.fields),
     );
 
+    const [selectedSpeciesIds, setSelectedSpeciesIds] = useState<string[]>(
+        () => entity?.species?.map((item) => item.id) ?? [],
+    );
+
     const speciesSelectOptions = useMemo(
-        () => speciesOptions.map((item) => ({ id: item.id, label: item.name })),
+        () => speciesOptions.map((item) => ({ value: item.id, label: item.name })),
         [speciesOptions],
     );
 
@@ -121,8 +111,9 @@ return;
     const handleOpenChange = useCallback(
         (value: boolean) => {
             if (!value) {
-setSelectedFields(buildSelectedFields(entity?.fields));
-}
+                setSelectedFields(buildSelectedFields(entity?.fields));
+                setSelectedSpeciesIds(entity?.species?.map((item) => item.id) ?? []);
+            }
 
             onOpenChange(value);
         },
@@ -166,17 +157,24 @@ setSelectedFields(buildSelectedFields(entity?.fields));
                         }}
                     />
 
-                    <FormSelect
-                        label="Especie (opcional)"
+                    <FormMultiSelect
+                        id="clinical-template-species_ids"
+                        label="Especies (opcional)"
                         placeholder="Cualquier especie"
+                        searchPlaceholder="Buscar especie…"
                         options={speciesSelectOptions}
-                        error={errors.species_id as string | undefined}
-                        selectProps={{
-                            id: 'clinical-template-species_id',
-                            name: 'species_id',
-                            defaultValue: entity?.species_id ?? '',
-                        }}
+                        values={selectedSpeciesIds}
+                        onValuesChange={setSelectedSpeciesIds}
+                        error={errors.species_ids as string | undefined}
                     />
+                    {selectedSpeciesIds.map((speciesId, index) => (
+                        <input
+                            key={speciesId}
+                            type="hidden"
+                            name={`species_ids[${index}]`}
+                            value={speciesId}
+                        />
+                    ))}
 
                     <Separator />
 
