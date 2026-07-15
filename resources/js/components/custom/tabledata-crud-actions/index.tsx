@@ -1,5 +1,5 @@
-import { PencilIcon, TrashIcon  } from 'lucide-react';
-import type {LucideIcon} from 'lucide-react';
+import { PencilIcon, TrashIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { ActiveStatusBadge } from '@/components/custom/active-status-badge';
 import { ConfiguredStatusBadge } from '@/components/custom/configured-status-badge';
 import type { TabledataColumn } from '@/components/custom/tabledata';
@@ -20,6 +20,8 @@ export type BuildTabledataCrudActionsColumnParams<T> = {
     can?: TabledataCrudActionsCan;
     canModifyRow?: (row: T) => boolean;
     canDeleteRow?: (row: T) => boolean;
+    editIcon?: LucideIcon;
+    editTitle?: string;
 };
 
 export function buildTabledataCrudActionsColumn<T>({
@@ -28,6 +30,8 @@ export function buildTabledataCrudActionsColumn<T>({
     can,
     canModifyRow,
     canDeleteRow,
+    editIcon: EditIcon = PencilIcon,
+    editTitle,
 }: BuildTabledataCrudActionsColumnParams<T>): TabledataColumn<T> {
     const resolveCanUpdate = (row: T): boolean => {
         if (canModifyRow) {
@@ -58,9 +62,13 @@ export function buildTabledataCrudActionsColumn<T>({
                         variant="outline"
                         size="icon"
                         type="button"
+                        title={editTitle}
                         onClick={() => onEdit(row)}
                     >
-                        <PencilIcon className="size-3" />
+                        <EditIcon className="size-3" />
+                        {editTitle ? (
+                            <span className="sr-only">{editTitle}</span>
+                        ) : null}
                     </Button>
                 ) : null}
                 {resolveCanDelete(row) ? (

@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { CirclePlus } from 'lucide-react';
+import { CirclePlus, FolderOpen } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { PatientRecordBadge } from '@/components/custom/patient-record-badge';
 import { PatientSexBadge } from '@/components/custom/patient-sex-badge';
@@ -19,13 +19,12 @@ import type { PatientsIndexPageProps } from '@/pages/medic/patients/config';
 import { PatientsIndexFilters } from '@/pages/medic/patients/filters';
 import { PatientForm } from '@/pages/medic/patients/form';
 import { usePatientsIndex } from '@/pages/medic/patients/hooks/use-index';
-import {
-    formatSpeciesAndBreed
-    
-    
-    
+import { formatSpeciesAndBreed } from '@/pages/medic/patients/types';
+import type {
+    Patient,
+    PatientListFilters,
+    PatientsIndexFiltersDraftFull,
 } from '@/pages/medic/patients/types';
-import type {Patient, PatientListFilters, PatientsIndexFiltersDraftFull} from '@/pages/medic/patients/types';
 import { edit as patientsEdit } from '@/routes/medic/patients';
 
 function PatientsIndex({
@@ -81,6 +80,8 @@ function PatientsIndex({
                 can,
                 onEdit: openEdit,
                 onDelete: deleteRow,
+                editIcon: FolderOpen,
+                editTitle: 'Abrir paciente',
             }),
         ],
         [can, deleteRow, openEdit],
