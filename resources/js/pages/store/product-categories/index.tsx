@@ -15,7 +15,6 @@ import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import {
     canDeleteStoreMasterRow,
     canModifyStoreMasterRow,
-    renderMasterRecordName,
 } from '@/lib/store-master-record';
 import {
     CONFIG_TABLEDATA,
@@ -41,7 +40,6 @@ function ProductCategoriesIndex({ can }: Pick<ProductCategoriesIndexPageProps, '
                 label: 'Nombre',
                 sortable: true,
                 hideable: false,
-                render: (row) => renderMasterRecordName(row.name, row.company_id),
             },
             buildTabledataIsActiveStatusColumn<ProductCategory>(),
             buildTabledataCrudActionsColumn<ProductCategory>({

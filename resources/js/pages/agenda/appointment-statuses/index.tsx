@@ -18,7 +18,6 @@ import {
     canDeleteGlobalRecordRow,
     canModifyGlobalRecordRow,
 } from '@/lib/global-record';
-import { renderMasterRecordName } from '@/lib/store-master-record';
 import { CONFIG_TABLEDATA } from '@/pages/agenda/appointment-statuses/config';
 import type { AppointmentStatusesIndexPageProps } from '@/pages/agenda/appointment-statuses/config';
 import { AppointmentStatusesIndexFilters } from '@/pages/agenda/appointment-statuses/filters';
@@ -44,7 +43,6 @@ function AppointmentStatusesIndex({
                 label: 'Nombre',
                 sortable: true,
                 hideable: false,
-                render: (row) => renderMasterRecordName(row.name, row.company_id),
             },
             {
                 key: 'color',
