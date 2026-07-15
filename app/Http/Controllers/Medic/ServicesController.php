@@ -50,7 +50,7 @@ class ServicesController extends Controller
             'filters' => $request->filtersForFrontend(),
             'specialties' => $company instanceof Company
                 ? Specialty::query()
-                    ->forCompany($company->id)
+                    ->forCompanyOrGlobal($company->id)
                     ->orderBy('name')
                     ->get(['id', 'name', 'is_active'])
                 : [],

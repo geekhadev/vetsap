@@ -3,6 +3,7 @@ import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
+import { isGlobalRecord } from '@/lib/global-record';
 import { useSpecialtyForm } from '@/pages/medic/specialties/hooks/use-form';
 import type { Specialty } from '@/pages/medic/specialties/types';
 
@@ -16,6 +17,7 @@ type SpecialtyFormFields = Pick<Specialty, 'name' | 'description' | 'is_active'>
 
 export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps) {
     const { formProps, headTitle, description } = useSpecialtyForm(entity);
+    const isGlobal = entity !== null && isGlobalRecord(entity);
 
     return (
         <InertiaFormDialog<SpecialtyFormFields>
@@ -28,9 +30,15 @@ export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps
         >
             {({ processing, errors }) => (
                 <>
+                    {isGlobal ? (
+                        <p className="text-muted-foreground text-sm">
+                            Registro global del sistema. No se puede editar ni eliminar.
+                        </p>
+                    ) : null}
+
                     <FormTextInput
                         label="Nombre"
-                        placeholder='Ej. "Medicina General", "Cirugía"'
+                        placeholder='Ej. "Dermatología", "Odontología"'
                         required
                         error={errors.name}
                         inputProps={{
@@ -38,6 +46,7 @@ export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps
                             name: 'name',
                             maxLength: 255,
                             defaultValue: entity?.name ?? '',
+                            readOnly: isGlobal,
                         }}
                     />
 
@@ -51,6 +60,7 @@ export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps
                             maxLength: 1000,
                             rows: 3,
                             defaultValue: entity?.description ?? '',
+                            readOnly: isGlobal,
                         }}
                     />
 
@@ -60,6 +70,7 @@ export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps
                         defaultChecked={entity?.is_active ?? true}
                         error={errors.is_active}
                         description="Controla la visibilidad en la web pública y en la agenda."
+                        disabled={isGlobal}
                         confirmUncheck={{
                             when: (entity?.active_services_count ?? 0) > 0,
                             message:
@@ -71,6 +82,7 @@ export function SpecialtyForm({ open, onOpenChange, entity }: SpecialtyFormProps
                         onCancel={() => onOpenChange(false)}
                         processing={processing}
                         isEdit={entity !== null}
+                        submitDisabled={isGlobal}
                     />
                 </>
             )}

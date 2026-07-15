@@ -21,9 +21,15 @@ final class ServicePayloadValidationRules
             'specialty_id' => [
                 'required',
                 'uuid',
-                Rule::exists('medic_specialties', 'id')
-                    ->where('company_id', $companyId)
-                    ->where('is_active', true),
+                Rule::exists('medic_specialties', 'id')->where(function ($query) use ($companyId): void {
+                    $query->where('is_active', true)
+                        ->where(function ($inner) use ($companyId): void {
+                            $inner->where('company_id', $companyId)
+                                ->orWhere(function ($global): void {
+                                    $global->where('is_global', true)->whereNull('company_id');
+                                });
+                        });
+                }),
             ],
             'name' => [
                 'required',
@@ -51,8 +57,14 @@ final class ServicePayloadValidationRules
             'specialty_id' => [
                 'required',
                 'uuid',
-                Rule::exists('medic_specialties', 'id')
-                    ->where('company_id', $companyId),
+                Rule::exists('medic_specialties', 'id')->where(function ($query) use ($companyId): void {
+                    $query->where(function ($inner) use ($companyId): void {
+                        $inner->where('company_id', $companyId)
+                            ->orWhere(function ($global): void {
+                                $global->where('is_global', true)->whereNull('company_id');
+                            });
+                    });
+                }),
             ],
             'name' => [
                 'required',

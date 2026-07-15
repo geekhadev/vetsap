@@ -12,6 +12,12 @@ final class UpdateSpecialtyAction
      */
     public function execute(Specialty $specialty, array $data): Specialty
     {
+        if ($specialty->isGlobal()) {
+            throw ValidationException::withMessages([
+                'name' => 'No se puede editar una especialidad global del sistema.',
+            ]);
+        }
+
         $deactivating = $specialty->is_active && ! $data['is_active'];
 
         if ($deactivating && $specialty->services()->where('is_active', true)->exists()) {

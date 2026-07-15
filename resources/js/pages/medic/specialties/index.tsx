@@ -13,6 +13,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import {
+    canDeleteGlobalRecordRow,
+    canModifyGlobalRecordRow,
+} from '@/lib/global-record';
+import { renderMasterRecordName } from '@/lib/store-master-record';
+import {
     CONFIG_TABLEDATA,
 } from '@/pages/medic/specialties/config';
 import type { SpecialtiesIndexPageProps } from '@/pages/medic/specialties/config';
@@ -33,6 +38,7 @@ function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
                 label: 'Nombre',
                 sortable: true,
                 hideable: false,
+                render: (row) => renderMasterRecordName(row.name, row.company_id),
             },
             {
                 key: 'description',
@@ -45,6 +51,8 @@ function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
                 can,
                 onEdit: openEdit,
                 onDelete: deleteRow,
+                canModifyRow: (row) => canModifyGlobalRecordRow(row, can),
+                canDeleteRow: (row) => canDeleteGlobalRecordRow(row, can),
             }),
         ],
         [can, deleteRow, openEdit],

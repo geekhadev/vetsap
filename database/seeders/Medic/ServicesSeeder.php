@@ -21,9 +21,6 @@ class ServicesSeeder extends Seeder
                 ['name' => 'Esterilización hembra', 'duration_minutes' => null, 'price' => null],
                 ['name' => 'Esterilización macho', 'duration_minutes' => null, 'price' => null],
             ],
-            'Odontología' => [
-                ['name' => 'Limpieza dental', 'duration_minutes' => 45, 'price' => '35000'],
-            ],
             'Exámenes' => [
                 ['name' => 'Hemograma completo', 'duration_minutes' => 15, 'price' => '18000'],
                 ['name' => 'Perfil bioquímico', 'duration_minutes' => 15, 'price' => '22000'],
@@ -35,7 +32,7 @@ class ServicesSeeder extends Seeder
         Company::query()->each(function (Company $company) use ($catalog): void {
             foreach ($catalog as $specialtyName => $services) {
                 $specialty = Specialty::query()
-                    ->where('company_id', $company->id)
+                    ->forCompanyOrGlobal($company->id)
                     ->where('name', $specialtyName)
                     ->first();
 

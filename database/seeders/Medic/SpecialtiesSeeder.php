@@ -2,7 +2,6 @@
 
 namespace Database\Seeders\Medic;
 
-use App\Models\Company;
 use App\Models\Medic\Specialty;
 use Illuminate\Database\Seeder;
 
@@ -10,31 +9,26 @@ class SpecialtiesSeeder extends Seeder
 {
     public function run(): void
     {
-        $specialties = [
+        $globals = [
             'Medicina General',
-            'Urgencias y Emergencias',
-            'Cirugía',
-            'Dermatología',
-            'Odontología',
-            'Nutrición y Dietética',
-            'Radiología',
-            'Laboratorio Clínico',
             'Exámenes',
-            'Rehabilitación',
+            'Vacunación',
+            'Laboratorio',
+            'Cirugía',
+            'Urgencia',
         ];
 
-        Company::query()->each(function (Company $company) use ($specialties): void {
-            foreach ($specialties as $name) {
-                Specialty::query()->firstOrCreate(
-                    [
-                        'company_id' => $company->id,
-                        'name' => $name,
-                    ],
-                    [
-                        'is_active' => true,
-                    ],
-                );
-            }
-        });
+        foreach ($globals as $name) {
+            Specialty::query()->firstOrCreate(
+                [
+                    'company_id' => null,
+                    'name' => $name,
+                ],
+                [
+                    'is_global' => true,
+                    'is_active' => true,
+                ],
+            );
+        }
     }
 }

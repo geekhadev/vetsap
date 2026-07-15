@@ -17,7 +17,7 @@ final class SpecialtyPayloadValidationRules
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('medic_specialties', 'name')->where('company_id', $companyId),
+                ...self::uniqueNameRules($companyId),
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['required', 'boolean'],
@@ -34,13 +34,32 @@ final class SpecialtyPayloadValidationRules
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('medic_specialties', 'name')
-                    ->where('company_id', $companyId)
-                    ->ignore($specialtyId),
+                ...self::uniqueNameRules($companyId, $specialtyId),
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['required', 'boolean'],
         ];
+    }
+
+    /**
+     * @return list<ValidationRule>
+     */
+    private static function uniqueNameRules(string $companyId, ?string $ignoreId = null): array
+    {
+        $unique = Rule::unique('medic_specialties', 'name')->where(function ($query) use ($companyId): void {
+            $query->where(function ($inner) use ($companyId): void {
+                $inner->where('company_id', $companyId)
+                    ->orWhere(function ($global): void {
+                        $global->where('is_global', true)->whereNull('company_id');
+                    });
+            });
+        });
+
+        if ($ignoreId !== null) {
+            $unique->ignore($ignoreId);
+        }
+
+        return [$unique];
     }
 
     /**
@@ -61,7 +80,7 @@ final class SpecialtyPayloadValidationRules
     }
 
     /**
-     * @return array{company_id: string, name: string, description: string|null, is_active: bool}
+     * @return array{company_id: string, name: string, description: string|null, is_global: bool, is_active: bool}
      */
     public static function storePayload(string $companyId, array $validated): array
     {
@@ -69,6 +88,7 @@ final class SpecialtyPayloadValidationRules
             'company_id' => $companyId,
             'name' => (string) $validated['name'],
             'description' => $validated['description'] ?? null,
+            'is_global' => false,
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
         ];
     }

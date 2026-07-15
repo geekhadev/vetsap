@@ -7,9 +7,10 @@ import type { PaginatedListFilters } from '@/types/list-filters';
 
 export type Specialty = {
     id: string;
-    company_id: string;
+    company_id: string | null;
     name: string;
     description: string | null;
+    is_global: boolean;
     is_active: boolean;
     active_services_count: number;
     created_at: string;

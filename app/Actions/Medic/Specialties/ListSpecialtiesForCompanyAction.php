@@ -19,7 +19,7 @@ final class ListSpecialtiesForCompanyAction
         );
 
         return Specialty::query()
-            ->forCompany($companyId)
+            ->forCompanyOrGlobal($companyId)
             ->withCount(['services as active_services_count' => function ($query): void {
                 $query->where('is_active', true);
             }])
