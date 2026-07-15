@@ -1,16 +1,7 @@
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { FormSelect } from '@/components/custom/form-select';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ClinicalFieldInput } from '@/pages/medic/clinical-attentions/clinical-field-input';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
@@ -221,30 +212,18 @@ export function PatientDraftAttentionForm({
                 )}
             </div>
 
-            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Completar la atención?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Se guardarán los datos de la atención y se cerrará el borrador. Esta
-                            acción no se puede deshacer.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={closing}>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                            disabled={closing}
-                            onClick={(event) => {
-                                event.preventDefault();
-                                setConfirmOpen(false);
-                                void closeAttention();
-                            }}
-                        >
-                            Completar atención
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                title="¿Completar la atención?"
+                description="Se guardarán los datos de la atención y se cerrará el borrador. Esta acción no se puede deshacer."
+                confirmLabel="Completar atención"
+                confirming={closing}
+                onConfirm={() => {
+                    setConfirmOpen(false);
+                    void closeAttention();
+                }}
+            />
         </div>
     );
 }

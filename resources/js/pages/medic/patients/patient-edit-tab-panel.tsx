@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
+import { PatientAttentionViewDialog } from '@/pages/medic/patients/patient-attention-view-dialog';
 import {
     PATIENT_DRAFT_ATTENTION_ACTION,
     getDraftAttentionActionLabel,
@@ -53,6 +54,7 @@ export function PatientEditTabPanel({
     can,
 }: PatientEditTabPanelProps) {
     const [hasDraftAttention, setHasDraftAttention] = useState(draftAttention !== null);
+    const [viewAttention, setViewAttention] = useState<AttentionSummary | null>(null);
 
     useEffect(() => {
         setHasDraftAttention(draftAttention !== null);
@@ -66,11 +68,22 @@ export function PatientEditTabPanel({
     const DraftActionIcon = PATIENT_DRAFT_ATTENTION_ACTION.icon;
     const isDraftSheetOpen = activeTab === PATIENT_DRAFT_ATTENTION_ACTION.id;
 
+    const openDraftSheet = useCallback(() => {
+        onTabChange(PATIENT_DRAFT_ATTENTION_ACTION.id);
+    }, [onTabChange]);
+
+    const dismissDraftSheet = useCallback(() => {
+        onTabChange('historial');
+    }, [onTabChange]);
+
     const handleDraftSheetOpenChange = useCallback(
         (open: boolean) => {
-            onTabChange(open ? PATIENT_DRAFT_ATTENTION_ACTION.id : 'historial');
+            // Solo permitir abrir por el Sheet; el cierre es exclusivo del botón X.
+            if (open) {
+                openDraftSheet();
+            }
         },
-        [onTabChange],
+        [openDraftSheet],
     );
 
     return (
@@ -133,7 +146,9 @@ export function PatientEditTabPanel({
                                     ? 'Hay una atención en borrador. Haz clic para continuar.'
                                     : undefined
                             }
-                            onClick={() => handleDraftSheetOpenChange(!isDraftSheetOpen)}
+                            onClick={() =>
+                                isDraftSheetOpen ? dismissDraftSheet() : openDraftSheet()
+                            }
                         >
                             {hasDraftAttention && !isDraftSheetOpen ? (
                                 <span className="relative flex size-2.5 shrink-0" aria-hidden>
@@ -149,7 +164,23 @@ export function PatientEditTabPanel({
                 </div>
             </div>
 
-            <PatientClinicalTimeline attentions={attentions} />
+            <PatientClinicalTimeline
+                attentions={attentions}
+                onAttentionSelect={setViewAttention}
+            />
+
+            <PatientAttentionViewDialog
+                attention={viewAttention}
+                open={viewAttention !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setViewAttention(null);
+                    }
+                }}
+                patientId={patient.id}
+                templates={templates}
+                canDelete={can.attentions.delete}
+            />
 
             {can.attentions.create ? (
                 <Sheet
@@ -162,6 +193,9 @@ export function PatientEditTabPanel({
                         showOverlay={false}
                         showCloseButton={false}
                         className="w-full gap-0 overflow-y-auto p-0 sm:max-w-xl md:max-w-2xl"
+                        onInteractOutside={(event) => event.preventDefault()}
+                        onPointerDownOutside={(event) => event.preventDefault()}
+                        onEscapeKeyDown={(event) => event.preventDefault()}
                     >
                         <SheetHeader className="sr-only">
                             <SheetTitle>{draftActionLabel}</SheetTitle>
@@ -176,7 +210,7 @@ export function PatientEditTabPanel({
                             title={draftActionLabel}
                             description="Completa los datos de la atención"
                             onDraftSaved={handleDraftSaved}
-                            onDismiss={() => handleDraftSheetOpenChange(false)}
+                            onDismiss={dismissDraftSheet}
                         />
                     </SheetContent>
                 </Sheet>

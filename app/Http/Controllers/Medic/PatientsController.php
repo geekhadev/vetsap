@@ -126,7 +126,7 @@ class PatientsController extends Controller
         $attentions = ClinicalAttention::query()
             ->where('patient_id', $patient->id)
             ->closed()
-            ->with(['template:id,name', 'doctor:id,first_name,last_name'])
+            ->with(['template:id,name', 'doctor:id,first_name,last_name', 'values'])
             ->orderByDesc('closed_at')
             ->orderByDesc('started_at')
             ->get();
@@ -167,6 +167,7 @@ class PatientsController extends Controller
                 : [],
             'attentions' => $attentions->map(fn ($a) => [
                 'id' => $a->id,
+                'template_id' => $a->template_id,
                 'template_name' => $a->template?->name,
                 'doctor_name' => $a->doctor
                     ? "{$a->doctor->first_name} {$a->doctor->last_name}"
@@ -174,6 +175,11 @@ class PatientsController extends Controller
                 'started_at' => $a->started_at,
                 'closed_at' => $a->closed_at,
                 'created_at' => $a->created_at,
+                'values' => $a->values
+                    ->mapWithKeys(fn ($value) => [
+                        $value->field_key => $value->value,
+                    ])
+                    ->all(),
             ]),
             'can' => [
                 'attentions' => [
