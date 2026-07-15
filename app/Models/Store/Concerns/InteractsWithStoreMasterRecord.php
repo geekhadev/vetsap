@@ -7,12 +7,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait InteractsWithStoreMasterRecord
 {
-    public const SORTABLE_COLUMNS = [
-        'name',
-        'is_active',
-        'created_at',
-    ];
-
     /**
      * @param  Builder<$this>  $query
      * @return Builder<$this>

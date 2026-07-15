@@ -2,8 +2,10 @@
 
 namespace App\Models\Store;
 
+use App\Enums\Store\InventoryMovementType;
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -13,26 +15,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'company_id',
-    'product_category_id',
-    'product_type_id',
-    'name',
-    'barcode',
-    'description',
-    'price',
-    'is_active',
+    'type',
+    'number',
+    'moved_at',
+    'movement_category_id',
+    'user_id',
 ])]
-class Product extends Model
+class InventoryMovement extends Model
 {
     use HasUuids;
     use InteractsWithCompanyMasterRecord;
 
-    protected $table = 'store_products';
+    protected $table = 'store_inventory_movements';
 
     public const SORTABLE_COLUMNS = [
-        'name',
-        'price',
-        'stock',
-        'is_active',
+        'number',
+        'moved_at',
+        'type',
         'created_at',
     ];
 
@@ -45,53 +44,53 @@ class Product extends Model
     }
 
     /**
-     * @return BelongsTo<ProductCategory, $this>
+     * @return BelongsTo<MovementCategory, $this>
      */
-    public function productCategory(): BelongsTo
+    public function movementCategory(): BelongsTo
     {
-        return $this->belongsTo(ProductCategory::class, 'product_category_id');
+        return $this->belongsTo(MovementCategory::class, 'movement_category_id');
     }
 
     /**
-     * @return BelongsTo<ProductType, $this>
+     * @return BelongsTo<User, $this>
      */
-    public function productType(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(ProductType::class, 'product_type_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
      * @return HasMany<InventoryMovementDetail, $this>
      */
-    public function inventoryMovementDetails(): HasMany
+    public function details(): HasMany
     {
-        return $this->hasMany(InventoryMovementDetail::class, 'product_id');
+        return $this->hasMany(InventoryMovementDetail::class, 'inventory_movement_id');
     }
 
     /**
      * @param  Builder<$this>  $query
      * @return Builder<$this>
      */
-    public function scopeFilterProductCategoryId(Builder $query, ?string $categoryId): Builder
+    public function scopeFilterType(Builder $query, ?string $type): Builder
+    {
+        if ($type === null || $type === '') {
+            return $query;
+        }
+
+        return $query->where('type', $type);
+    }
+
+    /**
+     * @param  Builder<$this>  $query
+     * @return Builder<$this>
+     */
+    public function scopeFilterMovementCategoryId(Builder $query, ?string $categoryId): Builder
     {
         if ($categoryId === null || $categoryId === '') {
             return $query;
         }
 
-        return $query->where('product_category_id', $categoryId);
-    }
-
-    /**
-     * @param  Builder<$this>  $query
-     * @return Builder<$this>
-     */
-    public function scopeFilterProductTypeId(Builder $query, ?string $typeId): Builder
-    {
-        if ($typeId === null || $typeId === '') {
-            return $query;
-        }
-
-        return $query->where('product_type_id', $typeId);
+        return $query->where('movement_category_id', $categoryId);
     }
 
     /**
@@ -106,9 +105,12 @@ class Product extends Model
 
         $term = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $search).'%';
 
-        return $query->where(function (Builder $inner) use ($term): void {
-            $inner->where('name', 'like', $term)
-                ->orWhere('barcode', 'like', $term);
+        return $query->where(function (Builder $inner) use ($term, $search): void {
+            $inner->where('number', 'like', $term);
+
+            if (ctype_digit($search)) {
+                $inner->orWhere('number', (int) $search);
+            }
         });
     }
 
@@ -118,9 +120,9 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:0',
-            'stock' => 'integer',
-            'is_active' => 'boolean',
+            'type' => InventoryMovementType::class,
+            'number' => 'integer',
+            'moved_at' => 'date',
         ];
     }
 }

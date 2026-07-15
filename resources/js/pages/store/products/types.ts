@@ -33,6 +33,7 @@ export type Product = {
     barcode: string | null;
     description: string | null;
     price: string | null;
+    stock: number;
     is_active: boolean;
     product_category?: ProductCategoryRef;
     product_type?: ProductTypeRef;

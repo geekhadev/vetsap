@@ -22,6 +22,12 @@ class ProductType extends Model
 
     protected $table = 'store_product_types';
 
+    public const SORTABLE_COLUMNS = [
+        'name',
+        'is_active',
+        'created_at',
+    ];
+
     /**
      * @return BelongsTo<Company, $this>
      */

@@ -105,6 +105,19 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'products',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Categorías de movimiento',
+                        'module_slug' => 'movement-categories',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Movimientos de inventario',
+                        'module_slug' => 'inventory-movements',
+                        'permissions' => [
+                            ['permission_name' => 'Listar', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Crear', 'permission_slug' => 'create'],
+                        ],
+                    ],
                 ],
             ],
             [

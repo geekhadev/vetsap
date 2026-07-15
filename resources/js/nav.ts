@@ -13,6 +13,7 @@ import {
     Globe,
     GraduationCap,
     Heart,
+    History,
     KeyRound,
     LayoutTemplate,
     ListChecks,
@@ -63,7 +64,10 @@ import { index as paymentTypesIndex } from '@/routes/shared/payment-types';
 import { index as siiEconomicActivitiesIndex } from '@/routes/shared/sii-economic-activities';
 import { index as siiTaxDocumentTypesIndex } from '@/routes/shared/sii-tax-document-types';
 import { index as statesIndex } from '@/routes/shared/states';
+import { index as inventoryMovementsIndex } from '@/routes/store/inventory-movements';
+import { index as movementCategoriesIndex } from '@/routes/store/movement-categories';
 import { index as productCategoriesIndex } from '@/routes/store/product-categories';
+import { index as productMovementsIndex } from '@/routes/store/product-movements';
 import { index as productTypesIndex } from '@/routes/store/product-types';
 import { index as productsIndex } from '@/routes/store/products';
 import type { NavItem } from '@/types';
@@ -181,7 +185,25 @@ export const mainNavItems: NavItem[] = [
                 permission: 'store.products.list',
             },
             {
-                title: 'Categorías de productos',
+                title: 'Mov. de inventario',
+                href: inventoryMovementsIndex(),
+                icon: Boxes,
+                permission: 'store.inventory-movements.list',
+            },
+            {
+                title: 'Mov. de productos',
+                href: productMovementsIndex(),
+                icon: History,
+                permission: 'store.inventory-movements.list',
+            },
+            {
+                title: 'Cat. de movimiento',
+                href: movementCategoriesIndex(),
+                icon: ClipboardList,
+                permission: 'store.movement-categories.list',
+            },
+            {
+                title: 'Cat. de productos',
                 href: productCategoriesIndex(),
                 icon: Tags,
                 permission: 'store.product-categories.list',

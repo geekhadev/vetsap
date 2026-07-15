@@ -18,6 +18,7 @@ use Database\Seeders\Shared\PaymentMethodsSeeder;
 use Database\Seeders\Shared\PaymentTypesSeeder;
 use Database\Seeders\Shared\SiiTaxDocumentTypesSeeder;
 use Database\Seeders\Shared\StatesSeeder;
+use Database\Seeders\Store\MovementCategoriesSeeder;
 use Database\Seeders\Store\ProductCategoriesSeeder;
 use Database\Seeders\Store\ProductsSeeder;
 use Database\Seeders\Store\ProductTypesSeeder;
@@ -50,6 +51,7 @@ class DatabaseSeeder extends Seeder
         $this->call(DoctorsSeeder::class);
         $this->call(ProductTypesSeeder::class);
         $this->call(ProductCategoriesSeeder::class);
+        $this->call(MovementCategoriesSeeder::class);
         $this->call(ProductsSeeder::class);
         $this->call(CountriesSeeder::class);
         $this->call(StatesSeeder::class);

@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { CirclePlus } from 'lucide-react';
 import { useMemo } from 'react';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
+import { NumberDisplay } from '@/components/custom/number-display';
 import {
     pickTabledataListShellConfig,
     TabledataProvider,
@@ -52,6 +53,12 @@ function ProductsIndex() {
                 label: 'Precio',
                 sortable: true,
                 render: (row) => <CurrencyDisplay value={row.price} />,
+            },
+            {
+                key: 'stock',
+                label: 'Stock',
+                sortable: true,
+                render: (row) => <NumberDisplay value={row.stock} />,
             },
             buildTabledataIsActiveStatusColumn<Product>(),
             buildTabledataCrudActionsColumn<Product>({
