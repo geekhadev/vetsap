@@ -6,11 +6,12 @@ import type { Doctor } from '../types';
 export type { DoctorsIndexPageProps } from '@/pages/medic/doctors/config';
 
 export function useDoctorsIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Doctor>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Doctor>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar al doctor «${formatDoctorName(row)}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar al doctor?',
+        confirmDescription: (row) =>
+            `Se eliminará al doctor «${formatDoctorName(row)}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

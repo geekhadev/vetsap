@@ -19,7 +19,7 @@ import type {
 } from './types';
 
 function CountriesIndex() {
-    const { deleteRow } = useCountriesIndex();
+    const { deleteRow, deleteConfirmDialog } = useCountriesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Country>();
 
@@ -65,6 +65,7 @@ function CountriesIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

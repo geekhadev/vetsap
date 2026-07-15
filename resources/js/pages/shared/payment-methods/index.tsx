@@ -19,7 +19,7 @@ import type {
 } from './types';
 
 function PaymentMethodsIndex() {
-    const { deleteRow } = usePaymentMethodsIndex();
+    const { deleteRow, deleteConfirmDialog } = usePaymentMethodsIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<PaymentMethod>();
 
@@ -47,6 +47,7 @@ function PaymentMethodsIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

@@ -8,10 +8,12 @@ import type { PaymentMethod } from '../types';
 export type { PaymentMethodsIndexPageProps } from '@/pages/shared/payment-methods/config';
 
 export function usePaymentMethodsIndex() {
-    const { deleteRow } = useTabledataDeleteRow<PaymentMethod>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<PaymentMethod>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) => `¿Eliminar el método de pago «${row.name}»?`,
+        confirmTitle: () => '¿Eliminar el método de pago?',
+        confirmDescription: (row) =>
+            `Se eliminará el método de pago «${row.name}».Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

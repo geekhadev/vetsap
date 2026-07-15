@@ -5,11 +5,12 @@ import type { Patient } from '../types';
 export type { PatientsIndexPageProps } from '@/pages/medic/patients/config';
 
 export function usePatientsIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Patient>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Patient>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar al paciente «${row.name}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar al paciente?',
+        confirmDescription: (row) =>
+            `Se eliminará al paciente «${row.name}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

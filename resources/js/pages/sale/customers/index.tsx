@@ -29,7 +29,7 @@ import type {
 
 function CustomersIndex() {
     const { can, species, data: customersPage } = usePage<CustomersIndexPageProps>().props;
-    const { deleteRow } = useCustomersIndex();
+    const { deleteRow, deleteConfirmDialog } = useCustomersIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Customer>();
     const [patientsCustomerId, setPatientsCustomerId] = useState<string | null>(null);
@@ -152,6 +152,7 @@ function CustomersIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <CustomerForm

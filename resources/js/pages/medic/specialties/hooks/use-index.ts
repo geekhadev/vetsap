@@ -5,11 +5,12 @@ import type { Specialty } from '../types';
 export type { SpecialtiesIndexPageProps } from '@/pages/medic/specialties/config';
 
 export function useSpecialtiesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Specialty>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Specialty>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar la especialidad «${row.name}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar la especialidad?',
+        confirmDescription: (row) =>
+            `Se eliminará la especialidad «${row.name}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

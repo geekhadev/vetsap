@@ -8,11 +8,12 @@ import type { SiiEconomicActivity } from '../types';
 export type { SiiEconomicActivitiesIndexPageProps } from '@/pages/shared/sii-economic-activities/config';
 
 export function useSiiEconomicActivitiesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<SiiEconomicActivity>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<SiiEconomicActivity>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar la actividad «${row.code} — ${row.description}»?`,
+        confirmTitle: () => '¿Eliminar la actividad?',
+        confirmDescription: (row) =>
+            `Se eliminará la actividad «${row.code} — ${row.description}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

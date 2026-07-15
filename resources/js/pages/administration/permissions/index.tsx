@@ -22,7 +22,7 @@ import type {
 
 function PermissionsIndex() {
     const { systems, modules } = usePage<PermissionsIndexPageProps>().props;
-    const { deleteRow } = usePermissionsIndex();
+    const { deleteRow, deleteConfirmDialog } = usePermissionsIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Permission>();
 
@@ -64,6 +64,7 @@ function PermissionsIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

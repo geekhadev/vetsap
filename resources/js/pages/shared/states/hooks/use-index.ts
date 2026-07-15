@@ -5,10 +5,12 @@ import type { State } from '../types';
 export type { StatesIndexPageProps } from '@/pages/shared/states/config';
 
 export function useStatesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<State>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<State>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) => `¿Eliminar el estado «${row.name}»?`,
+        confirmTitle: () => '¿Eliminar el estado?',
+        confirmDescription: (row) =>
+            `Se eliminará el estado «${row.name}».Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

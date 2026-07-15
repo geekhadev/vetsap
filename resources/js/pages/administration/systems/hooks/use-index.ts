@@ -8,10 +8,12 @@ import type { System } from '../types';
 export type { SystemsIndexPageProps } from '@/pages/administration/systems/config';
 
 export function useSystemsIndex() {
-    const { deleteRow } = useTabledataDeleteRow<System>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<System>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) => `¿Eliminar el sistema «${row.name}»?`,
+        confirmTitle: () => '¿Eliminar el sistema?',
+        confirmDescription: (row) =>
+            `Se eliminará el sistema «${row.name}».Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

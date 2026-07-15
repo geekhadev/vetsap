@@ -5,11 +5,12 @@ import type { AppointmentStatus } from '../types';
 export type { AppointmentStatusesIndexPageProps } from '@/pages/agenda/appointment-statuses/config';
 
 export function useAppointmentStatusesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<AppointmentStatus>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<AppointmentStatus>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar el estado «${row.name}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar el estado?',
+        confirmDescription: (row) =>
+            `Se eliminará el estado «${row.name}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

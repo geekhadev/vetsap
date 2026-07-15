@@ -31,7 +31,7 @@ import { formatMovementType } from '@/pages/store/movement-categories/types';
 function MovementCategoriesIndex() {
     const { can, movementTypes } =
         usePage<MovementCategoriesIndexPageProps>().props;
-    const { deleteRow } = useMovementCategoriesIndex();
+    const { deleteRow, deleteConfirmDialog } = useMovementCategoriesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<MovementCategory>();
 
@@ -62,6 +62,7 @@ function MovementCategoriesIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <MovementCategoryForm

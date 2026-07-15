@@ -8,10 +8,12 @@ import type { Permission } from '../types';
 export type { PermissionsIndexPageProps } from '@/pages/administration/permissions/config';
 
 export function usePermissionsIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Permission>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Permission>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) => `¿Eliminar el permiso «${row.name}»?`,
+        confirmTitle: () => '¿Eliminar el permiso?',
+        confirmDescription: (row) =>
+            `Se eliminará el permiso «${row.name}».Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

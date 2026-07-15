@@ -15,7 +15,7 @@ import { useSystemsIndex } from '@/pages/administration/systems/hooks/use-index'
 import type { System, SystemListFilters, SystemsIndexFiltersDraftFull } from './types';
 
 function SystemsIndex() {
-    const { deleteRow } = useSystemsIndex();
+    const { deleteRow, deleteConfirmDialog } = useSystemsIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<System>();
 
@@ -43,6 +43,7 @@ function SystemsIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

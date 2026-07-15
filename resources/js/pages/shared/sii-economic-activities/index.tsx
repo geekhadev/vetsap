@@ -23,7 +23,7 @@ function yesNo(value: boolean): string {
 }
 
 function SiiEconomicActivitiesIndex() {
-    const { deleteRow } = useSiiEconomicActivitiesIndex();
+    const { deleteRow, deleteConfirmDialog } = useSiiEconomicActivitiesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<SiiEconomicActivity>();
 
@@ -73,6 +73,7 @@ function SiiEconomicActivitiesIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

@@ -60,7 +60,7 @@ export default function SiiCafsIndex() {
         can,
     } = page.props;
 
-    const { deleteRow } = useSiiCafsIndex();
+    const { deleteRow, deleteConfirmDialog } = useSiiCafsIndex();
     const { formOpen, openCreate, handleFormOpenChange } =
         useEntityFormDialogState<SiiCafRow>();
     const [foliosLocalOpen, setFoliosLocalOpen] = useState(false);
@@ -223,6 +223,7 @@ export default function SiiCafsIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog open={formOpen} onOpenChange={handleFormOpenChange} />

@@ -5,11 +5,12 @@ import type { Species } from '../types';
 export type { SpeciesIndexPageProps } from '@/pages/medic/species/config';
 
 export function useSpeciesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Species>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Species>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar la especie «${row.name}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar la especie?',
+        confirmDescription: (row) =>
+            `Se eliminará la especie «${row.name}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

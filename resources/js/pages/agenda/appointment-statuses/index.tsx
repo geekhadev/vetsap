@@ -32,7 +32,7 @@ import type {
 function AppointmentStatusesIndex({
     can,
 }: Pick<AppointmentStatusesIndexPageProps, 'can'>) {
-    const { deleteRow } = useAppointmentStatusesIndex();
+    const { deleteRow, deleteConfirmDialog } = useAppointmentStatusesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<AppointmentStatus>();
 
@@ -73,6 +73,7 @@ function AppointmentStatusesIndex({
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <AppointmentStatusesForm

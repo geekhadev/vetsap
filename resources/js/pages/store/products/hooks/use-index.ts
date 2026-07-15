@@ -5,11 +5,12 @@ import type { Product } from '../types';
 export type { ProductsIndexPageProps } from '@/pages/store/products/config';
 
 export function useProductsIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Product>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Product>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar el producto «${row.name}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar el producto?',
+        confirmDescription: (row) =>
+            `Se eliminará el producto «${row.name}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

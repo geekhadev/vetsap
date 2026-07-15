@@ -21,7 +21,7 @@ import type {
 import { UsageBadges } from './usage-badges';
 
 function SiiTaxDocumentTypesIndex() {
-    const { deleteRow } = useSiiTaxDocumentTypesIndex();
+    const { deleteRow, deleteConfirmDialog } = useSiiTaxDocumentTypesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<SiiTaxDocumentType>();
 
@@ -65,6 +65,7 @@ function SiiTaxDocumentTypesIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

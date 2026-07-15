@@ -26,7 +26,7 @@ import { useSpecialtiesIndex } from '@/pages/medic/specialties/hooks/use-index';
 import type { Specialty, SpecialtyListFilters, SpecialtiesIndexFiltersDraftFull } from '@/pages/medic/specialties/types';
 
 function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
-    const { deleteRow } = useSpecialtiesIndex();
+    const { deleteRow, deleteConfirmDialog } = useSpecialtiesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Specialty>();
 
@@ -58,6 +58,7 @@ function SpecialtiesIndex({ can }: Pick<SpecialtiesIndexPageProps, 'can'>) {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <SpecialtyForm

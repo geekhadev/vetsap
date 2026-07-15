@@ -24,7 +24,7 @@ import type { Product, ProductListFilters, ProductsIndexFiltersDraftFull } from 
 function ProductsIndex() {
     const { can, productCategories, productTypes } =
         usePage<ProductsIndexPageProps>().props;
-    const { deleteRow } = useProductsIndex();
+    const { deleteRow, deleteConfirmDialog } = useProductsIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Product>();
 
@@ -72,6 +72,7 @@ function ProductsIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <ProductForm

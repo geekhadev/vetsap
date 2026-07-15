@@ -8,10 +8,12 @@ import type { Module } from '../types';
 export type { ModulesIndexPageProps } from '@/pages/administration/modules/config';
 
 export function useModulesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Module>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Module>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) => `¿Eliminar el módulo «${row.name}»?`,
+        confirmTitle: () => '¿Eliminar el módulo?',
+        confirmDescription: (row) =>
+            `Se eliminará el módulo «${row.name}».Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

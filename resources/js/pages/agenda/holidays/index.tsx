@@ -25,7 +25,7 @@ import type {
 } from '@/pages/agenda/holidays/types';
 
 function HolidaysIndex({ can }: Pick<HolidaysIndexPageProps, 'can'>) {
-    const { deleteRow } = useHolidaysIndex();
+    const { deleteRow, deleteConfirmDialog } = useHolidaysIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Holiday>();
 
@@ -56,6 +56,7 @@ function HolidaysIndex({ can }: Pick<HolidaysIndexPageProps, 'can'>) {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <HolidaysForm

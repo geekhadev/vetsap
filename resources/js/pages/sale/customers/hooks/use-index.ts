@@ -5,10 +5,12 @@ import type { Customer } from '../types';
 export type { CustomersIndexPageProps } from '@/pages/sale/customers/config';
 
 export function useCustomersIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Customer>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Customer>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) => `¿Eliminar el cliente «${row.name}»?`,
+        confirmTitle: () => '¿Eliminar el cliente?',
+        confirmDescription: (row) =>
+            `Se eliminará el cliente «${row.name}».Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

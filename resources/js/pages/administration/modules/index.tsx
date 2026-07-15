@@ -22,7 +22,7 @@ import type {
 
 function ModulesIndex() {
     const { systems } = usePage<ModulesIndexPageProps>().props;
-    const { deleteRow } = useModulesIndex();
+    const { deleteRow, deleteConfirmDialog } = useModulesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Module>();
 
@@ -57,6 +57,7 @@ function ModulesIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

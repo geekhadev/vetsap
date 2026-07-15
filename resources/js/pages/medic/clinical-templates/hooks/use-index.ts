@@ -3,11 +3,12 @@ import { destroy } from '@/routes/medic/clinical-templates';
 import type { ClinicalTemplate } from '../types';
 
 export function useClinicalTemplatesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<ClinicalTemplate>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<ClinicalTemplate>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar la plantilla «${row.name}»? Las atenciones existentes no se verán afectadas.`,
+        confirmTitle: () => '¿Eliminar la plantilla?',
+        confirmDescription: (row) =>
+            `Se eliminará la plantilla «${row.name}». Las atenciones existentes no se verán afectadas.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

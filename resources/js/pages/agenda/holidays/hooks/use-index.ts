@@ -5,11 +5,12 @@ import type { Holiday } from '../types';
 export type { HolidaysIndexPageProps } from '@/pages/agenda/holidays/config';
 
 export function useHolidaysIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Holiday>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Holiday>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar el día feriado «${row.name}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar el día feriado?',
+        confirmDescription: (row) =>
+            `Se eliminará el día feriado «${row.name}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

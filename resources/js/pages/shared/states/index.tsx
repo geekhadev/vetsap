@@ -17,7 +17,7 @@ import { useStatesIndex } from '@/pages/shared/states/hooks/use-index';
 import type { State, StateListFilters, StatesIndexFiltersDraftFull } from './types';
 
 function StatesIndex({ countries }: Pick<StatesIndexPageProps, 'countries'>) {
-    const { deleteRow } = useStatesIndex();
+    const { deleteRow, deleteConfirmDialog } = useStatesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<State>();
 
@@ -45,6 +45,7 @@ function StatesIndex({ countries }: Pick<StatesIndexPageProps, 'countries'>) {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

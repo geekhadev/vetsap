@@ -36,7 +36,7 @@ function UsersIndex() {
     const { listMode, companies } = page;
     const sessionCompany = page.company_selected ?? null;
     const currentUserId = page.auth?.user?.id ?? null;
-    const { deleteRow } = useUsersIndex();
+    const { deleteRow, deleteConfirmDialog } = useUsersIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<UserListRow>();
     const [rolesOpen, setRolesOpen] = useState(false);
@@ -168,6 +168,7 @@ function UsersIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <FormDialog

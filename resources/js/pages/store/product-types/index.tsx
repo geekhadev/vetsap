@@ -27,7 +27,7 @@ import type {
     ProductTypesIndexFiltersDraftFull,
 } from '@/pages/store/product-types/types';
 function ProductTypesIndex({ can }: Pick<ProductTypesIndexPageProps, 'can'>) {
-    const { deleteRow } = useProductTypesIndex();
+    const { deleteRow, deleteConfirmDialog } = useProductTypesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<ProductType>();
 
@@ -52,6 +52,7 @@ function ProductTypesIndex({ can }: Pick<ProductTypesIndexPageProps, 'can'>) {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <ProductTypeForm

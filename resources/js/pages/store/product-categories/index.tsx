@@ -29,7 +29,7 @@ import type {
     ProductCategoriesIndexFiltersDraftFull,
 } from '@/pages/store/product-categories/types';
 function ProductCategoriesIndex({ can }: Pick<ProductCategoriesIndexPageProps, 'can'>) {
-    const { deleteRow } = useProductCategoriesIndex();
+    const { deleteRow, deleteConfirmDialog } = useProductCategoriesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<ProductCategory>();
 
@@ -54,6 +54,7 @@ function ProductCategoriesIndex({ can }: Pick<ProductCategoriesIndexPageProps, '
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <ProductCategoryForm

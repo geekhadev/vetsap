@@ -30,7 +30,7 @@ function ClinicalTemplatesIndex({
     can,
     species,
 }: Pick<ClinicalTemplatesIndexPageProps, 'can' | 'species'>) {
-    const { deleteRow } = useClinicalTemplatesIndex();
+    const { deleteRow, deleteConfirmDialog } = useClinicalTemplatesIndex();
 
     const columns = useMemo<TabledataColumn<ClinicalTemplate>[]>(
         () => [
@@ -89,6 +89,7 @@ function ClinicalTemplatesIndex({
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <TabledataProvider<ClinicalTemplate, ClinicalTemplateListFilters, ClinicalTemplatesIndexFiltersDraftFull>

@@ -27,7 +27,7 @@ import type { Service, ServiceListFilters, ServicesIndexFiltersDraftFull } from 
 function ServicesIndex() {
     const { can, specialties, time_block_minutes: timeBlockMinutes } =
         usePage<ServicesIndexPageProps>().props;
-    const { deleteRow } = useServicesIndex();
+    const { deleteRow, deleteConfirmDialog } = useServicesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Service>();
 
@@ -75,6 +75,7 @@ function ServicesIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <ServiceForm

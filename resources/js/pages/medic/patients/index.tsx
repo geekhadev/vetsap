@@ -32,7 +32,7 @@ function PatientsIndex({
     species,
     customers,
 }: Pick<PatientsIndexPageProps, 'can' | 'species' | 'customers'>) {
-    const { deleteRow } = usePatientsIndex();
+    const { deleteRow, deleteConfirmDialog } = usePatientsIndex();
     const { formOpen, openCreate, handleFormOpenChange } =
         useEntityFormDialogState<Patient>();
 
@@ -89,6 +89,7 @@ function PatientsIndex({
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <PatientForm

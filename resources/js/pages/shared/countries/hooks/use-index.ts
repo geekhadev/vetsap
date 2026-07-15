@@ -8,10 +8,12 @@ import type { Country } from '../types';
 export type { CountriesIndexPageProps } from '@/pages/shared/countries/config';
 
 export function useCountriesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Country>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Country>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) => `¿Eliminar el país «${row.name}»?`,
+        confirmTitle: () => '¿Eliminar el país?',
+        confirmDescription: (row) =>
+            `Se eliminará el país «${row.name}».Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

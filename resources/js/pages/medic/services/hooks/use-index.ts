@@ -5,11 +5,12 @@ import type { Service } from '../types';
 export type { ServicesIndexPageProps } from '@/pages/medic/services/config';
 
 export function useServicesIndex() {
-    const { deleteRow } = useTabledataDeleteRow<Service>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<Service>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar el servicio «${row.name}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar el servicio?',
+        confirmDescription: (row) =>
+            `Se eliminará el servicio «${row.name}». Esta acción no se puede deshacer.`,
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

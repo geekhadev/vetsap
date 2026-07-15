@@ -4,10 +4,11 @@ import { destroy } from '@/routes/configuration/users';
 import type { UserListRow } from '../types';
 
 export function useUsersIndex() {
-    const { deleteRow } = useTabledataDeleteRow<UserListRow>({
+    const { deleteRow, deleteConfirmDialog } = useTabledataDeleteRow<UserListRow>({
         getDestroyUrl: (row) => destroy.url(row.id),
-        confirmMessage: (row) =>
-            `¿Eliminar al usuario «${row.name}»? Esta acción no se puede deshacer.`,
+        confirmTitle: () => '¿Eliminar el usuario?',
+        confirmDescription: (row) =>
+            `Se eliminará al usuario «${row.name}». Esta acción no se puede deshacer.`,
         onError: (errors) => {
             const raw = errors.user;
             const msg = Array.isArray(raw) ? raw[0] : raw;
@@ -19,5 +20,5 @@ export function useUsersIndex() {
         },
     });
 
-    return { deleteRow };
+    return { deleteRow, deleteConfirmDialog };
 }

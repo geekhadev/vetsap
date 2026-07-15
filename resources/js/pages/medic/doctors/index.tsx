@@ -41,7 +41,7 @@ import type {
 function DoctorsIndex() {
     const { can, services, calendar_time_block_minutes } =
         usePage<DoctorsIndexPageProps>().props;
-    const { deleteRow } = useDoctorsIndex();
+    const { deleteRow, deleteConfirmDialog } = useDoctorsIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Doctor>();
     const [servicesDoctor, setServicesDoctor] = useState<Doctor | null>(null);
@@ -200,6 +200,7 @@ function DoctorsIndex() {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <DoctorForm

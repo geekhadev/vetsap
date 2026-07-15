@@ -22,7 +22,7 @@ function ClinicalAttentionsIndex({
     doctors,
     templates,
 }: Pick<ClinicalAttentionsIndexPageProps, 'can' | 'patients' | 'doctors' | 'templates'>) {
-    const { deleteRow } = useClinicalAttentionsIndex();
+    const { deleteRow, deleteConfirmDialog } = useClinicalAttentionsIndex();
 
     const columns = useMemo<TabledataColumn<ClinicalAttention>[]>(
         () => [
@@ -94,6 +94,7 @@ function ClinicalAttentionsIndex({
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <TabledataProvider<ClinicalAttention, ClinicalAttentionListFilters, ClinicalAttentionsIndexFiltersDraftFull>
