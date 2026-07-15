@@ -26,6 +26,8 @@ type AppointmentFormProps = {
     formOptions: AppointmentFormOptions;
     defaults: AppointmentFormDefaults;
     holidays: CalendarHoliday[];
+    /** Si se define, tras crear la cita se vuelve al paciente en lugar del calendario. */
+    redirectPatientId?: string;
 };
 
 export function AppointmentForm({
@@ -34,6 +36,7 @@ export function AppointmentForm({
     formOptions,
     defaults,
     holidays,
+    redirectPatientId,
 }: AppointmentFormProps) {
     const { formProps, headTitle, description } = useAppointmentForm();
 
@@ -163,6 +166,13 @@ export function AppointmentForm({
                         name="starts_at_time"
                         value={formState.startsAtTime}
                     />
+                    {redirectPatientId ? (
+                        <input
+                            type="hidden"
+                            name="redirect_patient_id"
+                            value={redirectPatientId}
+                        />
+                    ) : null}
 
                     <FormCombobox
                         label="Cliente / paciente"

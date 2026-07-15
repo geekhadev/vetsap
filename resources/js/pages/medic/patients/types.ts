@@ -1,6 +1,11 @@
+import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import type { PatientSexValue } from '@/components/custom/patient-sex-badge';
 import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge';
 import type { TabledataListStandardDraft } from '@/components/custom/tabledata';
+import type {
+    AppointmentFormOptions,
+    AppointmentStatusOption,
+} from '@/pages/agenda/calendar/types';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
 import type { ClinicalTemplate } from '@/pages/medic/clinical-templates/types';
 import {
@@ -79,8 +84,20 @@ export type PatientDoctorOption = {
     last_name: string;
 };
 
+export type AttentionStatus = 'draft' | 'closed';
+
+export type AttentionRequestedExam = {
+    id: string;
+    name: string;
+    is_uploaded: boolean;
+    file_url: string | null;
+    file_name: string | null;
+    mime_type: string | null;
+};
+
 export type AttentionSummary = {
     id: string;
+    status: AttentionStatus;
     template_id: string;
     template_name: string | null;
     doctor_name: string | null;
@@ -88,11 +105,32 @@ export type AttentionSummary = {
     closed_at: string | null;
     created_at: string;
     values: Record<string, unknown>;
+    requested_exams: AttentionRequestedExam[];
+};
+
+export type FutureAppointmentSummary = {
+    id: string;
+    service_name: string | null;
+    doctor_name: string | null;
+    starts_at: string;
+    ends_at: string | null;
+    status_name: string | null;
+};
+
+export type ExamServiceOption = {
+    id: string;
+    name: string;
 };
 
 export type PatientsEditCan = {
     attentions: {
         create: boolean;
+        update: boolean;
+        delete: boolean;
+    };
+    appointments: {
+        create: boolean;
+        update: boolean;
         delete: boolean;
     };
 };
@@ -106,7 +144,12 @@ export type PatientsEditPageProps = {
     customers: CustomerOption[];
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
+    examServices: ExamServiceOption[];
     attentions: AttentionSummary[];
+    futureAppointments: FutureAppointmentSummary[];
+    appointmentFormOptions: AppointmentFormOptions;
+    appointmentHolidays: CalendarHoliday[];
+    appointmentStatuses: AppointmentStatusOption[];
     can: PatientsEditCan;
 };
 

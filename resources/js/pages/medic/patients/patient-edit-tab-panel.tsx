@@ -1,5 +1,7 @@
-import { ChevronDown, FileDown, Mail, MessageCircle } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { router } from '@inertiajs/react';
+import { CalendarPlus, ChevronDown, FileDown, Mail, MessageCircle } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -15,6 +17,13 @@ import {
     SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { AppointmentDetailModal } from '@/pages/agenda/calendar/appointment-detail-modal';
+import { AppointmentForm } from '@/pages/agenda/calendar/appointment-form';
+import type {
+    AppointmentFormOptions,
+    AppointmentStatusOption,
+} from '@/pages/agenda/calendar/types';
+import { buildDefaultAppointmentFormDefaults } from '@/pages/agenda/calendar/types';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
 import { PatientAttentionViewDialog } from '@/pages/medic/patients/patient-attention-view-dialog';
 import {
@@ -24,7 +33,10 @@ import {
 import { PatientClinicalTimeline } from '@/pages/medic/patients/patient-clinical-timeline';
 import { PatientDraftAttentionForm } from '@/pages/medic/patients/patient-draft-attention-form';
 import type {
+    AttentionRequestedExam,
     AttentionSummary,
+    ExamServiceOption,
+    FutureAppointmentSummary,
     Patient,
     PatientDoctorOption,
     PatientEditTabId,
@@ -39,7 +51,12 @@ type PatientEditTabPanelProps = {
     draftAttention: ClinicalAttention | null;
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
+    examServices: ExamServiceOption[];
     attentions: AttentionSummary[];
+    futureAppointments: FutureAppointmentSummary[];
+    appointmentFormOptions: AppointmentFormOptions;
+    appointmentHolidays: CalendarHoliday[];
+    appointmentStatuses: AppointmentStatusOption[];
     can: PatientsEditCan;
 };
 
@@ -50,12 +67,21 @@ export function PatientEditTabPanel({
     draftAttention,
     templates,
     doctors,
+    examServices,
     attentions,
+    futureAppointments,
+    appointmentFormOptions,
+    appointmentHolidays,
+    appointmentStatuses,
     can,
 }: PatientEditTabPanelProps) {
     const [hasDraftAttention, setHasDraftAttention] = useState(draftAttention !== null);
     const [draftFormKey, setDraftFormKey] = useState(0);
     const [viewAttention, setViewAttention] = useState<AttentionSummary | null>(null);
+    const [appointmentFormOpen, setAppointmentFormOpen] = useState(false);
+    const [appointmentFormSessionId, setAppointmentFormSessionId] = useState(0);
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+    const [appointmentDetailOpen, setAppointmentDetailOpen] = useState(false);
 
     useEffect(() => {
         setHasDraftAttention(draftAttention !== null);
@@ -63,6 +89,10 @@ export function PatientEditTabPanel({
 
     const handleDraftSaved = useCallback(() => {
         setHasDraftAttention(true);
+        router.reload({
+            only: ['attentions', 'draftAttention'],
+            preserveScroll: true,
+        });
     }, []);
 
     const handleDraftCompleted = useCallback(() => {
@@ -93,15 +123,51 @@ export function PatientEditTabPanel({
         [openDraftSheet],
     );
 
+    const appointmentDefaults = useMemo(
+        () => ({
+            ...buildDefaultAppointmentFormDefaults(),
+            patientId: patient.id,
+            customerId: patient.customer_id,
+        }),
+        [patient.customer_id, patient.id],
+    );
+
+    const openScheduleAppointment = useCallback(() => {
+        setAppointmentDetailOpen(false);
+        setSelectedAppointmentId(null);
+        setAppointmentFormSessionId((current) => current + 1);
+        setAppointmentFormOpen(true);
+    }, []);
+
+    const openAppointmentDetail = useCallback((appointment: FutureAppointmentSummary) => {
+        setAppointmentFormOpen(false);
+        setSelectedAppointmentId(appointment.id);
+        setAppointmentDetailOpen(true);
+    }, []);
+
+    const handleAppointmentDetailOpenChange = useCallback((open: boolean) => {
+        setAppointmentDetailOpen(open);
+
+        if (!open) {
+            setSelectedAppointmentId(null);
+            router.reload({
+                only: ['futureAppointments'],
+                preserveScroll: true,
+            });
+        }
+    }, []);
+
+    const timelineCount = attentions.length + futureAppointments.length;
+
     return (
         <div className="flex min-w-0 flex-col gap-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                     <h2 className="text-base font-medium">Historial clínico</h2>
                     <p className="text-muted-foreground text-sm">
-                        {attentions.length === 0
-                            ? 'Atenciones y exámenes del paciente.'
-                            : `${attentions.length} ${attentions.length === 1 ? 'registro' : 'registros'} en el timeline.`}
+                        {timelineCount === 0
+                            ? 'Atenciones y citas del paciente.'
+                            : `${timelineCount} ${timelineCount === 1 ? 'registro' : 'registros'} en el timeline.`}
                     </p>
                 </div>
 
@@ -119,6 +185,12 @@ export function PatientEditTabPanel({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="min-w-56">
+                            {can.appointments.create ? (
+                                <DropdownMenuItem onSelect={openScheduleAppointment}>
+                                    <CalendarPlus className="size-4" aria-hidden />
+                                    Programar cita
+                                </DropdownMenuItem>
+                            ) : null}
                             <DropdownMenuItem>
                                 <FileDown className="size-4" aria-hidden />
                                 Descargar historial PDF
@@ -173,7 +245,10 @@ export function PatientEditTabPanel({
 
             <PatientClinicalTimeline
                 attentions={attentions}
+                futureAppointments={futureAppointments}
                 onAttentionSelect={setViewAttention}
+                onDraftSelect={openDraftSheet}
+                onAppointmentSelect={openAppointmentDetail}
             />
 
             <PatientAttentionViewDialog
@@ -187,7 +262,37 @@ export function PatientEditTabPanel({
                 patientId={patient.id}
                 templates={templates}
                 canDelete={can.attentions.delete}
+                canUpdateExams={can.attentions.update}
+                onAttentionExamsChange={(attentionId, exams: AttentionRequestedExam[]) => {
+                    setViewAttention((current) =>
+                        current && current.id === attentionId
+                            ? { ...current, requested_exams: exams }
+                            : current,
+                    );
+                }}
             />
+
+            <AppointmentDetailModal
+                open={appointmentDetailOpen}
+                onOpenChange={handleAppointmentDetailOpenChange}
+                appointmentId={selectedAppointmentId}
+                appointmentStatuses={appointmentStatuses}
+                holidays={appointmentHolidays}
+                canUpdate={can.appointments.update}
+                canDelete={can.appointments.delete}
+            />
+
+            {can.appointments.create ? (
+                <AppointmentForm
+                    key={appointmentFormSessionId}
+                    open={appointmentFormOpen}
+                    onOpenChange={setAppointmentFormOpen}
+                    formOptions={appointmentFormOptions}
+                    defaults={appointmentDefaults}
+                    holidays={appointmentHolidays}
+                    redirectPatientId={patient.id}
+                />
+            ) : null}
 
             {can.attentions.create ? (
                 <Sheet
@@ -209,11 +314,12 @@ export function PatientEditTabPanel({
                             <SheetDescription>Completa los datos de la atención</SheetDescription>
                         </SheetHeader>
                         <PatientDraftAttentionForm
-                            key={`${patient.id}-${draftAttention?.id ?? 'new'}-${draftFormKey}`}
+                            key={`${patient.id}-${draftFormKey}`}
                             patientId={patient.id}
                             draftAttention={draftAttention}
                             templates={templates}
                             doctors={doctors}
+                            examServices={examServices}
                             title={draftActionLabel}
                             description="Completa los datos de la atención"
                             onDraftSaved={handleDraftSaved}

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Medic;
 
+use App\Actions\Agenda\Appointments\BuildAppointmentFormOptionsAction;
+use App\Actions\Agenda\AppointmentStatuses\ListActiveAppointmentStatusesForCalendarAction;
+use App\Actions\Agenda\Holidays\ListActiveHolidaysForCalendarAction;
 use App\Actions\Medic\ClinicalAttentions\ClosePatientDraftAttentionAction;
 use App\Actions\Medic\ClinicalAttentions\UpsertPatientDraftAttentionAction;
 use App\Actions\Medic\Patients\CreatePatientAction;
@@ -15,13 +18,16 @@ use App\Http\Requests\Medic\PatientDraftAttentionUpsertRequest;
 use App\Http\Requests\Medic\PatientListRequest;
 use App\Http\Requests\Medic\PatientStoreRequest;
 use App\Http\Requests\Medic\PatientUpdateRequest;
+use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\ClinicalTemplate;
 use App\Models\Medic\Doctor;
 use App\Models\Medic\Patient;
+use App\Models\Medic\Service;
 use App\Models\Medic\Species;
 use App\Models\Sale\Customer;
+use App\Support\Storage\PublicStorageUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -97,8 +103,13 @@ class PatientsController extends Controller
         return $this->redirectAfterSave($request->redirectTarget());
     }
 
-    public function edit(Patient $patient, Request $request): Response
-    {
+    public function edit(
+        Patient $patient,
+        Request $request,
+        BuildAppointmentFormOptionsAction $buildAppointmentFormOptions,
+        ListActiveHolidaysForCalendarAction $listActiveHolidays,
+        ListActiveAppointmentStatusesForCalendarAction $listAppointmentStatuses,
+    ): Response {
         $this->authorize('update', $patient);
 
         $company = $this->resolveCompany($request);
@@ -116,7 +127,7 @@ class PatientsController extends Controller
         $draftAttention = ClinicalAttention::query()
             ->where('patient_id', $patient->id)
             ->draft()
-            ->with(['values', 'template.fields'])
+            ->with(['values', 'template.fields', 'requestedServices:id,name'])
             ->first();
 
         if (! $request->has('tab') && $draftAttention instanceof ClinicalAttention) {
@@ -125,11 +136,49 @@ class PatientsController extends Controller
 
         $attentions = ClinicalAttention::query()
             ->where('patient_id', $patient->id)
-            ->closed()
-            ->with(['template:id,name', 'doctor:id,first_name,last_name', 'values'])
+            ->whereIn('status', [
+                ClinicalAttentionStatus::Draft,
+                ClinicalAttentionStatus::Closed,
+            ])
+            ->with([
+                'template:id,name',
+                'doctor:id,first_name,last_name',
+                'values',
+                'requestedServices:id,name',
+            ])
+            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', [ClinicalAttentionStatus::Draft->value])
             ->orderByDesc('closed_at')
             ->orderByDesc('started_at')
             ->get();
+
+        $futureAppointments = Appointment::query()
+            ->where('patient_id', $patient->id)
+            ->where('starts_at', '>', now())
+            ->whereHas(
+                'appointmentStatus',
+                static fn ($query) => $query->where('is_terminal', false),
+            )
+            ->with([
+                'service:id,name',
+                'doctor:id,first_name,last_name',
+                'appointmentStatus:id,name',
+            ])
+            ->orderBy('starts_at')
+            ->get();
+
+        $appointmentFormOptions = $company instanceof Company
+            ? $buildAppointmentFormOptions->execute($company->id)
+            : [
+                'doctors' => [],
+                'services' => [],
+                'patients' => [],
+                'offices' => [],
+            ];
+
+        $appointmentFormOptions['patients'] = collect($appointmentFormOptions['patients'])
+            ->filter(static fn (array $option): bool => $option['id'] === $patient->id)
+            ->values()
+            ->all();
 
         return Inertia::render('medic/patients/edit', [
             'patient' => $patient,
@@ -165,29 +214,115 @@ class PatientsController extends Controller
                     ->orderBy('first_name')
                     ->get(['id', 'first_name', 'last_name'])
                 : [],
-            'attentions' => $attentions->map(fn ($a) => [
-                'id' => $a->id,
-                'template_id' => $a->template_id,
-                'template_name' => $a->template?->name,
-                'doctor_name' => $a->doctor
-                    ? "{$a->doctor->first_name} {$a->doctor->last_name}"
+            'examServices' => $company instanceof Company
+                ? $this->examServicesForCompany($company->id)
+                : [],
+            'attentions' => $attentions->map(fn (ClinicalAttention $attention): array => [
+                'id' => $attention->id,
+                'status' => $attention->status instanceof ClinicalAttentionStatus
+                    ? $attention->status->value
+                    : (string) $attention->status,
+                'template_id' => $attention->template_id,
+                'template_name' => $attention->template?->name,
+                'doctor_name' => $attention->doctor
+                    ? "{$attention->doctor->first_name} {$attention->doctor->last_name}"
                     : null,
-                'started_at' => $a->started_at,
-                'closed_at' => $a->closed_at,
-                'created_at' => $a->created_at,
-                'values' => $a->values
+                'started_at' => $attention->started_at,
+                'closed_at' => $attention->closed_at,
+                'created_at' => $attention->created_at,
+                'values' => $attention->values
                     ->mapWithKeys(fn ($value) => [
                         $value->field_key => $value->value,
                     ])
                     ->all(),
+                'requested_exams' => $attention->requestedServices
+                    ->map(fn (Service $service): array => $this->mapRequestedExam($service))
+                    ->values()
+                    ->all(),
             ]),
+            'futureAppointments' => $futureAppointments->map(static fn (Appointment $appointment): array => [
+                'id' => $appointment->id,
+                'service_name' => $appointment->service?->name,
+                'doctor_name' => $appointment->doctor
+                    ? "{$appointment->doctor->first_name} {$appointment->doctor->last_name}"
+                    : null,
+                'starts_at' => $appointment->starts_at,
+                'ends_at' => $appointment->ends_at,
+                'status_name' => $appointment->appointmentStatus?->name,
+            ]),
+            'appointmentFormOptions' => $appointmentFormOptions,
+            'appointmentHolidays' => $company instanceof Company
+                ? $listActiveHolidays->execute($company->id)
+                : [],
+            'appointmentStatuses' => $company instanceof Company
+                ? $listAppointmentStatuses->execute($company->id)
+                : [],
             'can' => [
                 'attentions' => [
                     'create' => $user?->can('create', ClinicalAttention::class) ?? false,
+                    'update' => $user?->can('updateAny', ClinicalAttention::class) ?? false,
                     'delete' => $user?->can('deleteAny', ClinicalAttention::class) ?? false,
+                ],
+                'appointments' => [
+                    'create' => $user?->can('create', Appointment::class) ?? false,
+                    'update' => $user?->can('updateAny', Appointment::class) ?? false,
+                    'delete' => $user?->can('deleteAny', Appointment::class) ?? false,
                 ],
             ],
         ]);
+    }
+
+    /**
+     * @return array{
+     *     id: string,
+     *     name: string,
+     *     is_uploaded: bool,
+     *     file_url: string|null,
+     *     file_name: string|null,
+     *     mime_type: string|null,
+     * }
+     */
+    protected function mapRequestedExam(Service $service): array
+    {
+        $path = $service->pivot->result_path;
+        $isUploaded = is_string($path) && $path !== '';
+
+        return [
+            'id' => $service->id,
+            'name' => $service->name,
+            'is_uploaded' => $isUploaded,
+            'file_url' => $isUploaded ? PublicStorageUrl::fromRelativePath($path) : null,
+            'file_name' => $isUploaded ? ($service->pivot->result_original_name ?: null) : null,
+            'mime_type' => $isUploaded ? ($service->pivot->result_mime_type ?: null) : null,
+        ];
+    }
+
+    /**
+     * @return list<array{id: string, name: string}>
+     */
+    protected function examServicesForCompany(string $companyId): array
+    {
+        return Service::query()
+            ->forCompany($companyId)
+            ->where('is_active', true)
+            ->whereHas(
+                'specialty',
+                static fn ($query) => $query
+                    ->where('is_active', true)
+                    ->where(static function ($specialtyQuery): void {
+                        $specialtyQuery
+                            ->whereRaw('LOWER(name) = ?', ['exámenes'])
+                            ->orWhereRaw('LOWER(name) = ?', ['examenes']);
+                    }),
+            )
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(static fn (Service $service): array => [
+                'id' => $service->id,
+                'name' => $service->name,
+            ])
+            ->values()
+            ->all();
     }
 
     public function upsertDraftAttention(

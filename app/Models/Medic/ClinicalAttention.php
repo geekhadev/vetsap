@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
@@ -105,6 +106,27 @@ class ClinicalAttention extends Model
     public function values(): HasMany
     {
         return $this->hasMany(ClinicalAttentionValue::class, 'attention_id');
+    }
+
+    /**
+     * @return BelongsToMany<Service, $this>
+     */
+    public function requestedServices(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Service::class,
+            'medic_clinical_attention_requested_services',
+            'attention_id',
+            'service_id',
+        )
+            ->withPivot([
+                'result_path',
+                'result_original_name',
+                'result_mime_type',
+                'result_uploaded_at',
+            ])
+            ->withTimestamps()
+            ->orderBy('name');
     }
 
     /**

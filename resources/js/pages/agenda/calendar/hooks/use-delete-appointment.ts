@@ -11,17 +11,13 @@ export function useDeleteAppointment({ onDeleted }: UseDeleteAppointmentOptions 
     const [error, setError] = useState<string | null>(null);
 
     const deleteAppointment = useCallback(
-        (appointmentId: string, confirmMessage: string) => {
-            if (!window.confirm(confirmMessage)) {
-                return;
-            }
-
+        (appointmentId: string) => {
             setDeleting(true);
             setError(null);
 
             router.delete(AppointmentsController.destroy.url(appointmentId), {
                 preserveScroll: true,
-                only: ['appointments'],
+                only: ['appointments', 'futureAppointments'],
                 onSuccess: () => {
                     onDeleted?.();
                 },

@@ -25,6 +25,7 @@ export type ClinicalAttention = {
     patient?: { id: string; name: string; record_number: string } | null;
     doctor?: { id: string; first_name: string; last_name: string } | null;
     values?: AttentionValue[];
+    requested_services?: { id: string; name: string }[];
     started_at: string;
     closed_at: string | null;
     created_at: string;

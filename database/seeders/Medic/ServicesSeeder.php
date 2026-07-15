@@ -24,6 +24,12 @@ class ServicesSeeder extends Seeder
             'Odontología' => [
                 ['name' => 'Limpieza dental', 'duration_minutes' => 45, 'price' => '35000'],
             ],
+            'Exámenes' => [
+                ['name' => 'Hemograma completo', 'duration_minutes' => 15, 'price' => '18000'],
+                ['name' => 'Perfil bioquímico', 'duration_minutes' => 15, 'price' => '22000'],
+                ['name' => 'Radiografía simple', 'duration_minutes' => 20, 'price' => '25000'],
+                ['name' => 'Ecografía abdominal', 'duration_minutes' => 30, 'price' => '35000'],
+            ],
         ];
 
         Company::query()->each(function (Company $company) use ($catalog): void {

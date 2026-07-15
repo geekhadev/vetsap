@@ -1,8 +1,13 @@
 import { useCallback, useState } from 'react';
+import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import {
     SplitSettingsLayout,
     SplitSettingsPanel,
 } from '@/components/custom/split-settings-layout';
+import type {
+    AppointmentFormOptions,
+    AppointmentStatusOption,
+} from '@/pages/agenda/calendar/types';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
 import { PatientForm } from '@/pages/medic/patients/form';
 import { usePatientEditWorkspace } from '@/pages/medic/patients/hooks/use-patient-edit-workspace';
@@ -11,6 +16,8 @@ import { PatientEditTabPanel } from '@/pages/medic/patients/patient-edit-tab-pan
 import type {
     AttentionSummary,
     CustomerOption,
+    ExamServiceOption,
+    FutureAppointmentSummary,
     Patient,
     PatientDoctorOption,
     PatientEditTabId,
@@ -28,7 +35,12 @@ type PatientFormPageProps = {
     draftAttention: ClinicalAttention | null;
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
+    examServices: ExamServiceOption[];
     attentions: AttentionSummary[];
+    futureAppointments: FutureAppointmentSummary[];
+    appointmentFormOptions: AppointmentFormOptions;
+    appointmentHolidays: CalendarHoliday[];
+    appointmentStatuses: AppointmentStatusOption[];
     can: PatientsEditCan;
 };
 
@@ -41,7 +53,12 @@ export function PatientFormPage({
     draftAttention,
     templates,
     doctors,
+    examServices,
     attentions,
+    futureAppointments,
+    appointmentFormOptions,
+    appointmentHolidays,
+    appointmentStatuses,
     can,
 }: PatientFormPageProps) {
     const [formOpen, setFormOpen] = useState(false);
@@ -78,7 +95,12 @@ export function PatientFormPage({
                         draftAttention={draftAttention}
                         templates={templates}
                         doctors={doctors}
+                        examServices={examServices}
                         attentions={attentions}
+                        futureAppointments={futureAppointments}
+                        appointmentFormOptions={appointmentFormOptions}
+                        appointmentHolidays={appointmentHolidays}
+                        appointmentStatuses={appointmentStatuses}
                         can={can}
                     />
                 </SplitSettingsPanel>

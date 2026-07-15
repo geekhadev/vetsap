@@ -4,8 +4,23 @@ import { PatientFormPage } from '@/pages/medic/patients/patient-form-page';
 import type { PatientsEditPageProps } from '@/pages/medic/patients/types';
 
 function PatientsEdit() {
-    const { patient, species, customers, redirectTo, activeTab, draftAttention, templates, doctors, attentions, can } =
-        usePage<PatientsEditPageProps>().props;
+    const {
+        patient,
+        species,
+        customers,
+        redirectTo,
+        activeTab,
+        draftAttention,
+        templates,
+        doctors,
+        examServices,
+        attentions,
+        futureAppointments,
+        appointmentFormOptions,
+        appointmentHolidays,
+        appointmentStatuses,
+        can,
+    } = usePage<PatientsEditPageProps>().props;
 
     return (
         <>
@@ -20,7 +35,12 @@ function PatientsEdit() {
                 draftAttention={draftAttention}
                 templates={templates}
                 doctors={doctors}
+                examServices={examServices}
                 attentions={attentions}
+                futureAppointments={futureAppointments}
+                appointmentFormOptions={appointmentFormOptions}
+                appointmentHolidays={appointmentHolidays}
+                appointmentStatuses={appointmentStatuses}
                 can={can}
             />
         </>

@@ -20,6 +20,7 @@ final class ClinicalAttentionPayloadValidationRules
             'doctor_id' => ['required', 'uuid', Rule::exists('medic_doctors', 'id')->where('company_id', $companyId)],
             'values' => ['nullable', 'array'],
             'values.*' => ['nullable', 'string', 'max:5000'],
+            ...self::requestedServiceIdsRules($companyId),
         ];
     }
 
@@ -42,6 +43,23 @@ final class ClinicalAttentionPayloadValidationRules
             'doctor_id' => ['nullable', 'uuid', Rule::exists('medic_doctors', 'id')->where('company_id', $companyId)],
             'values' => ['nullable', 'array'],
             'values.*' => ['nullable', 'string', 'max:5000'],
+            ...self::requestedServiceIdsRules($companyId),
+        ];
+    }
+
+    /**
+     * @return array<string, ValidationRule|array<int, mixed|string>|string>
+     */
+    public static function requestedServiceIdsRules(string $companyId): array
+    {
+        return [
+            'requested_service_ids' => ['nullable', 'array'],
+            'requested_service_ids.*' => [
+                'uuid',
+                Rule::exists('medic_services', 'id')
+                    ->where('company_id', $companyId)
+                    ->where('is_active', true),
+            ],
         ];
     }
 
@@ -104,6 +122,7 @@ final class ClinicalAttentionPayloadValidationRules
             'template_id' => isset($validated['template_id']) ? (string) $validated['template_id'] : null,
             'doctor_id' => ($doctorId === null || $doctorId === '') ? null : (string) $doctorId,
             'values' => $validated['values'] ?? [],
+            'requested_service_ids' => self::normalizedRequestedServiceIds($validated),
         ];
     }
 
@@ -150,6 +169,25 @@ final class ClinicalAttentionPayloadValidationRules
             'doctor_id' => (string) $validated['doctor_id'],
             'updated_by_user_id' => $userId,
             'values' => $validated['values'] ?? [],
+            'requested_service_ids' => self::normalizedRequestedServiceIds($validated),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return list<string>
+     */
+    public static function normalizedRequestedServiceIds(array $validated): array
+    {
+        $ids = $validated['requested_service_ids'] ?? [];
+
+        if (! is_array($ids)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_map(
+            static fn (mixed $id): string => (string) $id,
+            array_filter($ids, static fn (mixed $id): bool => is_string($id) || is_int($id)),
+        )));
     }
 }

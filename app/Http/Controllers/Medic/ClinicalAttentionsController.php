@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Medic;
 
 use App\Actions\Medic\ClinicalAttentions\CreateClinicalAttentionAction;
 use App\Actions\Medic\ClinicalAttentions\DeleteClinicalAttentionAction;
+use App\Actions\Medic\ClinicalAttentions\DeleteClinicalAttentionExamResultAction;
 use App\Actions\Medic\ClinicalAttentions\ListClinicalAttentionsForCompanyAction;
+use App\Actions\Medic\ClinicalAttentions\StoreClinicalAttentionExamResultAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Medic\ClinicalAttentionExamResultStoreRequest;
 use App\Http\Requests\Medic\ClinicalAttentionListRequest;
 use App\Http\Requests\Medic\ClinicalAttentionStoreRequest;
 use App\Models\Company;
@@ -13,8 +16,11 @@ use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\ClinicalTemplate;
 use App\Models\Medic\Doctor;
 use App\Models\Medic\Patient;
+use App\Models\Medic\Service;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -122,5 +128,52 @@ class ClinicalAttentionsController extends Controller
         }
 
         return to_route('medic.clinical-attentions.index');
+    }
+
+    public function storeExamResult(
+        ClinicalAttentionExamResultStoreRequest $request,
+        ClinicalAttention $clinicalAttention,
+        Service $service,
+        StoreClinicalAttentionExamResultAction $action,
+    ): JsonResponse {
+        $this->authorize('update', $clinicalAttention);
+
+        if ($clinicalAttention->company_id !== $service->company_id) {
+            abort(404);
+        }
+
+        $file = $request->file('file');
+
+        if (! $file instanceof UploadedFile) {
+            abort(422, 'Selecciona un archivo PDF o una imagen.');
+        }
+
+        try {
+            $exam = $action->execute($clinicalAttention, $service, $file);
+        } catch (\RuntimeException $exception) {
+            abort(422, $exception->getMessage());
+        }
+
+        return response()->json(['exam' => $exam]);
+    }
+
+    public function destroyExamResult(
+        ClinicalAttention $clinicalAttention,
+        Service $service,
+        DeleteClinicalAttentionExamResultAction $action,
+    ): JsonResponse {
+        $this->authorize('update', $clinicalAttention);
+
+        if ($clinicalAttention->company_id !== $service->company_id) {
+            abort(404);
+        }
+
+        try {
+            $exam = $action->execute($clinicalAttention, $service);
+        } catch (\RuntimeException $exception) {
+            abort(422, $exception->getMessage());
+        }
+
+        return response()->json(['exam' => $exam]);
     }
 }

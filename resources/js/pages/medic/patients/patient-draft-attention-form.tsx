@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/custom/confirm-dialog';
+import { FormMultiSelect } from '@/components/custom/form-multi-select';
 import { FormSelect } from '@/components/custom/form-select';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -9,13 +10,18 @@ import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types'
 import type { ClinicalFieldKey } from '@/pages/medic/clinical-templates/types';
 import { CLINICAL_FIELD_CATALOG } from '@/pages/medic/clinical-templates/types';
 import { usePatientDraftAttention } from '@/pages/medic/patients/hooks/use-patient-draft-attention';
-import type { PatientDoctorOption, PatientTemplateOption } from '@/pages/medic/patients/types';
+import type {
+    ExamServiceOption,
+    PatientDoctorOption,
+    PatientTemplateOption,
+} from '@/pages/medic/patients/types';
 
 type PatientDraftAttentionFormProps = {
     patientId: string;
     draftAttention: ClinicalAttention | null;
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
+    examServices: ExamServiceOption[];
     title: string;
     description: string;
     onDraftSaved?: () => void;
@@ -28,6 +34,7 @@ export function PatientDraftAttentionForm({
     draftAttention,
     templates,
     doctors,
+    examServices,
     title,
     description,
     onDraftSaved,
@@ -56,6 +63,7 @@ export function PatientDraftAttentionForm({
         setTemplateId,
         setDoctorId,
         setFieldValue,
+        setRequestedServiceIds,
         closeAttention,
     } = usePatientDraftAttention({
         patientId,
@@ -78,6 +86,10 @@ export function PatientDraftAttentionForm({
     const templateOptions = useMemo(
         () => templates.map((t) => ({ id: t.id, label: t.name })),
         [templates],
+    );
+    const examServiceOptions = useMemo(
+        () => examServices.map((service) => ({ value: service.id, label: service.name })),
+        [examServices],
     );
 
     const sortedFields = useMemo(
@@ -234,6 +246,31 @@ export function PatientDraftAttentionForm({
                         </div>
                     </section>
                 )}
+
+                {(otherFields.length > 0 || vitalFields.length > 0) &&
+                examServiceOptions.length > 0 ? (
+                    <div className="border-border border-t" role="separator" />
+                ) : null}
+
+                {examServiceOptions.length > 0 ? (
+                    <section className="flex flex-col gap-4">
+                        <h3 className="text-base font-semibold">Solicitar exámenes</h3>
+                        <FormMultiSelect
+                            id="draft-attention-requested_service_ids"
+                            label="Exámenes"
+                            placeholder="Selecciona uno o más exámenes…"
+                            searchPlaceholder="Buscar examen…"
+                            emptyMessage="No hay exámenes disponibles."
+                            options={examServiceOptions}
+                            values={formState.requested_service_ids}
+                            onValuesChange={setRequestedServiceIds}
+                            error={
+                                closeErrors.requested_service_ids ??
+                                closeErrors['requested_service_ids.0']
+                            }
+                        />
+                    </section>
+                ) : null}
             </div>
 
             <ConfirmDialog

@@ -37,7 +37,15 @@ class AppointmentStoreRequest extends FormRequest
     {
         /** @var array<string, mixed> $validated */
         $validated = $this->validated();
+        unset($validated['redirect_patient_id']);
 
         return $validated;
+    }
+
+    public function redirectPatientId(): ?string
+    {
+        $patientId = $this->validated('redirect_patient_id');
+
+        return is_string($patientId) && $patientId !== '' ? $patientId : null;
     }
 }

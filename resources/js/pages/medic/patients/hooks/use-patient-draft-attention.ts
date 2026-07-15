@@ -11,6 +11,7 @@ export type DraftAttentionFormState = {
     template_id: string;
     doctor_id: string;
     values: Record<string, string>;
+    requested_service_ids: string[];
 };
 
 function valuesFromAttention(attention: ClinicalAttention | null): Record<string, string> {
@@ -27,6 +28,10 @@ function valuesFromAttention(attention: ClinicalAttention | null): Record<string
     }, {});
 }
 
+function requestedServiceIdsFromAttention(attention: ClinicalAttention | null): string[] {
+    return (attention?.requested_services ?? []).map((service) => service.id);
+}
+
 function buildInitialState(
     draftAttention: ClinicalAttention | null,
     defaultTemplateId: string,
@@ -36,6 +41,7 @@ function buildInitialState(
         template_id: draftAttention?.template_id ?? defaultTemplateId,
         doctor_id: draftAttention?.doctor_id ?? defaultDoctorId,
         values: valuesFromAttention(draftAttention),
+        requested_service_ids: requestedServiceIdsFromAttention(draftAttention),
     };
 }
 
@@ -44,11 +50,16 @@ function serializeDraftState(state: DraftAttentionFormState): string {
         template_id: state.template_id,
         doctor_id: state.doctor_id,
         values: state.values,
+        requested_service_ids: [...state.requested_service_ids].sort(),
     });
 }
 
 function hasMeaningfulDraftData(state: DraftAttentionFormState): boolean {
     if (state.doctor_id.trim() !== '') {
+        return true;
+    }
+
+    if (state.requested_service_ids.length > 0) {
         return true;
     }
 
@@ -86,6 +97,7 @@ export function usePatientDraftAttention({
         template_id: '',
         doctor_id: '',
         values: {} as Record<string, string>,
+        requested_service_ids: [] as string[],
     });
 
     useEffect(() => {
@@ -115,6 +127,7 @@ export function usePatientDraftAttention({
                 template_id: current.template_id || null,
                 doctor_id: current.doctor_id || null,
                 values: current.values,
+                requested_service_ids: current.requested_service_ids,
             }));
 
             const saved = (await autosaveHttp.put(
@@ -192,6 +205,16 @@ export function usePatientDraftAttention({
         [markDirty],
     );
 
+    const setRequestedServiceIds = useCallback(
+        (requestedServiceIds: string[]) => {
+            markDirty((prev) => ({
+                ...prev,
+                requested_service_ids: requestedServiceIds,
+            }));
+        },
+        [markDirty],
+    );
+
     const closeAttention = useCallback(async () => {
         setClosing(true);
         setCloseErrors({});
@@ -213,6 +236,7 @@ export function usePatientDraftAttention({
                 doctor_id: formStateRef.current.doctor_id,
                 patient_id: patientId,
                 values: formStateRef.current.values,
+                requested_service_ids: formStateRef.current.requested_service_ids,
             },
             {
                 preserveScroll: true,
@@ -237,6 +261,7 @@ export function usePatientDraftAttention({
         setTemplateId,
         setDoctorId,
         setFieldValue,
+        setRequestedServiceIds,
         closeAttention,
     };
 }

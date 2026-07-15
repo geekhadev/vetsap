@@ -19,6 +19,7 @@ class SpecialtiesSeeder extends Seeder
             'Nutrición y Dietética',
             'Radiología',
             'Laboratorio Clínico',
+            'Exámenes',
             'Rehabilitación',
         ];
 

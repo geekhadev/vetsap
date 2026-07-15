@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge/types';
@@ -432,6 +433,8 @@ export function AppointmentDetailModal({
         error: rescheduleError,
         clearError: clearRescheduleError,
     } = useRescheduleAppointment();
+    const [scheduleFieldKey, setScheduleFieldKey] = useState(0);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const {
         deleteAppointment,
         deleting,
@@ -439,10 +442,23 @@ export function AppointmentDetailModal({
         clearError: clearDeleteError,
     } = useDeleteAppointment({
         onDeleted: () => {
+            setConfirmDeleteOpen(false);
             onOpenChange(false);
         },
     });
-    const [scheduleFieldKey, setScheduleFieldKey] = useState(0);
+
+    const deleteDescription = useMemo(() => {
+        if (appointment === null) {
+            return 'Se eliminará esta cita. Esta acción no se puede deshacer.';
+        }
+
+        const startsAt = new Date(appointment.starts_at);
+        const formattedDate = Number.isNaN(startsAt.getTime())
+            ? appointment.starts_at
+            : format(startsAt, "dd/MM/yyyy 'a las' HH:mm");
+
+        return `Se eliminará la cita de ${appointment.patient.name} del ${formattedDate}. Esta acción no se puede deshacer.`;
+    }, [appointment]);
 
     const handleStatusChange = useCallback(
         async (statusId: string) => {
@@ -477,20 +493,12 @@ export function AppointmentDetailModal({
     );
 
     const handleDelete = useCallback(() => {
-        if (appointment === null || appointmentId === null) {
+        if (appointmentId === null) {
             return;
         }
 
-        const startsAt = new Date(appointment.starts_at);
-        const formattedDate = Number.isNaN(startsAt.getTime())
-            ? appointment.starts_at
-            : format(startsAt, "dd/MM/yyyy 'a las' HH:mm");
-
-        deleteAppointment(
-            appointmentId,
-            `¿Eliminar la cita de ${appointment.patient.name} del ${formattedDate}? Esta acción no se puede deshacer.`,
-        );
-    }, [appointment, appointmentId, deleteAppointment]);
+        deleteAppointment(appointmentId);
+    }, [appointmentId, deleteAppointment]);
 
     useEffect(() => {
         if (!open || appointmentId === null) {
@@ -517,43 +525,56 @@ export function AppointmentDetailModal({
     }, [open, reset]);
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="gap-0 overflow-y-auto sm:max-w-lg">
-                <DialogHeader className="sr-only">
-                    <DialogTitle>Detalle de cita</DialogTitle>
-                    <DialogDescription>
-                        Información de la cita seleccionada en el calendario.
-                    </DialogDescription>
-                </DialogHeader>
+        <>
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="gap-0 overflow-y-auto sm:max-w-lg">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Detalle de cita</DialogTitle>
+                        <DialogDescription>
+                            Información de la cita seleccionada en el calendario.
+                        </DialogDescription>
+                    </DialogHeader>
 
-                {loading ? <AppointmentDetailSkeleton /> : null}
+                    {loading ? <AppointmentDetailSkeleton /> : null}
 
-                {!loading && error ? (
-                    <p className="text-destructive text-sm" role="alert">
-                        {error}
-                    </p>
-                ) : null}
+                    {!loading && error ? (
+                        <p className="text-destructive text-sm" role="alert">
+                            {error}
+                        </p>
+                    ) : null}
 
-                {!loading && appointment ? (
-                    <AppointmentDetailContent
-                        appointment={appointment}
-                        appointmentStatuses={appointmentStatuses}
-                        canUpdate={canUpdate}
-                        canDelete={canDelete}
-                        statusChanging={statusChanging}
-                        statusChangeError={statusChangeError}
-                        rescheduling={rescheduling}
-                        rescheduleError={rescheduleError}
-                        deleting={deleting}
-                        deleteError={deleteError}
-                        holidays={holidays}
-                        scheduleFieldKey={scheduleFieldKey}
-                        onStatusChange={handleStatusChange}
-                        onScheduleChange={handleScheduleChange}
-                        onDelete={handleDelete}
-                    />
-                ) : null}
-            </DialogContent>
-        </Dialog>
+                    {!loading && appointment ? (
+                        <AppointmentDetailContent
+                            appointment={appointment}
+                            appointmentStatuses={appointmentStatuses}
+                            canUpdate={canUpdate}
+                            canDelete={canDelete}
+                            statusChanging={statusChanging}
+                            statusChangeError={statusChangeError}
+                            rescheduling={rescheduling}
+                            rescheduleError={rescheduleError}
+                            deleting={deleting}
+                            deleteError={deleteError}
+                            holidays={holidays}
+                            scheduleFieldKey={scheduleFieldKey}
+                            onStatusChange={handleStatusChange}
+                            onScheduleChange={handleScheduleChange}
+                            onDelete={() => setConfirmDeleteOpen(true)}
+                        />
+                    ) : null}
+                </DialogContent>
+            </Dialog>
+
+            <ConfirmDialog
+                open={confirmDeleteOpen}
+                onOpenChange={setConfirmDeleteOpen}
+                title="¿Eliminar la cita?"
+                description={deleteDescription}
+                confirmLabel={deleting ? 'Eliminando…' : 'Eliminar cita'}
+                confirmVariant="destructive"
+                confirming={deleting}
+                onConfirm={handleDelete}
+            />
+        </>
     );
 }

@@ -24,3 +24,7 @@ Route::put('doctors/{doctor}/schedule', [DoctorsController::class, 'syncSchedule
     ->name('doctors.schedule.sync');
 Route::resource('clinical-templates', ClinicalTemplatesController::class)->except(['show']);
 Route::resource('clinical-attentions', ClinicalAttentionsController::class)->except(['show', 'create', 'edit', 'update']);
+Route::post('clinical-attentions/{clinical_attention}/exam-results/{service}', [ClinicalAttentionsController::class, 'storeExamResult'])
+    ->name('clinical-attentions.exam-results.store');
+Route::delete('clinical-attentions/{clinical_attention}/exam-results/{service}', [ClinicalAttentionsController::class, 'destroyExamResult'])
+    ->name('clinical-attentions.exam-results.destroy');

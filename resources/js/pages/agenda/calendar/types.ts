@@ -132,6 +132,8 @@ export type CalendarIndexPageProps = {
 export type AppointmentFormDefaults = {
     appointmentDate: string;
     startsAtTime: string;
+    patientId?: string;
+    customerId?: string;
 };
 
 export type AppointmentFormFields = {
@@ -244,9 +246,14 @@ export function buildInitialAppointmentFormState(
     const serviceId =
         formOptions.services.length === 1 ? formOptions.services[0].id : '';
 
+    const defaultPatientId = defaults.patientId ?? '';
+    const patientFromOptions = formOptions.patients.find(
+        (patient) => patient.id === defaultPatientId,
+    );
+
     return {
-        patientId: '',
-        customerId: '',
+        patientId: patientFromOptions?.id ?? '',
+        customerId: patientFromOptions?.customer_id ?? defaults.customerId ?? '',
         serviceId,
         doctorId: resolveSingleDoctorId(formOptions.doctors, serviceId),
         officeId:

@@ -52,6 +52,11 @@ final class AppointmentPayloadValidationRules
             'starts_at_time' => ['required', 'date_format:H:i'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'public_notes' => ['nullable', 'string', 'max:5000'],
+            'redirect_patient_id' => [
+                'nullable',
+                'uuid',
+                Rule::exists('medic_patients', 'id')->where('company_id', $companyId),
+            ],
         ];
     }
 

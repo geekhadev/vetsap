@@ -93,6 +93,15 @@ class AppointmentsController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Cita creada correctamente.']);
 
+        $redirectPatientId = $request->redirectPatientId();
+
+        if ($redirectPatientId !== null) {
+            return redirect(route('medic.patients.edit', [
+                'patient' => $redirectPatientId,
+                'tab' => 'historial',
+            ]));
+        }
+
         return to_route('agenda.calendar.index');
     }
 
