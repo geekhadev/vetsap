@@ -25,7 +25,7 @@ export function FilterDropdown({
     align = 'end',
     triggerClassName,
     contentClassName,
-    bodyClassName = 'grid',
+    bodyClassName = 'grid gap-3',
     modal = false,
 }: FilterDropdownProps) {
     const [open, setOpen] = useState(false);
