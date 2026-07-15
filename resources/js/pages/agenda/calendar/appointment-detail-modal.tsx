@@ -1,12 +1,15 @@
+import { usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import {
     ArrowRight,
+    ChevronDown,
     Mail,
     MapPin,
     Phone,
+    Share2,
     Trash2,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
@@ -19,12 +22,19 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     appointmentStatusColorToDotClass,
 } from '@/lib/appointment-status-colors';
 import { cn } from '@/lib/utils';
 import { AppointmentScheduleAutosaveField } from '@/pages/agenda/calendar/appointment-schedule-field';
+import { buildAppointmentWhatsappUrl } from '@/pages/agenda/calendar/appointment-share';
 import { AppointmentStatusSelector } from '@/pages/agenda/calendar/appointment-status-selector';
 import { useAppointmentDetail } from '@/pages/agenda/calendar/hooks/use-appointment-detail';
 import { useChangeAppointmentStatus } from '@/pages/agenda/calendar/hooks/use-change-appointment-status';
@@ -126,7 +136,19 @@ function AppointmentDetailContent({
     onScheduleChange: (schedule: AppointmentScheduleValue) => void;
     onDelete: () => void;
 }) {
+    const { company_selected: companySelected } = usePage().props;
+    const companyName = companySelected?.name?.trim() || 'nuestra clínica';
     const birthDate = formatBirthDate(appointment.patient.birth_date);
+    const hasCustomerEmail = appointment.customer.email.trim() !== '';
+    const hasCustomerPhone = appointment.customer.phone.trim() !== '';
+    const whatsappUrl = useMemo(
+        () =>
+            hasCustomerPhone
+                ? buildAppointmentWhatsappUrl(appointment, companyName)
+                : null,
+        [appointment, companyName, hasCustomerPhone],
+    );
+    const canShare = hasCustomerEmail || whatsappUrl !== null;
 
     const patientMeta = joinDetailParts([
         appointment.patient.species_name || null,
@@ -211,16 +233,64 @@ function AppointmentDetailContent({
             </DetailSection>
 
             <DetailSection>
-                <DetailRow className="text-base font-medium text-primary">
-                    {appointment.customer.name}
+                <DetailRow className="flex items-center justify-between gap-3 text-base font-medium text-primary">
+                    <span className="min-w-0 truncate">
+                        {appointment.customer.name}
+                    </span>
+                    {canShare ? (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 shrink-0 gap-1.5 px-2 text-xs"
+                                >
+                                    <Share2 aria-hidden className="size-3.5" />
+                                    Compartir
+                                    <ChevronDown
+                                        aria-hidden
+                                        className="size-3.5 opacity-60"
+                                    />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {hasCustomerEmail ? (
+                                    <DropdownMenuItem
+                                        onSelect={() => {
+                                            // TODO: enviar recordatorio de cita por correo
+                                        }}
+                                    >
+                                        <Mail aria-hidden className="size-4" />
+                                        Correo
+                                    </DropdownMenuItem>
+                                ) : null}
+                                {whatsappUrl !== null ? (
+                                    <DropdownMenuItem asChild>
+                                        <a
+                                            href={whatsappUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <Phone
+                                                aria-hidden
+                                                className="size-4"
+                                            />
+                                            WhatsApp
+                                        </a>
+                                    </DropdownMenuItem>
+                                ) : null}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    ) : null}
                 </DetailRow>
-                {appointment.customer.phone ? (
+                {hasCustomerPhone ? (
                     <DetailRow className="flex items-center gap-2 border-t text-muted-foreground">
                         <Phone aria-hidden className="size-4 shrink-0" />
                         <span>{appointment.customer.phone}</span>
                     </DetailRow>
                 ) : null}
-                {appointment.customer.email ? (
+                {hasCustomerEmail ? (
                     <DetailRow className="flex items-center gap-2 border-t text-muted-foreground">
                         <Mail aria-hidden className="size-4 shrink-0" />
                         <span className="break-all">
