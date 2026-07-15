@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import {
     ArrowRight,
     ChevronDown,
+    Copy,
     Mail,
     MapPin,
     Phone,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { toast } from 'sonner';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge/types';
@@ -29,12 +31,16 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useClipboard } from '@/hooks/use-clipboard';
 import {
     appointmentStatusColorToDotClass,
 } from '@/lib/appointment-status-colors';
 import { cn } from '@/lib/utils';
 import { AppointmentScheduleAutosaveField } from '@/pages/agenda/calendar/appointment-schedule-field';
-import { buildAppointmentWhatsappUrl } from '@/pages/agenda/calendar/appointment-share';
+import {
+    buildAppointmentReminderMessage,
+    buildAppointmentWhatsappUrl,
+} from '@/pages/agenda/calendar/appointment-share';
 import { AppointmentStatusSelector } from '@/pages/agenda/calendar/appointment-status-selector';
 import { useAppointmentDetail } from '@/pages/agenda/calendar/hooks/use-appointment-detail';
 import { useChangeAppointmentStatus } from '@/pages/agenda/calendar/hooks/use-change-appointment-status';
@@ -138,9 +144,14 @@ function AppointmentDetailContent({
 }) {
     const { company_selected: companySelected } = usePage().props;
     const companyName = companySelected?.name?.trim() || 'nuestra clínica';
+    const [, copyToClipboard] = useClipboard();
     const birthDate = formatBirthDate(appointment.patient.birth_date);
     const hasCustomerEmail = appointment.customer.email.trim() !== '';
     const hasCustomerPhone = appointment.customer.phone.trim() !== '';
+    const invitationMessage = useMemo(
+        () => buildAppointmentReminderMessage(appointment, companyName),
+        [appointment, companyName],
+    );
     const whatsappUrl = useMemo(
         () =>
             hasCustomerPhone
@@ -148,7 +159,18 @@ function AppointmentDetailContent({
                 : null,
         [appointment, companyName, hasCustomerPhone],
     );
-    const canShare = hasCustomerEmail || whatsappUrl !== null;
+
+    const handleCopyInvitation = useCallback(async () => {
+        const copied = await copyToClipboard(invitationMessage);
+
+        if (copied) {
+            toast.success('Invitación copiada al portapapeles.');
+
+            return;
+        }
+
+        toast.error('No se pudo copiar la invitación.');
+    }, [copyToClipboard, invitationMessage]);
 
     const patientMeta = joinDetailParts([
         appointment.patient.species_name || null,
@@ -237,52 +259,58 @@ function AppointmentDetailContent({
                     <span className="min-w-0 truncate">
                         {appointment.customer.name}
                     </span>
-                    {canShare ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 shrink-0 gap-1.5 px-2 text-xs"
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 shrink-0 gap-1.5 px-2 text-xs"
+                            >
+                                <Share2 aria-hidden className="size-3.5" />
+                                Compartir
+                                <ChevronDown
+                                    aria-hidden
+                                    className="size-3.5 opacity-60"
+                                />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {hasCustomerEmail ? (
+                                <DropdownMenuItem
+                                    onSelect={() => {
+                                        // TODO: enviar recordatorio de cita por correo
+                                    }}
                                 >
-                                    <Share2 aria-hidden className="size-3.5" />
-                                    Compartir
-                                    <ChevronDown
-                                        aria-hidden
-                                        className="size-3.5 opacity-60"
-                                    />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {hasCustomerEmail ? (
-                                    <DropdownMenuItem
-                                        onSelect={() => {
-                                            // TODO: enviar recordatorio de cita por correo
-                                        }}
+                                    <Mail aria-hidden className="size-4" />
+                                    Correo
+                                </DropdownMenuItem>
+                            ) : null}
+                            {whatsappUrl !== null ? (
+                                <DropdownMenuItem asChild>
+                                    <a
+                                        href={whatsappUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                     >
-                                        <Mail aria-hidden className="size-4" />
-                                        Correo
-                                    </DropdownMenuItem>
-                                ) : null}
-                                {whatsappUrl !== null ? (
-                                    <DropdownMenuItem asChild>
-                                        <a
-                                            href={whatsappUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            <Phone
-                                                aria-hidden
-                                                className="size-4"
-                                            />
-                                            WhatsApp
-                                        </a>
-                                    </DropdownMenuItem>
-                                ) : null}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : null}
+                                        <Phone
+                                            aria-hidden
+                                            className="size-4"
+                                        />
+                                        WhatsApp
+                                    </a>
+                                </DropdownMenuItem>
+                            ) : null}
+                            <DropdownMenuItem
+                                onSelect={() => {
+                                    void handleCopyInvitation();
+                                }}
+                            >
+                                <Copy aria-hidden className="size-4" />
+                                Copiar invitación
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </DetailRow>
                 {hasCustomerPhone ? (
                     <DetailRow className="flex items-center gap-2 border-t text-muted-foreground">
