@@ -108,6 +108,9 @@ export type AppointmentDetail = {
     duration_minutes: number;
     price: string | null;
     notes: string | null;
+    clinic_map_url: string | null;
+    clinic_facebook_url: string | null;
+    clinic_instagram_url: string | null;
     status: AppointmentDetailStatus;
     patient: AppointmentDetailPatient;
     customer: AppointmentDetailCustomer;

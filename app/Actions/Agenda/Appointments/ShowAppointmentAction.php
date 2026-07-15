@@ -4,6 +4,8 @@ namespace App\Actions\Agenda\Appointments;
 
 use App\Enums\Medic\DoctorScheduleDayOfWeek;
 use App\Models\Agenda\Appointment;
+use App\Models\Web\ClinicWebSetting;
+use App\Support\Web\ClinicWebSettingKeys;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
@@ -32,6 +34,7 @@ final class ShowAppointmentAction
         $service = $appointment->service;
         $office = $appointment->office;
         $status = $appointment->appointmentStatus;
+        $clinicWeb = $this->resolveClinicWebShareSettings($appointment->company_id);
 
         return [
             'id' => $appointment->id,
@@ -40,6 +43,9 @@ final class ShowAppointmentAction
             'duration_minutes' => (int) $appointment->duration_minutes,
             'price' => $appointment->price !== null ? (string) $appointment->price : null,
             'notes' => $appointment->notes,
+            'clinic_map_url' => $clinicWeb['map_url'],
+            'clinic_facebook_url' => $clinicWeb['facebook_url'],
+            'clinic_instagram_url' => $clinicWeb['instagram_url'],
             'status' => [
                 'id' => $status->id,
                 'name' => $status->name,
@@ -93,6 +99,38 @@ final class ShowAppointmentAction
                 ? ['id' => $office->id, 'name' => $office->name]
                 : null,
         ];
+    }
+
+    /**
+     * @return array{map_url: string|null, facebook_url: string|null, instagram_url: string|null}
+     */
+    private function resolveClinicWebShareSettings(string $companyId): array
+    {
+        $settings = ClinicWebSetting::query()
+            ->where('company_id', $companyId)
+            ->whereIn('key', [
+                ClinicWebSettingKeys::CONTACT_MAP_URL,
+                ClinicWebSettingKeys::FACEBOOK_URL,
+                ClinicWebSettingKeys::INSTAGRAM_URL,
+            ])
+            ->pluck('value', 'key');
+
+        return [
+            'map_url' => $this->nullableTrimmedString($settings->get(ClinicWebSettingKeys::CONTACT_MAP_URL)),
+            'facebook_url' => $this->nullableTrimmedString($settings->get(ClinicWebSettingKeys::FACEBOOK_URL)),
+            'instagram_url' => $this->nullableTrimmedString($settings->get(ClinicWebSettingKeys::INSTAGRAM_URL)),
+        ];
+    }
+
+    private function nullableTrimmedString(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        return $trimmed !== '' ? $trimmed : null;
     }
 
     private function resolveAgeYears(?CarbonInterface $birthDate): ?int
