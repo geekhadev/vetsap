@@ -49,6 +49,8 @@ export type Patient = {
     colors: string | null;
     blood_type: string | null;
     microchip_number: string | null;
+    photo_path?: string | null;
+    photo_url?: string | null;
     is_active: boolean;
     species?: PatientSpeciesRef | null;
     customer?: PatientCustomerDetail | null;

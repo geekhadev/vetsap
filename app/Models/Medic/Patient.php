@@ -7,8 +7,10 @@ use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
 use App\Models\Sale\Customer;
+use App\Support\Storage\PublicStorageUrl;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'colors',
     'blood_type',
     'microchip_number',
+    'photo_path',
     'is_active',
 ])]
 class Patient extends Model
@@ -119,6 +122,16 @@ class Patient extends Model
                 ->orWhere('microchip_number', 'like', $term)
                 ->orWhere('breed', 'like', $term);
         });
+    }
+
+    /**
+     * @return Attribute<string|null, never>
+     */
+    protected function photoUrl(): Attribute
+    {
+        return Attribute::get(
+            fn (): ?string => PublicStorageUrl::fromRelativePath($this->photo_path),
+        );
     }
 
     /**

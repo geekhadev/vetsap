@@ -3,10 +3,16 @@ import type { DateDisplayMode, DateDisplayProps } from './types';
 
 export type { DateDisplayMode, DateDisplayProps } from './types';
 
+const DATE_ONLY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 function pad2(n: number): string {
     return String(n).padStart(2, '0');
 }
 
+/**
+ * Interpreta `yyyy-MM-dd` como fecha de calendario local (sin desfase UTC).
+ * El resto de strings se delegan a `Date` (ISO con zona, etc.).
+ */
 function parseToDate(
     value: string | Date | null | undefined,
 ): Date | null {
@@ -18,13 +24,44 @@ function parseToDate(
         return Number.isNaN(value.getTime()) ? null : value;
     }
 
+    const dateOnly = DATE_ONLY_RE.exec(value.trim());
+
+    if (dateOnly) {
+        const year = Number(dateOnly[1]);
+        const monthIndex = Number(dateOnly[2]) - 1;
+        const day = Number(dateOnly[3]);
+        const d = new Date(year, monthIndex, day);
+
+        if (
+            d.getFullYear() !== year ||
+            d.getMonth() !== monthIndex ||
+            d.getDate() !== day
+        ) {
+            return null;
+        }
+
+        return d;
+    }
+
     const d = new Date(value);
 
     return Number.isNaN(d.getTime()) ? null : d;
 }
 
+function resolveDateTimeAttr(
+    value: string | Date | null | undefined,
+    parsed: Date,
+): string {
+    if (typeof value === 'string' && value.trim() !== '') {
+        return value.trim();
+    }
+
+    return parsed.toISOString();
+}
+
 /**
- * Formato fijo `dd/mm/aaaa` y hora `HH:mm:ss` (24 h) en hora local.
+ * Formato fijo `dd/mm/aaaa` y hora `HH:mm` (24 h) en hora local.
+ * Mismo estándar visual en timeline, ficha de paciente, tablas, etc.
  */
 export function formatDateDisplay(
     value: string | Date | null | undefined,
@@ -38,7 +75,7 @@ export function formatDateDisplay(
     }
 
     const datePart = `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
-    const timePart = `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+    const timePart = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 
     if (mode === 'date') {
         return datePart;
@@ -66,7 +103,7 @@ export function DateDisplay({
     }
 
     return (
-        <time dateTime={d.toISOString()} className={cn(className)}>
+        <time dateTime={resolveDateTimeAttr(value, d)} className={cn(className)}>
             {text}
         </time>
     );

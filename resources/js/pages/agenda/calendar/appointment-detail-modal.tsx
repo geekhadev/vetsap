@@ -15,6 +15,7 @@ import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
+import { formatDateDisplay } from '@/components/custom/date-display';
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge/types';
 import { Button } from '@/components/ui/button';
@@ -62,20 +63,6 @@ type AppointmentDetailModalProps = {
     canUpdate: boolean;
     canDelete: boolean;
 };
-
-function formatBirthDate(value: string | null): string | null {
-    if (value === null || value.trim() === '') {
-        return null;
-    }
-
-    const parsed = new Date(`${value}T12:00:00`);
-
-    if (Number.isNaN(parsed.getTime())) {
-        return null;
-    }
-
-    return format(parsed, 'dd/MM/yyyy');
-}
 
 function joinDetailParts(parts: Array<string | null | undefined>): string {
     return parts
@@ -146,7 +133,11 @@ function AppointmentDetailContent({
     const { company_selected: companySelected } = usePage().props;
     const companyName = companySelected?.name?.trim() || 'nuestra clínica';
     const [, copyToClipboard] = useClipboard();
-    const birthDate = formatBirthDate(appointment.patient.birth_date);
+    const birthDate = formatDateDisplay(
+        appointment.patient.birth_date,
+        'date',
+        '',
+    );
     const hasCustomerEmail = appointment.customer.email.trim() !== '';
     const hasCustomerPhone = appointment.customer.phone.trim() !== '';
     const invitationMessage = useMemo(
@@ -193,7 +184,7 @@ function AppointmentDetailContent({
         appointment.patient.microchip_number
             ? `Chip: ${appointment.patient.microchip_number}`
             : null,
-        birthDate ? `Cumpleaños: ${birthDate}` : null,
+        birthDate !== '' ? `Cumpleaños: ${birthDate}` : null,
     ]);
 
     return (

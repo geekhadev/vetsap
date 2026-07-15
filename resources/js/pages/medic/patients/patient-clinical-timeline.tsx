@@ -6,10 +6,11 @@ import {
     Stethoscope,
 } from 'lucide-react';
 import { useMemo } from 'react';
+import { DateDisplay } from '@/components/custom/date-display';
 import { Badge } from '@/components/ui/badge';
 import { APPOINTMENT_STATUS_COLOR_BADGE_CLASS } from '@/lib/appointment-status-colors';
 import { cn } from '@/lib/utils';
-import { formatAttentionDateTime, formatAttentionDuration } from '@/pages/medic/patients/attention-view-helpers';
+import { formatAttentionDuration } from '@/pages/medic/patients/attention-view-helpers';
 import type {
     AttentionRequestedExam,
     AttentionSummary,
@@ -107,12 +108,11 @@ export function PatientClinicalTimeline({
                             )}
                         >
                             <div className="flex min-w-0 flex-col items-end justify-center gap-1 text-right">
-                                <time
-                                    dateTime={appointment.starts_at}
+                                <DateDisplay
+                                    value={appointment.starts_at}
+                                    mode="datetime"
                                     className="text-muted-foreground text-sm leading-none font-medium whitespace-nowrap tabular-nums"
-                                >
-                                    {formatAttentionDateTime(appointment.starts_at)}
-                                </time>
+                                />
                                 <span className="text-teal-700 dark:text-teal-300 text-xs leading-none whitespace-nowrap">
                                     Cita futura
                                 </span>
@@ -180,12 +180,11 @@ export function PatientClinicalTimeline({
                         )}
                     >
                         <div className="flex min-w-0 flex-col items-end justify-center gap-1 text-right">
-                            <time
-                                dateTime={timelineMoment}
+                            <DateDisplay
+                                value={timelineMoment}
+                                mode="datetime"
                                 className="text-muted-foreground text-sm leading-none font-medium whitespace-nowrap tabular-nums"
-                            >
-                                {formatAttentionDateTime(timelineMoment)}
-                            </time>
+                            />
                             {isDraft ? (
                                 <span className="text-amber-700 dark:text-amber-300 text-xs leading-none whitespace-nowrap">
                                     Borrador

@@ -10,6 +10,7 @@ use App\Actions\Medic\ClinicalAttentions\UpsertPatientDraftAttentionAction;
 use App\Actions\Medic\Patients\CreatePatientAction;
 use App\Actions\Medic\Patients\DeletePatientAction;
 use App\Actions\Medic\Patients\ListPatientsForCompanyAction;
+use App\Actions\Medic\Patients\StorePatientPhotoAction;
 use App\Actions\Medic\Patients\UpdatePatientAction;
 use App\Enums\Medic\ClinicalAttentionStatus;
 use App\Http\Controllers\Controller;
@@ -18,6 +19,7 @@ use App\Http\Requests\Medic\PatientDraftAttentionUpsertRequest;
 use App\Http\Requests\Medic\PatientListRequest;
 use App\Http\Requests\Medic\PatientStoreRequest;
 use App\Http\Requests\Medic\PatientUpdateRequest;
+use App\Http\Requests\Medic\StorePatientPhotoRequest;
 use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\ClinicalAttention;
@@ -31,6 +33,7 @@ use App\Support\Storage\PublicStorageUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -117,6 +120,7 @@ class PatientsController extends Controller
             'species:id,name',
             'customer:id,name,document_type,document_number,email,phone,address',
         ]);
+        $patient->append('photo_url');
 
         $user = $request->user();
 
@@ -409,6 +413,22 @@ class PatientsController extends Controller
         }
 
         return to_route('medic.patients.edit', $patient);
+    }
+
+    public function storePhoto(
+        StorePatientPhotoRequest $request,
+        Patient $patient,
+        StorePatientPhotoAction $action,
+    ): RedirectResponse {
+        $this->authorize('update', $patient);
+
+        /** @var UploadedFile $file */
+        $file = $request->file('photo');
+        $action->execute($patient, $file);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Foto del paciente actualizada.']);
+
+        return back();
     }
 
     public function destroy(Patient $patient, DeletePatientAction $action, Request $request): RedirectResponse

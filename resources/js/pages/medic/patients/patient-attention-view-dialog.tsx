@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { Check, ChevronDown, FileDown, Mail, MessageCircle, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/custom/confirm-dialog';
+import { DateDisplay } from '@/components/custom/date-display';
 import { FormFileDropzone } from '@/components/custom/form-file-dropzone';
 import { InfoItem } from '@/components/custom/info-item';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import {
-    formatAttentionDateTime,
     formatAttentionDuration,
     resolveAttentionViewFields,
 } from '@/pages/medic/patients/attention-view-helpers';
@@ -174,9 +174,11 @@ export function PatientAttentionViewDialog({
                             <span className="text-muted-foreground/40" aria-hidden>
                                 ·
                             </span>
-                            <span className="tabular-nums">
-                                {formatAttentionDateTime(moment)}
-                            </span>
+                            <DateDisplay
+                                value={moment}
+                                mode="datetime"
+                                className="tabular-nums"
+                            />
                             <span className="text-muted-foreground/40" aria-hidden>
                                 ·
                             </span>

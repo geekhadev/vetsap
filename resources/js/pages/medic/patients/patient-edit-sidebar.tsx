@@ -3,6 +3,7 @@ import {
     CircuitBoard,
     Droplets,
     IdCard,
+    ImagePlus,
     Mail,
     MapPin,
     Palette,
@@ -13,21 +14,24 @@ import {
     Scissors,
     UserRound,
 } from 'lucide-react';
+import { useRef } from 'react';
+import { DateDisplay } from '@/components/custom/date-display';
 import { DocumentBadge } from '@/components/custom/document-badge';
 import { InfoItem } from '@/components/custom/info-item';
 import { SplitSettingsAside } from '@/components/custom/split-settings-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { APPOINTMENT_STATUS_COLOR_BADGE_CLASS } from '@/lib/appointment-status-colors';
 import {
     DISPLAY_EMPTY,
-    formatBirthDate,
     formatOptionalText,
     formatOptionalWithSuffix,
 } from '@/lib/format-display';
 import { cn } from '@/lib/utils';
+import { usePatientPhotoUpload } from '@/pages/medic/patients/hooks/use-patient-photo-upload';
 import { formatSex, formatSterilized } from '@/pages/medic/patients/types';
 import type { Patient, PatientSexValue } from '@/pages/medic/patients/types';
 
@@ -72,29 +76,96 @@ export function PatientEditSidebar({ patient, onEdit }: PatientEditSidebarProps)
     const speciesName = patient.species?.name?.trim() ?? '';
     const recordNumber = patient.record_number?.trim() ?? '';
     const hasKnownSex = isKnownPatientSex(patient.sex);
+    const photoInputRef = useRef<HTMLInputElement>(null);
+    const { previewUrl, processing, error, upload } = usePatientPhotoUpload({
+        patientId: patient.id,
+        photoUrl: patient.photo_url,
+    });
+    const hasPhoto = previewUrl !== null;
+    const photoActionLabel = hasPhoto ? 'Cambiar foto' : 'Subir foto';
+
+    const openPhotoPicker = (): void => {
+        if (processing) {
+            return;
+        }
+
+        photoInputRef.current?.click();
+    };
 
     return (
         <SplitSettingsAside>
             <Card className="gap-0 overflow-hidden py-0 shadow-xs">
                 <div className="relative">
-                    <div
+                    <button
+                        type="button"
                         className={cn(
-                            'bg-muted flex aspect-4/3 w-full items-center justify-center',
+                            'group/photo bg-muted relative flex aspect-4/3 w-full cursor-pointer items-center justify-center overflow-hidden',
                             'dark:bg-muted/80',
+                            'focus-visible:ring-ring outline-none focus-visible:ring-2 focus-visible:ring-inset',
+                            processing && 'cursor-wait',
                         )}
-                        aria-hidden
+                        onClick={openPhotoPicker}
+                        disabled={processing}
+                        aria-label={photoActionLabel}
                     >
-                        <div className="text-muted-foreground/70 flex flex-col items-center gap-2">
-                            <PawPrint className="size-12" strokeWidth={1.25} />
-                            <span className="text-xs font-medium tracking-wide uppercase">
-                                Foto del paciente
-                            </span>
+                        {hasPhoto ? (
+                            <img
+                                src={previewUrl}
+                                alt={`Foto de ${patient.name}`}
+                                className="absolute inset-0 size-full object-cover"
+                            />
+                        ) : (
+                            <div className="text-muted-foreground/70 flex flex-col items-center gap-2">
+                                <PawPrint className="size-12" strokeWidth={1.25} />
+                                <span className="text-xs font-medium tracking-wide uppercase">
+                                    Foto del paciente
+                                </span>
+                            </div>
+                        )}
+
+                        <div
+                            className={cn(
+                                'absolute inset-0 z-[1] flex items-center justify-center',
+                                'bg-black/45 text-sm font-medium text-white transition-opacity',
+                                processing
+                                    ? 'opacity-100'
+                                    : 'opacity-0 group-hover/photo:opacity-100 group-focus-visible/photo:opacity-100',
+                            )}
+                        >
+                            {processing ? (
+                                <span className="flex items-center gap-2">
+                                    <Spinner className="size-4 text-white" />
+                                    Subiendo…
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-1.5">
+                                    <ImagePlus className="size-4" aria-hidden />
+                                    {photoActionLabel}
+                                </span>
+                            )}
                         </div>
-                    </div>
+                    </button>
+
+                    <input
+                        ref={photoInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="sr-only"
+                        tabIndex={-1}
+                        disabled={processing}
+                        onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            const input = photoInputRef.current;
+
+                            if (file && input) {
+                                upload(file, input);
+                            }
+                        }}
+                    />
 
                     <h1
                         className={cn(
-                            'absolute top-2.5 left-2.5 max-w-[calc(100%-3.5rem)] truncate',
+                            'pointer-events-none absolute top-2.5 left-2.5 z-10 max-w-[calc(100%-3.5rem)] truncate',
                             'rounded-md bg-background/95 px-2.5 py-1 text-base font-semibold tracking-tight shadow-xs',
                         )}
                     >
@@ -106,7 +177,7 @@ export function PatientEditSidebar({ patient, onEdit }: PatientEditSidebarProps)
                         variant="secondary"
                         size="icon"
                         className={cn(
-                            'absolute top-2.5 right-2.5 size-8 rounded-full shadow-sm',
+                            'absolute top-2.5 right-2.5 z-10 size-8 rounded-full shadow-sm',
                             'bg-background/95 hover:bg-background',
                         )}
                         title="Editar paciente"
@@ -116,7 +187,7 @@ export function PatientEditSidebar({ patient, onEdit }: PatientEditSidebarProps)
                         <span className="sr-only">Editar paciente</span>
                     </Button>
 
-                    <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-1.5 p-2.5">
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-wrap gap-1.5 p-2.5">
                         {speciesName !== '' ? (
                             <PatientPhotoPill
                                 label="Especie"
@@ -140,6 +211,12 @@ export function PatientEditSidebar({ patient, onEdit }: PatientEditSidebarProps)
                         ) : null}
                     </div>
                 </div>
+
+                {error ? (
+                    <p className="text-destructive px-4 py-2 text-xs" role="alert">
+                        {error}
+                    </p>
+                ) : null}
 
                 <CardContent className="p-0">
                     <Tabs defaultValue="medicos" className="gap-0">
@@ -180,7 +257,10 @@ export function PatientEditSidebar({ patient, onEdit }: PatientEditSidebarProps)
                                     {formatOptionalText(patient.breed)}
                                 </InfoItem>
                                 <InfoItem icon={Cake} label="Nacimiento">
-                                    {formatBirthDate(patient.birth_date)}
+                                    <DateDisplay
+                                        value={patient.birth_date}
+                                        mode="date"
+                                    />
                                 </InfoItem>
                                 <InfoItem icon={Scale} label="Peso">
                                     {formatOptionalWithSuffix(patient.weight_kg, 'kg')}

@@ -1,21 +1,6 @@
-import { formatDateDisplay } from '@/components/custom/date-display';
 import { CLINICAL_FIELD_CATALOG } from '@/pages/medic/clinical-templates/types';
 import type { ClinicalFieldKey } from '@/pages/medic/clinical-templates/types';
 import type { AttentionSummary, PatientTemplateOption } from '@/pages/medic/patients/types';
-
-export function formatAttentionDateTime(value: string | null | undefined): string {
-    if (value == null || value === '') {
-        return '—';
-    }
-
-    const formatted = formatDateDisplay(value, 'datetime', '');
-
-    if (formatted === '') {
-        return '—';
-    }
-
-    return formatted.replace(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}):\d{2}$/, '$1');
-}
 
 export function formatAttentionDuration(
     startedAt: string | null | undefined,
