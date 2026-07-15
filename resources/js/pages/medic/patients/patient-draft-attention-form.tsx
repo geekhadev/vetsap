@@ -1,6 +1,16 @@
-import { CheckCircle2, Loader2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { FormSelect } from '@/components/custom/form-select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { ClinicalFieldInput } from '@/pages/medic/clinical-attentions/clinical-field-input';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
@@ -14,42 +24,24 @@ type PatientDraftAttentionFormProps = {
     draftAttention: ClinicalAttention | null;
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
+    title: string;
+    description: string;
     onDraftSaved?: () => void;
+    onDismiss?: () => void;
 };
-
-function SaveStatusLabel({ status }: { status: 'idle' | 'saving' | 'saved' | 'error' }) {
-    if (status === 'saving') {
-        return (
-            <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                <Loader2 className="size-3.5 animate-spin" />
-                Guardando borrador…
-            </span>
-        );
-    }
-
-    if (status === 'saved') {
-        return (
-            <span className="flex items-center gap-1.5 text-xs text-emerald-600">
-                <CheckCircle2 className="size-3.5" />
-                Borrador guardado
-            </span>
-        );
-    }
-
-    if (status === 'error') {
-        return <span className="text-destructive text-xs">No se pudo guardar el borrador.</span>;
-    }
-
-    return <span className="text-muted-foreground text-xs">Los cambios se guardan automáticamente.</span>;
-}
 
 export function PatientDraftAttentionForm({
     patientId,
     draftAttention,
     templates,
     doctors,
+    title,
+    description,
     onDraftSaved,
+    onDismiss,
 }: PatientDraftAttentionFormProps) {
+    const [confirmOpen, setConfirmOpen] = useState(false);
+
     const defaultTemplateId = useMemo(
         () => templates.find((t) => t.is_default)?.id ?? templates[0]?.id ?? '',
         [templates],
@@ -57,7 +49,6 @@ export function PatientDraftAttentionForm({
 
     const {
         formState,
-        saveStatus,
         closeErrors,
         closing,
         setTemplateId,
@@ -122,94 +113,138 @@ export function PatientDraftAttentionForm({
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-muted-foreground text-sm">
-                    Borrador en curso. Cierra la atención cuando hayas terminado el registro clínico.
-                </p>
-                <SaveStatusLabel status={saveStatus} />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormSelect
-                    label="Médico"
-                    required
-                    placeholder="Selecciona un médico…"
-                    options={doctorOptions}
-                    error={closeErrors.doctor_id}
-                    selectProps={{
-                        id: 'draft-attention-doctor_id',
-                        value: formState.doctor_id,
-                        onChange: (e) => setDoctorId(e.target.value),
-                    }}
-                />
-                <FormSelect
-                    label="Plantilla de ficha"
-                    required
-                    placeholder="Selecciona una plantilla…"
-                    options={templateOptions}
-                    error={closeErrors.template_id}
-                    selectProps={{
-                        id: 'draft-attention-template_id',
-                        value: formState.template_id,
-                        onChange: (e) => setTemplateId(e.target.value),
-                    }}
-                />
-            </div>
-
-            {!selectedTemplate && (
-                <p className="text-muted-foreground text-sm">
-                    Selecciona una plantilla para registrar los datos clínicos.
-                </p>
-            )}
-
-            {vitalFields.length > 0 && (
-                <div className="flex flex-col gap-4">
-                    <div>
-                        <h2 className="text-base font-semibold">Signos vitales</h2>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                        {vitalFields.map((field) => (
-                            <ClinicalFieldInput
-                                key={field.field_key}
-                                fieldKey={field.field_key}
-                                value={formState.values[field.field_key] ?? ''}
-                                onValueChange={(value) =>
-                                    setFieldValue(field.field_key as ClinicalFieldKey, value)
-                                }
-                                error={closeErrors[`values.${field.field_key}`]}
-                            />
-                        ))}
-                    </div>
+        <div className="flex flex-col">
+            <div className="flex items-center justify-between gap-3 border-b p-4">
+                <div className="min-w-0 space-y-1.5">
+                    <h2 className="text-foreground text-base leading-none font-semibold">{title}</h2>
+                    <p className="text-muted-foreground text-sm">{description}</p>
                 </div>
-            )}
-
-            {otherFields.length > 0 && (
-                <div className="flex flex-col gap-4">
-                    <div>
-                        <h2 className="text-base font-semibold">Datos clínicos</h2>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {otherFields.map((field) => (
-                            <ClinicalFieldInput
-                                key={field.field_key}
-                                fieldKey={field.field_key}
-                                value={formState.values[field.field_key] ?? ''}
-                                onValueChange={(value) =>
-                                    setFieldValue(field.field_key as ClinicalFieldKey, value)
-                                }
-                                error={closeErrors[`values.${field.field_key}`]}
-                            />
-                        ))}
-                    </div>
+                <div className="flex shrink-0 items-center gap-2">
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => setConfirmOpen(true)}
+                        disabled={closing}
+                    >
+                        {closing ? 'Completando…' : 'Completar atención'}
+                    </Button>
+                    {onDismiss ? (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            title="Cerrar"
+                            onClick={onDismiss}
+                        >
+                            <X className="size-4" aria-hidden />
+                            <span className="sr-only">Cerrar</span>
+                        </Button>
+                    ) : null}
                 </div>
-            )}
-
-            <div className="flex items-center justify-end gap-3 border-t pt-4">
-                <Button type="button" onClick={closeAttention} disabled={closing}>
-                    {closing ? 'Cerrando…' : 'Cerrar atención'}
-                </Button>
             </div>
+
+            <div className="flex flex-col gap-4 p-4 sm:p-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <FormSelect
+                        label="Médico"
+                        required
+                        placeholder="Selecciona un médico…"
+                        options={doctorOptions}
+                        error={closeErrors.doctor_id}
+                        selectProps={{
+                            id: 'draft-attention-doctor_id',
+                            value: formState.doctor_id,
+                            onChange: (e) => setDoctorId(e.target.value),
+                        }}
+                    />
+                    <FormSelect
+                        label="Plantilla de ficha"
+                        required
+                        placeholder="Selecciona una plantilla…"
+                        options={templateOptions}
+                        error={closeErrors.template_id}
+                        selectProps={{
+                            id: 'draft-attention-template_id',
+                            value: formState.template_id,
+                            onChange: (e) => setTemplateId(e.target.value),
+                        }}
+                    />
+                </div>
+
+                {!selectedTemplate && (
+                    <p className="text-muted-foreground text-sm">
+                        Selecciona una plantilla para registrar los datos clínicos.
+                    </p>
+                )}
+
+                {vitalFields.length > 0 && (
+                    <div className="flex flex-col gap-4">
+                        <div>
+                            <h3 className="text-base font-semibold">Signos vitales</h3>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                            {vitalFields.map((field) => (
+                                <ClinicalFieldInput
+                                    key={field.field_key}
+                                    fieldKey={field.field_key}
+                                    value={formState.values[field.field_key] ?? ''}
+                                    onValueChange={(value) =>
+                                        setFieldValue(field.field_key as ClinicalFieldKey, value)
+                                    }
+                                    error={closeErrors[`values.${field.field_key}`]}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {otherFields.length > 0 && (
+                    <div className="flex flex-col gap-4">
+                        <div>
+                            <h3 className="text-base font-semibold">Datos clínicos</h3>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                            {otherFields.map((field) => (
+                                <ClinicalFieldInput
+                                    key={field.field_key}
+                                    fieldKey={field.field_key}
+                                    value={formState.values[field.field_key] ?? ''}
+                                    onValueChange={(value) =>
+                                        setFieldValue(field.field_key as ClinicalFieldKey, value)
+                                    }
+                                    error={closeErrors[`values.${field.field_key}`]}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Completar la atención?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Se guardarán los datos de la atención y se cerrará el borrador. Esta
+                            acción no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={closing}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            disabled={closing}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                setConfirmOpen(false);
+                                void closeAttention();
+                            }}
+                        >
+                            Completar atención
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

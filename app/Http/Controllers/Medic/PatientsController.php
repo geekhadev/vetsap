@@ -109,7 +109,7 @@ class PatientsController extends Controller
 
         $user = $request->user();
 
-        $activeTab = in_array($request->query('tab'), ['historial', 'examenes', 'nueva-atencion'], true)
+        $activeTab = in_array($request->query('tab'), ['historial', 'nueva-atencion'], true)
             ? $request->query('tab')
             : 'historial';
 
@@ -241,7 +241,7 @@ class PatientsController extends Controller
 
         $action->execute($draft, $request->closePayload($patient->id));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Atención cerrada correctamente.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Atención completada correctamente.']);
 
         return redirect(route('medic.patients.edit', [
             'patient' => $patient->id,

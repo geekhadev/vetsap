@@ -1,5 +1,6 @@
 import { router, useHttp } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import PatientsController from '@/actions/App/Http/Controllers/Medic/PatientsController';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
 import type { ClinicalFieldKey } from '@/pages/medic/clinical-templates/types';
@@ -70,7 +71,6 @@ export function usePatientDraftAttention({
 
     const [formState, setFormState] = useState<DraftAttentionFormState>(initialState);
     const [draftId, setDraftId] = useState<string | null>(draftAttention?.id ?? null);
-    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [closeErrors, setCloseErrors] = useState<Record<string, string>>({});
     const [closing, setClosing] = useState(false);
 
@@ -100,8 +100,6 @@ export function usePatientDraftAttention({
             return true;
         }
 
-        setSaveStatus('saving');
-
         try {
             autosaveHttp.transform(() => ({
                 template_id: current.template_id || null,
@@ -117,7 +115,7 @@ export function usePatientDraftAttention({
             setDraftId(saved.id);
             lastPersistedSnapshotRef.current = serializeDraftState(formStateRef.current);
             isDirtyRef.current = false;
-            setSaveStatus('saved');
+            toast.success('Borrador guardado correctamente.');
 
             if (isFirstSave) {
                 onDraftSavedRef.current?.();
@@ -125,7 +123,7 @@ export function usePatientDraftAttention({
 
             return true;
         } catch {
-            setSaveStatus('error');
+            toast.error('No se pudo guardar el borrador.');
 
             return false;
         }
@@ -157,7 +155,6 @@ export function usePatientDraftAttention({
 
     const markDirty = useCallback((updater: (prev: DraftAttentionFormState) => DraftAttentionFormState) => {
         isDirtyRef.current = true;
-        setSaveStatus('idle');
         setFormState(updater);
     }, []);
 
@@ -221,7 +218,6 @@ export function usePatientDraftAttention({
     return {
         formState,
         draftId,
-        saveStatus,
         closeErrors,
         closing,
         setTemplateId,

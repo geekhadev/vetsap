@@ -67,7 +67,7 @@ export function PatientFormPage({
                 redirectTo={redirectTo}
             />
 
-            <SplitSettingsLayout>
+            <SplitSettingsLayout className="lg:max-w-none lg:gap-x-4">
                 <PatientEditSidebar patient={patient} onEdit={handleEdit} />
 
                 <SplitSettingsPanel>

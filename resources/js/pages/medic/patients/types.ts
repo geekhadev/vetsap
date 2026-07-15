@@ -106,7 +106,7 @@ export type PatientsEditPageProps = {
     can: PatientsEditCan;
 };
 
-export type PatientEditTabId = 'historial' | 'examenes' | 'nueva-atencion';
+export type PatientEditTabId = 'historial' | 'nueva-atencion';
 
 export const PATIENTS_INDEX_MODULE_FILTER_KEYS = ['is_active', 'species_id', 'customer_id'] as const;
 
