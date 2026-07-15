@@ -2,7 +2,12 @@ import { Head, usePage } from '@inertiajs/react';
 import { useMemo } from 'react';
 import { FormSelect } from '@/components/custom/form-select';
 import { FormTimePickerField } from '@/components/custom/form-time-picker-field';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+    SplitSettingsAside,
+    SplitSettingsHeading,
+    SplitSettingsLayout,
+    SplitSettingsPanel,
+} from '@/components/custom/split-settings-layout';
 import { CALENDAR_SETTINGS_PAGE, TIME_BLOCK_OPTIONS } from '@/pages/configuration/calendar-settings/config';
 import { useCalendarSettingsForm } from '@/pages/configuration/calendar-settings/hooks/use-calendar-settings-form';
 import { SettingsSection } from '@/pages/configuration/calendar-settings/settings-section';
@@ -16,9 +21,9 @@ function CalendarSettingsIndex() {
 
     const serviceOptions = useMemo(
         () => [
-            { value: '', label: 'Servicio por defecto' },
+            { id: '', label: 'Servicio por defecto' },
             ...services.map((service) => ({
-                value: service.id,
+                id: service.id,
                 label: service.label,
             })),
         ],
@@ -43,19 +48,15 @@ function CalendarSettingsIndex() {
         <>
             <Head title={CALENDAR_SETTINGS_PAGE.title} />
 
-            <div className="flex min-w-0 flex-1 flex-col gap-8 p-4 lg:max-w-[1400px] lg:flex-row lg:items-start lg:gap-12">
-                <div className="flex max-w-xs flex-col gap-4">
-                    <h1 className="text-2xl font-semibold tracking-tight">
-                        {CALENDAR_SETTINGS_PAGE.title}
-                    </h1>
-                    <p className="text-muted-foreground text-sm">
-                        {CALENDAR_SETTINGS_PAGE.description}
-                    </p>
-                </div>
+            <SplitSettingsLayout>
+                <SplitSettingsAside>
+                    <SplitSettingsHeading
+                        title={CALENDAR_SETTINGS_PAGE.title}
+                        description={CALENDAR_SETTINGS_PAGE.description}
+                    />
+                </SplitSettingsAside>
 
-                <Card className="min-w-0 flex-1 gap-0 py-0 shadow-xs">
-                    <CardContent className="px-0">
-                        <div className="space-y-6 p-6">
+                <SplitSettingsPanel contentClassName="space-y-6">
                             <SettingsSection
                                 title="Configuración del calendario"
                                 showSeparator={false}
@@ -338,10 +339,8 @@ function CalendarSettingsIndex() {
                                 </div>
                             </SettingsSection>
 
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                </SplitSettingsPanel>
+            </SplitSettingsLayout>
         </>
     );
 }

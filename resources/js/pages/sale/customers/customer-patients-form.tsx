@@ -19,7 +19,7 @@ import {
 } from '@/pages/medic/patients/types';
 import type {Patient, SpeciesOption} from '@/pages/medic/patients/types';
 import type { Customer } from '@/pages/sale/customers/types';
-import { destroy } from '@/routes/medic/patients';
+import { destroy, edit as patientsEdit } from '@/routes/medic/patients';
 
 type CustomerPatientsCan = {
     create: boolean;
@@ -43,26 +43,24 @@ export function CustomerPatientsForm({
     can,
 }: CustomerPatientsFormProps) {
     const [patientFormOpen, setPatientFormOpen] = useState(false);
-    const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
 
     const patients = customer?.patients ?? [];
 
     const openCreate = useCallback(() => {
-        setEditingPatient(null);
         setPatientFormOpen(true);
     }, []);
 
     const openEdit = useCallback((patient: Patient) => {
-        setEditingPatient(patient);
-        setPatientFormOpen(true);
+        router.visit(
+            patientsEdit.url(
+                { patient: patient.id },
+                { query: { redirect_to: 'customers' } },
+            ),
+        );
     }, []);
 
     const handlePatientFormOpenChange = useCallback((nextOpen: boolean) => {
         setPatientFormOpen(nextOpen);
-
-        if (!nextOpen) {
-            setEditingPatient(null);
-        }
     }, []);
 
     const deletePatient = useCallback(
@@ -90,7 +88,7 @@ export function CustomerPatientsForm({
             <PatientForm
                 open={patientFormOpen}
                 onOpenChange={handlePatientFormOpenChange}
-                entity={editingPatient}
+                entity={null}
                 speciesOptions={speciesOptions}
                 fixedCustomerId={customer.id}
                 redirectTo="customers"

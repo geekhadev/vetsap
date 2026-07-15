@@ -134,9 +134,18 @@ class ClinicalAttentionsController extends Controller
             return back()->withErrors(['template_id' => 'Debes seleccionar una empresa para registrar atenciones.']);
         }
 
-        $action->execute($request->attentionPayload());
+        $attention = $action->execute($request->attentionPayload());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Atención registrada correctamente.']);
+
+        $backToPatient = $request->input('back_to_patient_id');
+
+        if ($backToPatient) {
+            return redirect(route('medic.patients.edit', [
+                'patient' => $backToPatient,
+                'tab' => 'historial',
+            ]));
+        }
 
         return to_route('medic.clinical-attentions.index');
     }
@@ -149,6 +158,7 @@ class ClinicalAttentionsController extends Controller
 
         return Inertia::render('medic/clinical-attentions/edit', [
             'attention' => $clinicalAttention->load('values'),
+            'backToPatientId' => $request->query('back_to_patient'),
             'patients' => $company instanceof Company
                 ? Patient::query()
                     ->forCompany($company->id)
@@ -200,18 +210,37 @@ class ClinicalAttentionsController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Atención actualizada correctamente.']);
 
+        $backToPatient = $request->input('back_to_patient_id');
+
+        if ($backToPatient) {
+            return redirect(route('medic.patients.edit', [
+                'patient' => $backToPatient,
+                'tab' => 'historial',
+            ]));
+        }
+
         return to_route('medic.clinical-attentions.index');
     }
 
     public function destroy(
         ClinicalAttention $clinicalAttention,
         DeleteClinicalAttentionAction $action,
+        Request $request,
     ): RedirectResponse {
         $this->authorize('delete', $clinicalAttention);
 
         $action->execute($clinicalAttention);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Atención eliminada.']);
+
+        $backToPatient = $request->input('back_to_patient') ?? $request->query('back_to_patient');
+
+        if (is_string($backToPatient) && $backToPatient !== '') {
+            return redirect(route('medic.patients.edit', [
+                'patient' => $backToPatient,
+                'tab' => 'historial',
+            ]));
+        }
 
         return to_route('medic.clinical-attentions.index');
     }

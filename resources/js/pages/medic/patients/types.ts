@@ -1,6 +1,8 @@
 import type { PatientSexValue } from '@/components/custom/patient-sex-badge';
 import { formatPatientSexLabel } from '@/components/custom/patient-sex-badge';
 import type { TabledataListStandardDraft } from '@/components/custom/tabledata';
+import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
+import type { ClinicalTemplate } from '@/pages/medic/clinical-templates/types';
 import {
     formatIsActive as formatIsActiveBase,
     isActiveFilterOptions,
@@ -21,6 +23,12 @@ export type PatientCustomerRef = {
     document_number: string;
 };
 
+export type PatientCustomerDetail = PatientCustomerRef & {
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+};
+
 export type Patient = {
     id: string;
     company_id: string;
@@ -38,7 +46,7 @@ export type Patient = {
     microchip_number: string | null;
     is_active: boolean;
     species?: PatientSpeciesRef | null;
-    customer?: PatientCustomerRef | null;
+    customer?: PatientCustomerDetail | null;
     created_at: string;
     updated_at: string;
 };
@@ -53,7 +61,52 @@ export type CustomerOption = {
     name: string;
     document_type: 'rut' | 'pasaporte';
     document_number: string;
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
 };
+
+export type PatientTemplateOption = {
+    id: string;
+    name: string;
+    is_default: boolean;
+    fields: ClinicalTemplate['fields'];
+};
+
+export type PatientDoctorOption = {
+    id: string;
+    first_name: string;
+    last_name: string;
+};
+
+export type AttentionSummary = {
+    id: string;
+    template_name: string | null;
+    doctor_name: string | null;
+    created_at: string;
+};
+
+export type PatientsEditCan = {
+    attentions: {
+        create: boolean;
+        delete: boolean;
+    };
+};
+
+export type PatientsEditPageProps = {
+    patient: Patient;
+    redirectTo: 'patients' | 'customers';
+    activeTab: PatientEditTabId;
+    draftAttention: ClinicalAttention | null;
+    species: SpeciesOption[];
+    customers: CustomerOption[];
+    templates: PatientTemplateOption[];
+    doctors: PatientDoctorOption[];
+    attentions: AttentionSummary[];
+    can: PatientsEditCan;
+};
+
+export type PatientEditTabId = 'historial' | 'examenes' | 'nueva-atencion';
 
 export const PATIENTS_INDEX_MODULE_FILTER_KEYS = ['is_active', 'species_id', 'customer_id'] as const;
 

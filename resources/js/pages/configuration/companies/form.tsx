@@ -1,5 +1,10 @@
 import { Head } from '@inertiajs/react';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+    SplitSettingsAside,
+    SplitSettingsHeading,
+    SplitSettingsLayout,
+    SplitSettingsPanel,
+} from '@/components/custom/split-settings-layout';
 import { Separator } from '@/components/ui/separator';
 import { COMPANY_SETTINGS_PAGE } from '@/pages/configuration/companies/config';
 import { useCompanyForm } from '@/pages/configuration/companies/hooks/use-company-form';
@@ -28,42 +33,42 @@ function CompanyForm(props: CompaniesFormPageProps) {
         <>
             <Head title={headTitle} />
 
-            <div className="flex min-w-0 flex-1 flex-col gap-8 p-4 lg:max-w-[1400px] lg:flex-row lg:items-start lg:gap-12">
-                <div className="flex max-w-xs flex-col gap-4">
-                    <h1 className="text-2xl font-semibold tracking-tight">
-                        {isEdit
-                            ? COMPANY_SETTINGS_PAGE.title
-                            : 'Nueva empresa'}
-                    </h1>
-                    <p className="text-muted-foreground text-sm">
-                        {isEdit
-                            ? COMPANY_SETTINGS_PAGE.description
-                            : 'Registra una nueva empresa en el sistema.'}
-                    </p>
-                </div>
+            <SplitSettingsLayout>
+                <SplitSettingsAside>
+                    <SplitSettingsHeading
+                        title={
+                            isEdit
+                                ? COMPANY_SETTINGS_PAGE.title
+                                : 'Nueva empresa'
+                        }
+                        description={
+                            isEdit
+                                ? COMPANY_SETTINGS_PAGE.description
+                                : 'Registra una nueva empresa en el sistema.'
+                        }
+                    />
+                </SplitSettingsAside>
 
-                <Card className="min-w-0 flex-1 gap-0 py-0 shadow-xs">
-                    <CardContent className="space-y-8 p-6">
-                        <form onSubmit={submit} className="space-y-6">
-                            <GeneralTabPanel
-                                form={form}
-                                isEdit={isEdit}
-                                hideCancel={isEdit}
+                <SplitSettingsPanel unwrapped contentClassName="space-y-8">
+                    <form onSubmit={submit} className="space-y-6">
+                        <GeneralTabPanel
+                            form={form}
+                            isEdit={isEdit}
+                            hideCancel={isEdit}
+                        />
+                    </form>
+
+                    {isEdit && company ? (
+                        <>
+                            <Separator />
+                            <CompanyDeleteTabPanel
+                                company={company}
+                                canDelete={can.delete}
                             />
-                        </form>
-
-                        {isEdit && company ? (
-                            <>
-                                <Separator />
-                                <CompanyDeleteTabPanel
-                                    company={company}
-                                    canDelete={can.delete}
-                                />
-                            </>
-                        ) : null}
-                    </CardContent>
-                </Card>
-            </div>
+                        </>
+                    ) : null}
+                </SplitSettingsPanel>
+            </SplitSettingsLayout>
         </>
     );
 }

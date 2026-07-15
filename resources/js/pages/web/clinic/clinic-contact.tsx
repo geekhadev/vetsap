@@ -1,6 +1,9 @@
-import { Clock, Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import { Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import { EditableHours } from './editable-hours';
 import { EditableText } from './editable-text';
 import type { ClinicCompany, ClinicSettings } from './types';
+
+const DEFAULT_CONTACT_HOURS = ['Lunes a Viernes: 09:00 — 19:00', 'Sábados: 09:00 — 14:00'].join('\n');
 
 function ContactMap({ src }: { src: string }) {
     return (
@@ -26,6 +29,11 @@ type ClinicContactProps = {
 export function ClinicContact({ company, settings }: ClinicContactProps) {
     const pretitle = settings['contact_pretitle'] ?? 'Para urgencias fuera de horario, contáctanos directamente.';
     const title = settings['contact_title'] ?? 'Contáctanos';
+    const hoursTitle = settings['contact_hours_title'] ?? 'Horario de Atención';
+    const legacyHours = [settings['contact_hours_weekday'], settings['contact_hours_saturday']]
+        .filter((line): line is string => line != null && line.trim() !== '')
+        .join('\n');
+    const hours = settings['contact_hours'] ?? (legacyHours !== '' ? legacyHours : DEFAULT_CONTACT_HOURS);
     const facebookUrl = settings['facebook_url'];
     const instagramUrl = settings['instagram_url'];
     const hasSocial = facebookUrl != null || instagramUrl != null;
@@ -99,15 +107,13 @@ export function ClinicContact({ company, settings }: ClinicContactProps) {
                     )}
 
                     <div className="flex flex-col gap-1">
-                        <p className="font-bold">Horario de Atención</p>
-                        <p className="flex items-center gap-2 font-light text-gray-800">
-                            <Clock size={20} className="shrink-0 text-gray-600" />
-                            Lunes a Viernes: 09:00 — 19:00
-                        </p>
-                        <p className="flex items-center gap-2 font-light text-gray-800">
-                            <Clock size={20} className="shrink-0 text-gray-600" />
-                            Sábados: 09:00 — 14:00
-                        </p>
+                        <EditableText
+                            settingKey="contact_hours_title"
+                            value={hoursTitle}
+                            as="p"
+                            className="font-bold"
+                        />
+                        <EditableHours settingKey="contact_hours" value={hours} />
                     </div>
 
                     {(company.email || company.phone || company.address) && (

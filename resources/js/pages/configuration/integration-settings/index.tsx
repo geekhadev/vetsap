@@ -1,6 +1,9 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+    SplitSettingsLayout,
+    SplitSettingsPanel,
+} from '@/components/custom/split-settings-layout';
 import { buildEmptySiiIntegrationFormData } from '@/pages/configuration/companies/tabs/integrations/sii-integration-keys';
 import { IntegrationsTabPanel } from '@/pages/configuration/companies/tabs/integrations-tab-panel';
 import { INTEGRATION_SETTINGS_PAGE } from '@/pages/configuration/integration-settings/config';
@@ -44,28 +47,24 @@ function IntegrationsSettingsIndex() {
         <>
             <Head title={INTEGRATION_SETTINGS_PAGE.title} />
 
-            <div className="flex min-w-0 flex-1 flex-col gap-8 p-4 lg:max-w-[1400px] lg:flex-row lg:items-start lg:gap-12">
+            <SplitSettingsLayout>
                 <IntegrationSettingsSidebar
                     activeTab={activeTab}
                     onTabChange={setActiveTab}
                 />
 
-                <Card className="min-w-0 flex-1 gap-0 py-0 shadow-xs">
-                    <CardContent className="px-0">
-                        <div className="p-6">
-                            <IntegrationsTabPanel
-                                activeTab={activeTab}
-                                companyId={companyId}
-                                siiCertificateDownloadUrl={
-                                    siiCertificateDownloadUrl
-                                }
-                                siiIntegration={siiIntegration}
-                                siiEconomicActivities={siiEconomicActivities}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                <SplitSettingsPanel>
+                    <IntegrationsTabPanel
+                        activeTab={activeTab}
+                        companyId={companyId}
+                        siiCertificateDownloadUrl={
+                            siiCertificateDownloadUrl
+                        }
+                        siiIntegration={siiIntegration}
+                        siiEconomicActivities={siiEconomicActivities}
+                    />
+                </SplitSettingsPanel>
+            </SplitSettingsLayout>
         </>
     );
 }

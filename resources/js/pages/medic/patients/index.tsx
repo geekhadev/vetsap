@@ -1,6 +1,6 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { CirclePlus } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { PatientRecordBadge } from '@/components/custom/patient-record-badge';
 import { PatientSexBadge } from '@/components/custom/patient-sex-badge';
 import {
@@ -26,6 +26,7 @@ import {
     
 } from '@/pages/medic/patients/types';
 import type {Patient, PatientListFilters, PatientsIndexFiltersDraftFull} from '@/pages/medic/patients/types';
+import { edit as patientsEdit } from '@/routes/medic/patients';
 
 function PatientsIndex({
     can,
@@ -33,8 +34,12 @@ function PatientsIndex({
     customers,
 }: Pick<PatientsIndexPageProps, 'can' | 'species' | 'customers'>) {
     const { deleteRow } = usePatientsIndex();
-    const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
+    const { formOpen, openCreate, handleFormOpenChange } =
         useEntityFormDialogState<Patient>();
+
+    const openEdit = useCallback((row: Patient) => {
+        router.visit(patientsEdit.url({ patient: row.id }));
+    }, []);
 
     const columns = useMemo<TabledataColumn<Patient>[]>(
         () => [
@@ -88,7 +93,7 @@ function PatientsIndex({
             <PatientForm
                 open={formOpen}
                 onOpenChange={handleFormOpenChange}
-                entity={editingEntity}
+                entity={null}
                 speciesOptions={species}
                 customerOptions={customers}
             />

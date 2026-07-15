@@ -1,4 +1,8 @@
 import { FormActionButton } from '@/components/custom/form-action-button';
+import {
+    SplitSettingsAside,
+    SplitSettingsHeading,
+} from '@/components/custom/split-settings-layout';
 import { cn } from '@/lib/utils';
 import { INTEGRATION_SETTINGS_PAGE } from '@/pages/configuration/integration-settings/config';
 import { INTEGRATION_TABS } from '@/pages/configuration/integration-settings/integration-tabs-config';
@@ -14,13 +18,11 @@ export function IntegrationSettingsSidebar({
     onTabChange,
 }: IntegrationSettingsSidebarProps) {
     return (
-        <div className="flex max-w-xs flex-col gap-4">
-            <h1 className="text-2xl font-semibold tracking-tight">
-                {INTEGRATION_SETTINGS_PAGE.title}
-            </h1>
-            <p className="text-muted-foreground text-sm">
-                {INTEGRATION_SETTINGS_PAGE.description}
-            </p>
+        <SplitSettingsAside>
+            <SplitSettingsHeading
+                title={INTEGRATION_SETTINGS_PAGE.title}
+                description={INTEGRATION_SETTINGS_PAGE.description}
+            />
 
             {INTEGRATION_TABS.map((tab) => {
                 const Icon = tab.icon;
@@ -43,6 +45,6 @@ export function IntegrationSettingsSidebar({
                     />
                 );
             })}
-        </div>
+        </SplitSettingsAside>
     );
 }

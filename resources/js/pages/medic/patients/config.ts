@@ -1,5 +1,6 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     CustomerOption,
     Patient,
@@ -9,7 +10,6 @@ import type {
     SpeciesOption,
 } from '@/pages/medic/patients/types';
 import { PATIENTS_INDEX_MODULE_FILTER_KEYS } from '@/pages/medic/patients/types';
-import { dashboard } from '@/routes';
 import { index as patientsIndex } from '@/routes/medic/patients';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -38,10 +38,11 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: patientsIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, patientsIndex()),
+        edit: (): BreadcrumbItem[] =>
+            buildModuleBreadcrumbs(PAGE.title, patientsIndex(), {
+                title: 'Gestionar paciente',
+            }),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         Patient,

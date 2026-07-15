@@ -11,13 +11,16 @@ export type AttentionValue = {
     value: unknown;
 };
 
+export type ClinicalAttentionStatus = 'draft' | 'closed';
+
 export type ClinicalAttention = {
     id: string;
     company_id: string;
     appointment_id: string | null;
     template_id: string;
     patient_id: string;
-    doctor_id: string;
+    doctor_id: string | null;
+    status: ClinicalAttentionStatus;
     template?: ClinicalTemplate | null;
     patient?: { id: string; name: string; record_number: string } | null;
     doctor?: { id: string; first_name: string; last_name: string } | null;
