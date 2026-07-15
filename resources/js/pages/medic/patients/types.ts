@@ -83,6 +83,8 @@ export type AttentionSummary = {
     id: string;
     template_name: string | null;
     doctor_name: string | null;
+    started_at: string;
+    closed_at: string | null;
     created_at: string;
 };
 

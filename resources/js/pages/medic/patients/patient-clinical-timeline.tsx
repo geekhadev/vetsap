@@ -8,7 +8,11 @@ type PatientClinicalTimelineProps = {
     attentions: AttentionSummary[];
 };
 
-function formatTimelineDateTime(value: string): string {
+function formatTimelineDateTime(value: string | null | undefined): string {
+    if (value == null || value === '') {
+        return '—';
+    }
+
     const formatted = formatDateDisplay(value, 'datetime', '');
 
     if (formatted === '') {
@@ -17,6 +21,10 @@ function formatTimelineDateTime(value: string): string {
 
     // `datetime` incluye segundos; el timeline usa `dd/mm/aaaa HH:mm`.
     return formatted.replace(/^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}):\d{2}$/, '$1');
+}
+
+function attentionTimelineMoment(attention: AttentionSummary): string {
+    return attention.closed_at ?? attention.started_at ?? attention.created_at;
 }
 
 export function PatientClinicalTimeline({ attentions }: PatientClinicalTimelineProps) {
@@ -33,6 +41,7 @@ export function PatientClinicalTimeline({ attentions }: PatientClinicalTimelineP
             {attentions.map((attention, index) => {
                 const isFirst = index === 0;
                 const isLast = index === attentions.length - 1;
+                const timelineMoment = attentionTimelineMoment(attention);
 
                 return (
                     <li
@@ -44,10 +53,10 @@ export function PatientClinicalTimeline({ attentions }: PatientClinicalTimelineP
                     >
                         <div className="flex items-center justify-end">
                             <time
-                                dateTime={attention.created_at}
+                                dateTime={timelineMoment}
                                 className="text-muted-foreground text-sm leading-none font-medium whitespace-nowrap tabular-nums"
                             >
-                                {formatTimelineDateTime(attention.created_at)}
+                                {formatTimelineDateTime(timelineMoment)}
                             </time>
                         </div>
 
@@ -88,6 +97,12 @@ export function PatientClinicalTimeline({ attentions }: PatientClinicalTimelineP
                                         {attention.doctor_name?.trim()
                                             ? `Médico: ${attention.doctor_name}`
                                             : 'Sin médico asignado'}
+                                    </p>
+                                    <p className="text-muted-foreground truncate text-xs">
+                                        Inicio: {formatTimelineDateTime(attention.started_at)}
+                                        {attention.closed_at
+                                            ? ` · Fin: ${formatTimelineDateTime(attention.closed_at)}`
+                                            : ''}
                                     </p>
                                 </div>
 

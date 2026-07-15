@@ -25,10 +25,20 @@ final class CreateClinicalAttentionAction
     {
         return DB::transaction(function () use ($data): ClinicalAttention {
             $values = $data['values'] ?? [];
-            unset($data['values'], $data['status']);
+            unset($data['values']);
+
+            $now = now();
+            $status = $data['status'] ?? ClinicalAttentionStatus::Closed;
 
             /** @var ClinicalAttention $attention */
-            $attention = ClinicalAttention::query()->create($data);
+            $attention = ClinicalAttention::query()->create([
+                ...$data,
+                'status' => $status,
+                'started_at' => $data['started_at'] ?? $now,
+                'closed_at' => $status === ClinicalAttentionStatus::Closed
+                    ? ($data['closed_at'] ?? $now)
+                    : ($data['closed_at'] ?? null),
+            ]);
 
             foreach ($values as $fieldKey => $value) {
                 if ($value === null || $value === '') {

@@ -31,6 +31,7 @@ final class ClosePatientDraftAttentionAction
             $attention->update([
                 ...$data,
                 'status' => ClinicalAttentionStatus::Closed,
+                'closed_at' => now(),
             ]);
 
             $attention->values()->delete();

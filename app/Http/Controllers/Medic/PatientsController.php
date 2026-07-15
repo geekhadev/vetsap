@@ -127,7 +127,8 @@ class PatientsController extends Controller
             ->where('patient_id', $patient->id)
             ->closed()
             ->with(['template:id,name', 'doctor:id,first_name,last_name'])
-            ->orderByDesc('created_at')
+            ->orderByDesc('closed_at')
+            ->orderByDesc('started_at')
             ->get();
 
         return Inertia::render('medic/patients/edit', [
@@ -170,6 +171,8 @@ class PatientsController extends Controller
                 'doctor_name' => $a->doctor
                     ? "{$a->doctor->first_name} {$a->doctor->last_name}"
                     : null,
+                'started_at' => $a->started_at,
+                'closed_at' => $a->closed_at,
                 'created_at' => $a->created_at,
             ]),
             'can' => [

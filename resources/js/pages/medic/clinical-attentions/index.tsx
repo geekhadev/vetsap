@@ -56,15 +56,32 @@ function ClinicalAttentionsIndex({
                 render: (row) => row.template?.name ?? '—',
             },
             {
-                key: 'created_at',
-                label: 'Fecha',
+                key: 'started_at',
+                label: 'Inicio',
                 sortable: true,
                 render: (row) =>
-                    new Date(row.created_at).toLocaleDateString('es-CL', {
+                    new Date(row.started_at).toLocaleString('es-CL', {
                         day: '2-digit',
                         month: 'short',
                         year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
                     }),
+            },
+            {
+                key: 'closed_at',
+                label: 'Fin',
+                sortable: true,
+                render: (row) =>
+                    row.closed_at
+                        ? new Date(row.closed_at).toLocaleString('es-CL', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                          })
+                        : '—',
             },
             buildTabledataCrudActionsColumn<ClinicalAttention>({
                 can: { update: false, delete: can.delete },

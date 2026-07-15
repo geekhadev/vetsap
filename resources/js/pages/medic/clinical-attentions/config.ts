@@ -31,7 +31,7 @@ const PAGE = {
     searchPlaceholder: 'Paciente o médico…',
 } as const;
 
-const ORDER = { sort: 'created_at', direction: 'desc' } as const;
+const ORDER = { sort: 'closed_at', direction: 'desc' } as const;
 
 export const CONFIG_TABLEDATA = {
     storageKey: PAGE.storageKey,

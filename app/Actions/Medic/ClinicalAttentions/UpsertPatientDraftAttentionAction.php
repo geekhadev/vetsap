@@ -62,6 +62,8 @@ final class UpsertPatientDraftAttentionAction
                     'company_id' => $companyId,
                     'patient_id' => $patient->id,
                     'status' => ClinicalAttentionStatus::Draft,
+                    'started_at' => now(),
+                    'closed_at' => null,
                     'created_by_user_id' => $userId,
                     ...$attributes,
                 ]);

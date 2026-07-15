@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'patient_id',
     'doctor_id',
     'status',
+    'started_at',
+    'closed_at',
     'created_by_user_id',
     'updated_by_user_id',
 ])]
@@ -38,11 +40,15 @@ class ClinicalAttention extends Model
     {
         return [
             'status' => ClinicalAttentionStatus::class,
+            'started_at' => 'datetime',
+            'closed_at' => 'datetime',
         ];
     }
 
     public const SORTABLE_COLUMNS = [
         'created_at',
+        'started_at',
+        'closed_at',
     ];
 
     /**
