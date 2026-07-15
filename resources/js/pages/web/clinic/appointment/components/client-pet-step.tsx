@@ -197,7 +197,7 @@ export function ClientPetStep({
                             <SelectTrigger id="pet-species" className={CLINIC_BOOKING_SELECT_TRIGGER}>
                                 <SelectValue placeholder="Selecciona especie" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent portalled={false}>
                                 {species.map((item) => (
                                     <SelectItem key={item.id} value={item.id}>
                                         {item.name}

@@ -43,7 +43,7 @@ export const CLINIC_BOOKING_STEP_LABEL_CURRENT = 'text-cyan-700';
 export const CLINIC_BOOKING_INPUT = 'h-11 text-base md:text-base';
 
 export const CLINIC_BOOKING_SELECT_TRIGGER =
-    'h-11! min-h-11 w-full py-0 text-base md:text-base data-[size=default]:h-11! data-[size=sm]:h-11!';
+    'h-11! min-h-11 w-full bg-transparent py-0 text-base md:text-base data-[size=default]:h-11! data-[size=sm]:h-11! dark:bg-transparent dark:hover:bg-transparent';
 
 /** Scrollable horizontal slider (touch, drag, trackpad). */
 export const CLINIC_BOOKING_SLIDER_SCROLL =

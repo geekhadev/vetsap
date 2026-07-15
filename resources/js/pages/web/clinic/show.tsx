@@ -50,7 +50,7 @@ export default function ClinicShow() {
                     content={`${company.name} — clínica veterinaria. Agenda tu cita en línea.`}
                 />
             </Head>
-            <div className="clinic-page flex min-h-screen flex-col bg-white [&_#hero]:scroll-mt-0 [&_[id]]:scroll-mt-24">
+            <div className="clinic-page flex min-h-screen flex-col bg-white text-gray-900 [&_#hero]:scroll-mt-0 [&_[id]]:scroll-mt-24">
                 <main className="flex flex-col">
                     <div className="relative">
                         <ClinicHeader logo={settings['logo']} companyName={company.name} />

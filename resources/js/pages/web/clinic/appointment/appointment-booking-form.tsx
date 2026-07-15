@@ -28,7 +28,7 @@ export function AppointmentBookingForm({
     return (
         <Card
             id="appointment-booking"
-            className="w-full gap-0 border-gray-200/80 py-0 shadow-xl scroll-mt-24"
+            className="w-full gap-0 border-gray-200/80 bg-white py-0 text-gray-900 shadow-xl scroll-mt-24 dark:bg-white dark:text-gray-900"
         >
             <CardHeader className="border-b border-gray-100 px-4 py-4 sm:px-5">
                 {state.step !== 'success' && (
