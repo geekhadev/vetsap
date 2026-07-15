@@ -24,7 +24,7 @@ import { useSpeciesIndex } from '@/pages/medic/species/hooks/use-index';
 import type { Species, SpeciesListFilters, SpeciesIndexFiltersDraftFull } from '@/pages/medic/species/types';
 
 function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
-    const { deleteRow } = useSpeciesIndex();
+    const { deleteRow, deleteConfirmDialog } = useSpeciesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Species>();
 
@@ -50,6 +50,7 @@ function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
 
     return (
         <>
+            {deleteConfirmDialog}
             <Head title={CONFIG_TABLEDATA.pageTitle} />
 
             <SpeciesForm
