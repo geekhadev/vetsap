@@ -105,6 +105,9 @@ export function BlockSchedulePicker({
                         </div>
 
                         <div className="flex flex-col gap-1.5">
+                            <p className="text-[11px] font-medium text-gray-500">
+                                {multipleVets ? 'Médicos disponibles' : 'Médico'}
+                            </p>
                             {row.slots.map((slot) => {
                                 const veterinarian = doctorsById.get(slot.veterinarianId);
                                 const isSelected = selectedSlotId === slot.id;
@@ -115,6 +118,7 @@ export function BlockSchedulePicker({
                                         type="button"
                                         onClick={() => onSelectSlot(slot)}
                                         title={veterinarian?.name}
+                                        aria-label={`Médico: ${veterinarian?.name ?? ''}`}
                                         className={cn(
                                             'w-full min-w-0 border px-3 py-2 text-left text-xs transition-all',
                                             CLINIC_BOOKING_SELECTION_ROUNDED,

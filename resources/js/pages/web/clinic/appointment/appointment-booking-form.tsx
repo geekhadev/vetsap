@@ -106,7 +106,7 @@ export function AppointmentBookingForm({
                             className={CLINIC_BOOKING_BACK_BUTTON}
                             onClick={booking.goBack}
                         >
-                            Atrás
+                            Cambiar horario o servicio
                         </Button>
                     ) : (
                         <span />

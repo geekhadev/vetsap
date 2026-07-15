@@ -99,9 +99,7 @@ export function ClientPetStep({
 
             {clientLookupDone && client && (
                 <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm">
-                    <p className="font-medium text-green-800">
-                        ¡Hola, {client.name}! Te reconocimos por tu teléfono.
-                    </p>
+                    <p className="font-medium text-green-800">¡Hola, {client.name}!</p>
                     <p className="text-xs text-green-700">Selecciona una mascota o agenda con otra.</p>
                 </div>
             )}
