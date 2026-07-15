@@ -46,15 +46,15 @@ type AppointmentDetailModalProps = {
     canDelete: boolean;
 };
 
-function formatBirthDate(value: string | null): string {
+function formatBirthDate(value: string | null): string | null {
     if (value === null || value.trim() === '') {
-        return '—';
+        return null;
     }
 
     const parsed = new Date(`${value}T12:00:00`);
 
     if (Number.isNaN(parsed.getTime())) {
-        return '—';
+        return null;
     }
 
     return format(parsed, 'dd/MM/yyyy');
@@ -126,8 +126,13 @@ function AppointmentDetailContent({
     onScheduleChange: (schedule: AppointmentScheduleValue) => void;
     onDelete: () => void;
 }) {
+    const birthDate = formatBirthDate(appointment.patient.birth_date);
+
     const patientMeta = joinDetailParts([
-        formatPatientSexLabel(appointment.patient.sex),
+        appointment.patient.species_name || null,
+        appointment.patient.sex !== 'unknown'
+            ? `Sexo: ${formatPatientSexLabel(appointment.patient.sex)}`
+            : null,
         appointment.patient.age_years !== null
             ? `${appointment.patient.age_years} años`
             : null,
@@ -142,8 +147,8 @@ function AppointmentDetailContent({
         `Ficha: ${appointment.patient.record_number}`,
         appointment.patient.microchip_number
             ? `Chip: ${appointment.patient.microchip_number}`
-            : 'Chip:',
-        `Cumpleaños: ${formatBirthDate(appointment.patient.birth_date)}`,
+            : null,
+        birthDate ? `Cumpleaños: ${birthDate}` : null,
     ]);
 
     return (
