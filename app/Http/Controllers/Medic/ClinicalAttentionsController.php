@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Medic;
 use App\Actions\Medic\ClinicalAttentions\CreateClinicalAttentionAction;
 use App\Actions\Medic\ClinicalAttentions\DeleteClinicalAttentionAction;
 use App\Actions\Medic\ClinicalAttentions\ListClinicalAttentionsForCompanyAction;
-use App\Actions\Medic\ClinicalAttentions\UpdateClinicalAttentionAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Medic\ClinicalAttentionListRequest;
 use App\Http\Requests\Medic\ClinicalAttentionStoreRequest;
-use App\Http\Requests\Medic\ClinicalAttentionUpdateRequest;
 use App\Models\Company;
 use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\ClinicalTemplate;
@@ -70,56 +68,9 @@ class ClinicalAttentionsController extends Controller
                 : [],
             'can' => [
                 'create' => $user?->can('create', ClinicalAttention::class) ?? false,
-                'update' => $user?->can('updateAny', ClinicalAttention::class) ?? false,
+                'update' => false,
                 'delete' => $user?->can('deleteAny', ClinicalAttention::class) ?? false,
             ],
-        ]);
-    }
-
-    public function create(Request $request): Response
-    {
-        $this->authorize('create', ClinicalAttention::class);
-
-        $company = $this->resolveCompany($request);
-
-        return Inertia::render('medic/clinical-attentions/create', [
-            'patients' => $company instanceof Company
-                ? Patient::query()
-                    ->forCompany($company->id)
-                    ->where('is_active', true)
-                    ->with(['species:id,name', 'customer:id,name,phone,email'])
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'record_number', 'sex', 'weight_kg', 'colors', 'breed', 'species_id', 'customer_id'])
-                    ->map(fn ($p) => [
-                        'id' => $p->id,
-                        'name' => $p->name,
-                        'record_number' => $p->record_number,
-                        'sex' => $p->sex?->value,
-                        'weight_kg' => $p->weight_kg,
-                        'colors' => $p->colors,
-                        'breed' => $p->breed,
-                        'species_name' => $p->species?->name,
-                        'customer_name' => $p->customer?->name,
-                        'customer_phone' => $p->customer?->phone,
-                        'customer_email' => $p->customer?->email,
-                    ])
-                : [],
-            'doctors' => $company instanceof Company
-                ? Doctor::query()
-                    ->forCompany($company->id)
-                    ->where('is_active', true)
-                    ->orderBy('first_name')
-                    ->get(['id', 'first_name', 'last_name'])
-                : [],
-            'templates' => $company instanceof Company
-                ? ClinicalTemplate::query()
-                    ->forCompany($company->id)
-                    ->where('is_active', true)
-                    ->orderByDesc('is_default')
-                    ->orderBy('name')
-                    ->with('fields')
-                    ->get(['id', 'name', 'is_default'])
-                : [],
         ]);
     }
 
@@ -134,81 +85,9 @@ class ClinicalAttentionsController extends Controller
             return back()->withErrors(['template_id' => 'Debes seleccionar una empresa para registrar atenciones.']);
         }
 
-        $attention = $action->execute($request->attentionPayload());
+        $action->execute($request->attentionPayload());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Atención registrada correctamente.']);
-
-        $backToPatient = $request->input('back_to_patient_id');
-
-        if ($backToPatient) {
-            return redirect(route('medic.patients.edit', [
-                'patient' => $backToPatient,
-                'tab' => 'historial',
-            ]));
-        }
-
-        return to_route('medic.clinical-attentions.index');
-    }
-
-    public function edit(ClinicalAttention $clinicalAttention, Request $request): Response
-    {
-        $this->authorize('update', $clinicalAttention);
-
-        $company = $this->resolveCompany($request);
-
-        return Inertia::render('medic/clinical-attentions/edit', [
-            'attention' => $clinicalAttention->load('values'),
-            'backToPatientId' => $request->query('back_to_patient'),
-            'patients' => $company instanceof Company
-                ? Patient::query()
-                    ->forCompany($company->id)
-                    ->where('is_active', true)
-                    ->with(['species:id,name', 'customer:id,name,phone,email'])
-                    ->orderBy('name')
-                    ->get(['id', 'name', 'record_number', 'sex', 'weight_kg', 'colors', 'breed', 'species_id', 'customer_id'])
-                    ->map(fn ($p) => [
-                        'id' => $p->id,
-                        'name' => $p->name,
-                        'record_number' => $p->record_number,
-                        'sex' => $p->sex?->value,
-                        'weight_kg' => $p->weight_kg,
-                        'colors' => $p->colors,
-                        'breed' => $p->breed,
-                        'species_name' => $p->species?->name,
-                        'customer_name' => $p->customer?->name,
-                        'customer_phone' => $p->customer?->phone,
-                        'customer_email' => $p->customer?->email,
-                    ])
-                : [],
-            'doctors' => $company instanceof Company
-                ? Doctor::query()
-                    ->forCompany($company->id)
-                    ->where('is_active', true)
-                    ->orderBy('first_name')
-                    ->get(['id', 'first_name', 'last_name'])
-                : [],
-            'templates' => $company instanceof Company
-                ? ClinicalTemplate::query()
-                    ->forCompany($company->id)
-                    ->where('is_active', true)
-                    ->orderByDesc('is_default')
-                    ->orderBy('name')
-                    ->with('fields')
-                    ->get(['id', 'name', 'is_default'])
-                : [],
-        ]);
-    }
-
-    public function update(
-        ClinicalAttentionUpdateRequest $request,
-        ClinicalAttention $clinicalAttention,
-        UpdateClinicalAttentionAction $action,
-    ): RedirectResponse {
-        $this->authorize('update', $clinicalAttention);
-
-        $action->execute($clinicalAttention, $request->attentionPayload());
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Atención actualizada correctamente.']);
 
         $backToPatient = $request->input('back_to_patient_id');
 

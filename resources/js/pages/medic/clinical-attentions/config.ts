@@ -11,10 +11,7 @@ import type {
     TemplateOption,
 } from '@/pages/medic/clinical-attentions/types';
 import { CLINICAL_ATTENTIONS_MODULE_FILTER_KEYS } from '@/pages/medic/clinical-attentions/types';
-import {
-    index as clinicalAttentionsIndex,
-    create as clinicalAttentionsCreate,
-} from '@/routes/medic/clinical-attentions';
+import { index as clinicalAttentionsIndex } from '@/routes/medic/clinical-attentions';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
 
@@ -44,15 +41,6 @@ export const CONFIG_TABLEDATA = {
     order: ORDER,
     breadcrumbs: {
         index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, clinicalAttentionsIndex()),
-        create: (): BreadcrumbItem[] =>
-            buildModuleBreadcrumbs(PAGE.title, clinicalAttentionsIndex(), {
-                title: 'Nueva atención',
-                href: clinicalAttentionsCreate(),
-            }),
-        edit: (): BreadcrumbItem[] =>
-            buildModuleBreadcrumbs(PAGE.title, clinicalAttentionsIndex(), {
-                title: 'Editar atención',
-            }),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         ClinicalAttention,

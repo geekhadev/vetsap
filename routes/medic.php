@@ -23,4 +23,4 @@ Route::put('doctors/{doctor}/services', [DoctorsController::class, 'syncServices
 Route::put('doctors/{doctor}/schedule', [DoctorsController::class, 'syncSchedule'])
     ->name('doctors.schedule.sync');
 Route::resource('clinical-templates', ClinicalTemplatesController::class)->except(['show']);
-Route::resource('clinical-attentions', ClinicalAttentionsController::class)->except(['show']);
+Route::resource('clinical-attentions', ClinicalAttentionsController::class)->except(['show', 'create', 'edit', 'update']);

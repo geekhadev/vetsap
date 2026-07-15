@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { DateDisplay } from '@/components/custom/date-display';
 import { Button } from '@/components/ui/button';
@@ -20,10 +20,7 @@ import type {
     PatientTemplateOption,
     PatientsEditCan,
 } from '@/pages/medic/patients/types';
-import {
-    destroy as clinicalAttentionsDestroy,
-    edit as clinicalAttentionsEdit,
-} from '@/routes/medic/clinical-attentions';
+import { destroy as clinicalAttentionsDestroy } from '@/routes/medic/clinical-attentions';
 
 type PatientEditTabPanelProps = {
     patient: Patient;
@@ -158,30 +155,8 @@ export function PatientEditTabPanel({
                                                 {attention.doctor_name ?? '—'}
                                             </td>
                                             <td className="px-4 py-2 text-right">
-                                                <div className="flex justify-end gap-1">
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        size="icon"
-                                                        title="Ver / editar atención"
-                                                        onClick={() =>
-                                                            router.visit(
-                                                                clinicalAttentionsEdit.url(
-                                                                    {
-                                                                        clinical_attention: attention.id,
-                                                                    },
-                                                                    {
-                                                                        query: {
-                                                                            back_to_patient: patient.id,
-                                                                        },
-                                                                    },
-                                                                ),
-                                                            )
-                                                        }
-                                                    >
-                                                        <Pencil className="size-3.5" />
-                                                    </Button>
-                                                    {can.attentions.delete ? (
+                                                {can.attentions.delete ? (
+                                                    <div className="flex justify-end gap-1">
                                                         <Button
                                                             type="button"
                                                             variant="destructive"
@@ -192,8 +167,8 @@ export function PatientEditTabPanel({
                                                         >
                                                             <Trash2 className="size-3.5" />
                                                         </Button>
-                                                    ) : null}
-                                                </div>
+                                                    </div>
+                                                ) : null}
                                             </td>
                                         </tr>
                                     ))}
