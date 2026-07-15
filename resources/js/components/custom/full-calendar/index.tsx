@@ -691,7 +691,7 @@ export function VetsapFullCalendar({
                     scrollTimeReset={false}
                     height="100%"
                     expandRows={false}
-                    eventMinHeight={40}
+                    eventMinHeight={36}
                     events={events}
                     eventContent={renderEventContent}
                     eventDidMount={handleEventDidMount}

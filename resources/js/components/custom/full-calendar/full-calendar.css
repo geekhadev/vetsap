@@ -17,7 +17,8 @@
     --fc-unscheduled-stripe: color-mix(in oklch, var(--muted) 58%, transparent);
     --fc-schedule-blocked-bg: color-mix(in oklch, var(--muted) 42%, var(--card));
     --fc-schedule-blocked-stripe: color-mix(in oklch, var(--muted) 62%, transparent);
-    --fc-event-gap: 0.25rem;
+    /* Separación visual dentro del harness (no margen externo: desalinearía la rejilla). */
+    --fc-event-gap: 0.125rem;
     --fc-event-inset: 0.3125rem;
 
     display: flex;
@@ -296,7 +297,6 @@
     border-radius: 0.375rem;
     box-shadow: none;
     box-sizing: border-box;
-    margin-block: var(--fc-event-gap);
     overflow: hidden;
     padding: 0;
 }
@@ -388,9 +388,17 @@
     pointer-events: auto;
 }
 
-.vetsap-full-calendar .fc-timegrid-event-harness .fc-timegrid-event,
 .vetsap-full-calendar .fc-daygrid-event-harness .fc-daygrid-event {
     height: 100%;
+    margin-block: var(--fc-event-gap);
+    pointer-events: auto;
+    width: 100%;
+}
+
+/* Inset dentro del harness: height 100% + margin-block desbordaba a la franja siguiente. */
+.vetsap-full-calendar .fc-timegrid-event-harness .fc-timegrid-event {
+    height: calc(100% - (var(--fc-event-gap) * 2)) !important;
+    margin-block: var(--fc-event-gap) 0;
     pointer-events: auto;
     width: 100%;
 }
