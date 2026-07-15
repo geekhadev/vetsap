@@ -1,12 +1,12 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     ModuleOption,
     Permission,
     PermissionListFilters,
     SystemOption,
 } from '@/pages/administration/permissions/types';
-import { dashboard } from '@/routes';
 import { index as permissionsIndex } from '@/routes/administration/permissions';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -35,10 +35,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: permissionsIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, permissionsIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         Permission,

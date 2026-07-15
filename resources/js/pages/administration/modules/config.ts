@@ -1,11 +1,11 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     Module,
     ModuleListFilters,
     SystemOption,
 } from '@/pages/administration/modules/types';
-import { dashboard } from '@/routes';
 import { index as modulesIndex } from '@/routes/administration/modules';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -33,10 +33,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: modulesIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, modulesIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         Module,

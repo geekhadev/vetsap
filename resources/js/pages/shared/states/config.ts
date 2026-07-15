@@ -1,12 +1,12 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     CountryOption,
     State,
     StateListFilters,
     StatesIndexFiltersDraftFull,
 } from '@/pages/shared/states/types';
-import { dashboard } from '@/routes';
 import { index as statesIndex } from '@/routes/shared/states';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -34,10 +34,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: statesIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, statesIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         State,

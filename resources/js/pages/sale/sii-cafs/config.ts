@@ -1,6 +1,7 @@
 import { TABLEDATA_LIST_INERTIA_ONLY } from '@/components/custom/tabledata';
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     FoliosForModalPayload,
     SiiCafDocumentTypeOption,
@@ -8,7 +9,6 @@ import type {
     SiiCafRow,
 } from '@/pages/sale/sii-cafs/types';
 import { SII_CAFS_INDEX_MODULE_FILTER_KEYS } from '@/pages/sale/sii-cafs/types';
-import { dashboard } from '@/routes';
 import { index as siiCafsIndex } from '@/routes/sale/sii-cafs';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -50,10 +50,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: siiCafsIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, siiCafsIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         SiiCafRow,

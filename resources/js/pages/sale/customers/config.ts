@@ -1,5 +1,6 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     Customer,
     CustomerListFilters,
@@ -8,7 +9,6 @@ import type {
     SpeciesOption,
 } from '@/pages/sale/customers/types';
 import { CUSTOMERS_INDEX_MODULE_FILTER_KEYS } from '@/pages/sale/customers/types';
-import { dashboard } from '@/routes';
 import { index as customersIndex } from '@/routes/sale/customers';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -36,10 +36,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: customersIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, customersIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         Customer,

@@ -1,5 +1,6 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import { SERVICES_INDEX_MODULE_FILTER_KEYS } from '@/pages/medic/services/types';
 import type {
     Service,
@@ -8,7 +9,6 @@ import type {
     ServicesIndexFiltersDraftFull,
 } from '@/pages/medic/services/types';
 import type { SpecialtyOption } from '@/pages/medic/services/types';
-import { dashboard } from '@/routes';
 import { index as servicesIndex } from '@/routes/medic/services';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -70,10 +70,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: servicesIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, servicesIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         Service,

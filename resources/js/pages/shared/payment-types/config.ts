@@ -1,10 +1,10 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     PaymentType,
     PaymentTypeListFilters,
 } from '@/pages/shared/payment-types/types';
-import { dashboard } from '@/routes';
 import { index as paymentTypesIndex } from '@/routes/shared/payment-types';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -31,10 +31,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: paymentTypesIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, paymentTypesIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         PaymentType,

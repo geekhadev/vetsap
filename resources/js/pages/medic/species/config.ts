@@ -1,5 +1,6 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     Species,
     SpeciesListFilters,
@@ -7,7 +8,6 @@ import type {
     SpeciesIndexFiltersDraftFull,
 } from '@/pages/medic/species/types';
 import { SPECIES_INDEX_MODULE_FILTER_KEYS } from '@/pages/medic/species/types';
-import { dashboard } from '@/routes';
 import { index as speciesIndex } from '@/routes/medic/species';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -34,10 +34,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: speciesIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, speciesIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         Species,

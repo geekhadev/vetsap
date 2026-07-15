@@ -1,5 +1,6 @@
 import { buildTabledataListInertiaForModuleStringKeys } from '@/components/custom/tabledata';
 import type { TabledataListQueryValues } from '@/components/custom/tabledata';
+import { buildModuleBreadcrumbs } from '@/lib/module-breadcrumbs';
 import type {
     AppointmentStatus,
     AppointmentStatusesListFilters,
@@ -7,7 +8,6 @@ import type {
     AppointmentStatusesIndexFiltersDraftFull,
 } from '@/pages/agenda/appointment-statuses/types';
 import { APPOINTMENT_STATUSES_INDEX_MODULE_FILTER_KEYS } from '@/pages/agenda/appointment-statuses/types';
-import { dashboard } from '@/routes';
 import { index as appointmentStatusesIndex } from '@/routes/agenda/appointment-statuses';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
@@ -34,10 +34,7 @@ export const CONFIG_TABLEDATA = {
     searchPlaceholder: PAGE.searchPlaceholder,
     order: ORDER,
     breadcrumbs: {
-        index: (): BreadcrumbItem[] => [
-            { title: 'Panel', href: dashboard() },
-            { title: PAGE.title, href: appointmentStatusesIndex() },
-        ],
+        index: (): BreadcrumbItem[] => buildModuleBreadcrumbs(PAGE.title, appointmentStatusesIndex()),
     },
     listInertia: buildTabledataListInertiaForModuleStringKeys<
         AppointmentStatus,
