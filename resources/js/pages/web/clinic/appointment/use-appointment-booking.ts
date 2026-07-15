@@ -16,6 +16,7 @@ import type {
     AppointmentService,
     BookingClient,
     BookingFormState,
+    ConfirmedBooking,
     PetSelection,
     PublicBookingSchedule,
     TimeBlockSlot,
@@ -51,6 +52,7 @@ function createInitialState(
         petSelection: initialPetSelection,
         clientName: '',
         clientEmail: '',
+        confirmedBooking: null,
     };
 }
 
@@ -137,6 +139,22 @@ export function useAppointmentBooking(
         () => services.find((service) => service.id === state.serviceId),
         [services, state.serviceId],
     );
+
+    const confirmedService = useMemo(() => {
+        if (!state.confirmedBooking) {
+            return undefined;
+        }
+
+        return services.find((service) => service.id === state.confirmedBooking?.serviceId);
+    }, [services, state.confirmedBooking]);
+
+    const confirmedVeterinarian = useMemo(() => {
+        if (!state.confirmedBooking) {
+            return undefined;
+        }
+
+        return doctors.find((doctor) => doctor.id === state.confirmedBooking?.veterinarianId);
+    }, [doctors, state.confirmedBooking]);
 
     const calendarDates = useMemo(
         () => getCalendarDatesFromToday(liveSchedule.blockConfig.daysAhead),
@@ -413,12 +431,24 @@ export function useAppointmentBooking(
 
             await storeHttp.post(ClinicBookingController.storeAppointment.url(companySlug));
 
+            const confirmedBooking: ConfirmedBooking = {
+                serviceId: state.serviceId,
+                date: state.date,
+                startTime: selectedSlot.startTime,
+                endTime: selectedSlot.endTime,
+                veterinarianId: selectedSlot.veterinarianId,
+            };
+
             setLiveSchedule((current) => ({
                 ...current,
                 veterinarianBlocks: consumeBookedBlocks(current.veterinarianBlocks, selectedSlot),
             }));
 
-            setState((current) => ({ ...current, step: 'success' }));
+            setState((current) => ({
+                ...current,
+                step: 'success',
+                confirmedBooking,
+            }));
         } catch {
             setSubmitError('No pudimos confirmar la cita. Revisa los datos e intenta de nuevo.');
         } finally {
@@ -479,6 +509,8 @@ export function useAppointmentBooking(
         selectedService,
         selectedSlot,
         selectedVeterinarian,
+        confirmedService,
+        confirmedVeterinarian,
         isLookingUp,
         isSubmitting,
         lookupError,

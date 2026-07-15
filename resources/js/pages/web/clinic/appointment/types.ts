@@ -79,6 +79,14 @@ export type PetSelection = {
     petSpecies: string;
 };
 
+export type ConfirmedBooking = {
+    serviceId: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    veterinarianId: string;
+};
+
 export type BookingFormState = {
     step: BookingStep;
     serviceId: string | null;
@@ -90,6 +98,7 @@ export type BookingFormState = {
     petSelection: PetSelection;
     clientName: string;
     clientEmail: string;
+    confirmedBooking: ConfirmedBooking | null;
 };
 
 export type BookingHoliday = {

@@ -1,7 +1,7 @@
 /** Chips de selección (servicio, día, mascota, horario) — esquinas suaves, no pill. */
 export const CLINIC_BOOKING_SELECTION_ROUNDED = 'rounded-lg';
 
-/** Primary CTA (Continuar, Confirmar, Agendar otra cita). */
+/** Primary CTA (Continuar, Confirmar). */
 export const CLINIC_BOOKING_ACTION_BUTTON =
     'h-12 min-w-[9rem] rounded-full px-7 text-base font-semibold bg-cyan-600 text-white shadow-sm hover:bg-cyan-700';
 
@@ -10,6 +10,14 @@ export const CLINIC_BOOKING_BACK_BUTTON =
 
 export const CLINIC_BOOKING_OUTLINE_BUTTON =
     'h-12 shrink-0 rounded-full border-cyan-200 bg-white px-6 text-base font-semibold text-cyan-900 shadow-xs hover:border-cyan-500 hover:bg-cyan-50';
+
+/** Google Calendar CTA — white surface, brand mark. */
+export const CLINIC_BOOKING_GOOGLE_CALENDAR_BUTTON =
+    'inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-full border border-[#DADCE0] bg-white px-2.5 text-sm font-semibold text-[#3C4043] shadow-xs transition-colors hover:bg-[#F8F9FA] hover:border-[#BDC1C6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4285F4]/40';
+
+/** Apple Calendar CTA — light surface for the iOS calendar mark. */
+export const CLINIC_BOOKING_APPLE_CALENDAR_BUTTON =
+    'inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-full border border-[#D2D2D7] bg-white px-2.5 text-sm font-semibold text-[#1C1C1E] shadow-xs transition-colors hover:bg-[#F5F5F7] hover:border-[#AEAEB2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF3B30]/40';
 
 /** Hero / external link CTA on the clinic landing. */
 export const CLINIC_HERO_CTA_BUTTON =

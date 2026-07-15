@@ -11,12 +11,14 @@ import { useAppointmentBooking } from './use-appointment-booking';
 
 type AppointmentBookingFormProps = {
     companySlug: string;
+    companyName: string;
     companyAddress: string | null;
     bookingSchedule: PublicBookingSchedule;
 };
 
 export function AppointmentBookingForm({
     companySlug,
+    companyName,
     companyAddress,
     bookingSchedule,
 }: AppointmentBookingFormProps) {
@@ -79,18 +81,16 @@ export function AppointmentBookingForm({
                     />
                 )}
 
-                {state.step === 'success' && (
+                {state.step === 'success' && state.confirmedBooking && (
                     <BookingSuccessStep
-                        service={booking.selectedService}
-                        date={state.date}
-                        time={
-                            booking.selectedSlot
-                                ? `${booking.selectedSlot.startTime} – ${booking.selectedSlot.endTime}`
-                                : undefined
-                        }
-                        veterinarian={booking.selectedVeterinarian}
+                        service={booking.confirmedService}
+                        date={state.confirmedBooking.date}
+                        startTime={state.confirmedBooking.startTime}
+                        endTime={state.confirmedBooking.endTime}
+                        veterinarian={booking.confirmedVeterinarian}
                         clientName={state.clientName}
                         petName={state.petSelection.petName}
+                        companyName={companyName}
                         companyAddress={companyAddress}
                         onReset={booking.resetBooking}
                     />

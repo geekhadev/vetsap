@@ -74,6 +74,7 @@ export function ClinicHero({ company, settings, bookingSchedule }: ClinicHeroPro
                 <div className="order-first w-full lg:order-last lg:col-span-6">
                     <AppointmentBookingForm
                         companySlug={company.slug}
+                        companyName={company.name}
                         companyAddress={company.address}
                         bookingSchedule={mapPublicBookingSchedule(bookingSchedule)}
                     />
