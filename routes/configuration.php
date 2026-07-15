@@ -35,6 +35,8 @@ Route::put('website-settings', [WebsiteSettingsController::class, 'update'])
     ->name('website-settings.update');
 Route::post('website-settings/logo', [WebsiteSettingsController::class, 'storeLogo'])
     ->name('website-settings.logo.store');
+Route::post('website-settings/og-image', [WebsiteSettingsController::class, 'storeOgImage'])
+    ->name('website-settings.og-image.store');
 
 Route::patch('companies/{company}/integrations/sii', [CompanySiiIntegrationController::class, 'update'])
     ->name('companies.integrations.sii.update');

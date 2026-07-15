@@ -133,6 +133,15 @@ export function LandingHeader({ canRegister }: LandingSectionProps) {
                                 </li>
                             );
                         })}
+                        <li>
+                            <Link
+                                href="/equipo"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="inline-block text-base font-medium text-gray-600 transition-colors hover:text-cyan-600"
+                            >
+                                Equipo
+                            </Link>
+                        </li>
                     </ul>
                     <div className="mt-4 flex flex-col gap-2 sm:hidden">
                         <AuthButtons canRegister={canRegister} />

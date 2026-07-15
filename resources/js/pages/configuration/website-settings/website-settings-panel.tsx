@@ -6,7 +6,7 @@ import { SettingsSection } from '@/pages/configuration/calendar-settings/setting
 import { useWebsiteSettingsForm } from '@/pages/configuration/website-settings/hooks/use-website-settings-form';
 
 export function WebsiteSettingsPanel() {
-    const { form, logoForm, logoPreviewUrl, submit, uploadLogo } =
+    const { form, logoForm, logoPreviewUrl, ogImageForm, ogImagePreviewUrl, submit, uploadLogo, uploadOgImage } =
         useWebsiteSettingsForm();
 
     return (
@@ -17,18 +17,6 @@ export function WebsiteSettingsPanel() {
                 tooltip="Define el logo y la dirección web pública de tu clínica."
             >
                 <div className="grid items-start gap-8 lg:grid-cols-2">
-                    <FormImageUpload
-                        label="Logo"
-                        previewUrl={logoPreviewUrl}
-                        previewAlt="Logo de la clínica"
-                        emptyLabel="Subir logo"
-                        changeLabel="Cambiar logo"
-                        error={logoForm.errors.logo}
-                        processing={logoForm.processing}
-                        helperText="Formatos permitidos: JPG, PNG, WebP. Tamaño máximo: 5 MB."
-                        onFileSelect={uploadLogo}
-                    />
-
                     <div className="space-y-2">
                         <FormTextInput
                             label="Slug de URL"
@@ -57,6 +45,32 @@ export function WebsiteSettingsPanel() {
                             </span>
                         </p>
                     </div>
+                </div>
+
+                <div className="grid items-start gap-8 lg:grid-cols-2">
+                    <FormImageUpload
+                        label="Logo"
+                        previewUrl={logoPreviewUrl}
+                        previewAlt="Logo de la clínica"
+                        emptyLabel="Subir logo"
+                        changeLabel="Cambiar logo"
+                        error={logoForm.errors.logo}
+                        processing={logoForm.processing}
+                        helperText="Formatos permitidos: JPG, PNG, WebP. Máx. 5 MB."
+                        onFileSelect={uploadLogo}
+                    />
+
+                    <FormImageUpload
+                        label="Imagen para compartir en redes (OG)"
+                        previewUrl={ogImagePreviewUrl}
+                        previewAlt="Imagen OG de la clínica"
+                        emptyLabel="Subir imagen"
+                        changeLabel="Cambiar imagen"
+                        error={ogImageForm.errors.og_image}
+                        processing={ogImageForm.processing}
+                        helperText="Recomendado: 1200×630 px. JPG, PNG, WebP. Máx. 5 MB."
+                        onFileSelect={uploadOgImage}
+                    />
                 </div>
             </SettingsSection>
 
@@ -123,26 +137,21 @@ export function WebsiteSettingsPanel() {
                                 ),
                         }}
                     />
-                </div>
-            </SettingsSection>
 
-            <SettingsSection
-                title="Mapa de contacto"
-                tooltip="Copia la URL del iframe de Google Maps (en Google Maps: Compartir → Insertar un mapa → copiar solo el valor del atributo src)."
-            >
-                <FormTextInput
-                    label="URL del mapa (src del iframe)"
-                    error={form.errors.contact_map_url}
-                    inputProps={{
-                        id: 'contact_map_url',
-                        name: 'contact_map_url',
-                        placeholder: 'https://www.google.com/maps/embed?pb=…',
-                        maxLength: 2000,
-                        value: form.data.contact_map_url,
-                        onChange: (e) =>
-                            form.setData('contact_map_url', e.target.value),
-                    }}
-                />
+                    <FormTextInput
+                        label="Ubicación de la clínica (src del iframe de Google Maps)"
+                        error={form.errors.contact_map_url}
+                        inputProps={{
+                            id: 'contact_map_url',
+                            name: 'contact_map_url',
+                            placeholder: 'https://www.google.com/maps/embed?pb=…',
+                            maxLength: 2000,
+                            value: form.data.contact_map_url,
+                            onChange: (e) =>
+                                form.setData('contact_map_url', e.target.value),
+                        }}
+                    />
+                </div>
             </SettingsSection>
 
             <div className="flex flex-row flex-wrap items-center gap-3">

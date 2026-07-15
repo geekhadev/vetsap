@@ -42,6 +42,9 @@ final class BuildWebsiteSettingsPageDataAction
         $logoSetting = $company->webSettings()->where('key', ClinicWebSettingKeys::LOGO)->first();
         $result[ClinicWebSettingKeys::LOGO] = PublicStorageUrl::fromRelativePath($logoSetting?->value);
 
+        $ogImageSetting = $company->webSettings()->where('key', ClinicWebSettingKeys::OG_IMAGE)->first();
+        $result[ClinicWebSettingKeys::OG_IMAGE] = PublicStorageUrl::fromRelativePath($ogImageSetting?->value);
+
         return $result;
     }
 }

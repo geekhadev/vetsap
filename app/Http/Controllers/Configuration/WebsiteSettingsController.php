@@ -7,6 +7,7 @@ use App\Actions\Web\StoreClinicWebImageAction;
 use App\Actions\Web\SyncClinicTextWebSettingsAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Configuration\StoreWebsiteLogoRequest;
+use App\Http\Requests\Configuration\StoreWebsiteOgImageRequest;
 use App\Http\Requests\Configuration\UpdateWebsiteSettingsRequest;
 use App\Models\Company;
 use App\Support\SelectedCompanySession;
@@ -85,6 +86,27 @@ class WebsiteSettingsController extends Controller
         $action->execute($company, ClinicWebSettingKeys::LOGO, $file);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Logo actualizado.']);
+
+        return to_route('configuration.website-settings.index');
+    }
+
+    public function storeOgImage(
+        StoreWebsiteOgImageRequest $request,
+        StoreClinicWebImageAction $action,
+    ): RedirectResponse {
+        $company = $request->selectedCompany();
+
+        if (! $company instanceof Company) {
+            return back()->withErrors([
+                'og_image' => 'Debes seleccionar una empresa para subir la imagen.',
+            ]);
+        }
+
+        /** @var UploadedFile $file */
+        $file = $request->file('og_image');
+        $action->execute($company, ClinicWebSettingKeys::OG_IMAGE, $file);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Imagen OG actualizada.']);
 
         return to_route('configuration.website-settings.index');
     }
