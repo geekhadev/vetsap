@@ -161,7 +161,7 @@ export function buildAppointmentReminderMessage(
         const links = buildClinicNavigationLinks(clinicMapUrl);
 
         if (links !== null) {
-            message += `\n\n\nPara que no se pierda, puede ubicar la clínica aquí:\n\nGoogle Maps: ${links.googleMaps}\n\nWaze: ${links.waze}`;
+            message += `\n\nPara que no se pierda, puede ubicar la clínica aquí:\nWaze: ${links.waze}\nGoogle Maps: ${links.googleMaps}`;
         }
     }
 
@@ -178,7 +178,7 @@ export function buildAppointmentReminderMessage(
     }
 
     if (socialLines.length > 0) {
-        message += `\n\n\nTambién lo invitamos a visitarnos y seguirnos en nuestras redes sociales:\n\n${socialLines.join('\n\n')}`;
+        message += `\n\nTambién lo invitamos a visitarnos y seguirnos en nuestras redes sociales:\n${socialLines.join('\n')}`;
     }
 
     return message;
