@@ -2,7 +2,7 @@
 
 namespace Database\Seeders\Configuration;
 
-use App\Models\Configuration\Role;
+use App\Actions\Configuration\Roles\SyncOwnerRolePermissionsAction;
 use Illuminate\Database\Seeder;
 
 class RolesSeeder extends Seeder
@@ -12,13 +12,6 @@ class RolesSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::query()->firstOrCreate(
-            [
-                'name' => Role::OWNER_SYSTEM_NAME,
-                'is_public' => true,
-                'company_id' => null,
-            ],
-            [],
-        );
+        app(SyncOwnerRolePermissionsAction::class)->execute();
     }
 }
