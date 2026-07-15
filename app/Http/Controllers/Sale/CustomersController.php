@@ -45,7 +45,7 @@ class CustomersController extends Controller
             'filters' => $request->filtersForFrontend(),
             'species' => $company instanceof Company
                 ? Species::query()
-                    ->forCompany($company->id)
+                    ->forCompanyOrGlobal($company->id)
                     ->where('is_active', true)
                     ->orderBy('name')
                     ->get(['id', 'name'])

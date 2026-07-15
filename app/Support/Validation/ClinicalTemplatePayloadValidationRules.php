@@ -14,7 +14,17 @@ final class ClinicalTemplatePayloadValidationRules
     {
         return [
             'species_ids' => ['nullable', 'array'],
-            'species_ids.*' => ['uuid', Rule::exists('medic_species', 'id')->where('company_id', $companyId)],
+            'species_ids.*' => [
+                'uuid',
+                Rule::exists('medic_species', 'id')->where(function ($query) use ($companyId): void {
+                    $query->where(function ($inner) use ($companyId): void {
+                        $inner->where('company_id', $companyId)
+                            ->orWhere(function ($global): void {
+                                $global->where('is_global', true)->whereNull('company_id');
+                            });
+                    });
+                }),
+            ],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'is_default' => ['boolean'],

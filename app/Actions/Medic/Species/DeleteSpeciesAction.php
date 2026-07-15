@@ -11,6 +11,12 @@ final class DeleteSpeciesAction
 {
     public function execute(Species $species): void
     {
+        if ($species->isGlobal()) {
+            throw ValidationException::withMessages([
+                'name' => 'No se puede eliminar una especie global del sistema.',
+            ]);
+        }
+
         if (Schema::hasTable('medic_patients')
             && Schema::hasColumn('medic_patients', 'species_id')
             && DB::table('medic_patients')->where('species_id', $species->id)->exists()

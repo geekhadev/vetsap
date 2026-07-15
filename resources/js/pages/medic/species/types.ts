@@ -7,8 +7,9 @@ import type { PaginatedListFilters } from '@/types/list-filters';
 
 export type Species = {
     id: string;
-    company_id: string;
+    company_id: string | null;
     name: string;
+    is_global: boolean;
     is_active: boolean;
     created_at: string;
     updated_at: string;

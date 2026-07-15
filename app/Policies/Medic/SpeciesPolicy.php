@@ -2,12 +2,12 @@
 
 namespace App\Policies\Medic;
 
-use App\Policies\Medic\Concerns\AuthorizesCompanyScopedRecord;
+use App\Policies\Medic\Concerns\AuthorizesMedicSpeciesRecord;
 use App\Support\Administration\ModulePermissionSlugs;
 
 class SpeciesPolicy
 {
-    use AuthorizesCompanyScopedRecord;
+    use AuthorizesMedicSpeciesRecord;
 
     protected function listPermissionSlug(): string
     {

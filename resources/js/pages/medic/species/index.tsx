@@ -12,6 +12,10 @@ import {
 } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
 import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
+import {
+    canDeleteGlobalRecordRow,
+    canModifyGlobalRecordRow,
+} from '@/lib/global-record';
 import { CONFIG_TABLEDATA } from '@/pages/medic/species/config';
 import type { SpeciesIndexPageProps } from '@/pages/medic/species/config';
 import { SpeciesIndexFilters } from '@/pages/medic/species/filters';
@@ -37,6 +41,8 @@ function SpeciesIndex({ can }: Pick<SpeciesIndexPageProps, 'can'>) {
                 can,
                 onEdit: openEdit,
                 onDelete: deleteRow,
+                canModifyRow: (row) => canModifyGlobalRecordRow(row, can),
+                canDeleteRow: (row) => canDeleteGlobalRecordRow(row, can),
             }),
         ],
         [can, deleteRow, openEdit],

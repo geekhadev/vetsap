@@ -17,7 +17,7 @@ final class SpeciesPayloadValidationRules
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('medic_species', 'name')->where('company_id', $companyId),
+                ...self::uniqueNameRules($companyId),
             ],
             'is_active' => ['required', 'boolean'],
         ];
@@ -33,22 +33,42 @@ final class SpeciesPayloadValidationRules
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('medic_species', 'name')
-                    ->where('company_id', $companyId)
-                    ->ignore($speciesId),
+                ...self::uniqueNameRules($companyId, $speciesId),
             ],
             'is_active' => ['required', 'boolean'],
         ];
     }
 
     /**
-     * @return array{company_id: string, name: string, is_active: bool}
+     * @return list<ValidationRule>
+     */
+    private static function uniqueNameRules(string $companyId, ?string $ignoreId = null): array
+    {
+        $unique = Rule::unique('medic_species', 'name')->where(function ($query) use ($companyId): void {
+            $query->where(function ($inner) use ($companyId): void {
+                $inner->where('company_id', $companyId)
+                    ->orWhere(function ($global): void {
+                        $global->where('is_global', true)->whereNull('company_id');
+                    });
+            });
+        });
+
+        if ($ignoreId !== null) {
+            $unique->ignore($ignoreId);
+        }
+
+        return [$unique];
+    }
+
+    /**
+     * @return array{company_id: string, name: string, is_global: bool, is_active: bool}
      */
     public static function storePayload(string $companyId, array $validated): array
     {
         return [
             'company_id' => $companyId,
             'name' => (string) $validated['name'],
+            'is_global' => false,
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
         ];
     }

@@ -84,7 +84,7 @@ final class BuildPublicBookingScheduleAction
     private function resolveSpecies(string $companyId): array
     {
         return Species::query()
-            ->forCompany($companyId)
+            ->forCompanyOrGlobal($companyId)
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name'])

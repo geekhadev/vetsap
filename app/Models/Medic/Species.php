@@ -3,7 +3,7 @@
 namespace App\Models\Medic;
 
 use App\Models\Company;
-use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
+use App\Models\Medic\Concerns\InteractsWithCompanyOrGlobalMasterRecord;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -13,12 +13,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'company_id',
     'name',
+    'is_global',
     'is_active',
 ])]
 class Species extends Model
 {
     use HasUuids;
-    use InteractsWithCompanyMasterRecord;
+    use InteractsWithCompanyOrGlobalMasterRecord;
 
     protected $table = 'medic_species';
 
@@ -50,6 +51,7 @@ class Species extends Model
     protected function casts(): array
     {
         return [
+            'is_global' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

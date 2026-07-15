@@ -55,8 +55,13 @@ final class WebBookingPayloadValidationRules
                 'nullable',
                 'uuid',
                 Rule::exists('medic_species', 'id')->where(fn ($query) => $query
-                    ->where('company_id', $companyId)
-                    ->where('is_active', true)),
+                    ->where('is_active', true)
+                    ->where(function ($inner) use ($companyId): void {
+                        $inner->where('company_id', $companyId)
+                            ->orWhere(function ($global): void {
+                                $global->where('is_global', true)->whereNull('company_id');
+                            });
+                    })),
             ],
         ];
     }

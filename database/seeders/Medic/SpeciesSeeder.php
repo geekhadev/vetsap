@@ -10,9 +10,25 @@ class SpeciesSeeder extends Seeder
 {
     public function run(): void
     {
-        $species = [
-            'Perro',
-            'Gato',
+        $globals = [
+            'Canino',
+            'Felino',
+        ];
+
+        foreach ($globals as $name) {
+            Species::query()->firstOrCreate(
+                [
+                    'company_id' => null,
+                    'name' => $name,
+                ],
+                [
+                    'is_global' => true,
+                    'is_active' => true,
+                ],
+            );
+        }
+
+        $companySpecies = [
             'Ave',
             'Conejo',
             'Hámster',
@@ -21,14 +37,15 @@ class SpeciesSeeder extends Seeder
             'Otro',
         ];
 
-        Company::query()->each(function (Company $company) use ($species): void {
-            foreach ($species as $name) {
+        Company::query()->each(function (Company $company) use ($companySpecies): void {
+            foreach ($companySpecies as $name) {
                 Species::query()->firstOrCreate(
                     [
                         'company_id' => $company->id,
                         'name' => $name,
                     ],
                     [
+                        'is_global' => false,
                         'is_active' => true,
                     ],
                 );

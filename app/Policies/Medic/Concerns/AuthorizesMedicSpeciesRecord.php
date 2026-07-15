@@ -4,12 +4,11 @@ namespace App\Policies\Medic\Concerns;
 
 use App\Enums\UserType;
 use App\Models\Company;
-use App\Models\Medic\Doctor;
-use App\Models\Medic\Service;
+use App\Models\Medic\Species;
 use App\Models\User;
 use App\Models\UserCompanyRole;
 
-trait AuthorizesCompanyScopedRecord
+trait AuthorizesMedicSpeciesRecord
 {
     abstract protected function listPermissionSlug(): string;
 
@@ -24,10 +23,9 @@ trait AuthorizesCompanyScopedRecord
         return $this->canList($user);
     }
 
-    public function view(User $user, Doctor|Service $record): bool
+    public function view(User $user, Species $record): bool
     {
-        return $this->canList($user)
-            && $this->sessionCompanyMatches((string) $record->company_id);
+        return $this->canList($user);
     }
 
     public function create(User $user): bool
@@ -45,16 +43,27 @@ trait AuthorizesCompanyScopedRecord
         return $this->canDelete($user);
     }
 
-    public function update(User $user, Doctor|Service $record): bool
+    public function update(User $user, Species $record): bool
     {
-        return $this->canUpdate($user)
-            && $this->sessionCompanyMatches((string) $record->company_id);
+        return $this->canModifyRecord($user, $record, $this->canUpdate($user));
     }
 
-    public function delete(User $user, Doctor|Service $record): bool
+    public function delete(User $user, Species $record): bool
     {
-        return $this->canDelete($user)
-            && $this->sessionCompanyMatches((string) $record->company_id);
+        return $this->canModifyRecord($user, $record, $this->canDelete($user));
+    }
+
+    protected function canModifyRecord(User $user, Species $record, bool $hasAbility): bool
+    {
+        if (! $hasAbility) {
+            return false;
+        }
+
+        if ($record->isGlobal()) {
+            return false;
+        }
+
+        return $this->sessionCompanyMatches((string) $record->company_id);
     }
 
     protected function sessionCompanyMatches(string $recordCompanyId): bool

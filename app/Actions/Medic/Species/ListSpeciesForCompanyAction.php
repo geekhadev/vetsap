@@ -19,7 +19,7 @@ final class ListSpeciesForCompanyAction
         );
 
         return Species::query()
-            ->forCompany($companyId)
+            ->forCompanyOrGlobal($companyId)
             ->filterIsActive($filters['is_active'] ?? null)
             ->search($filters['search'] ?? null)
             ->orderByColumn($sort, $direction)
