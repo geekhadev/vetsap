@@ -25,15 +25,15 @@ export function LandingPricing({ canRegister }: LandingSectionProps) {
                 </p>
             </div>
 
-            <ul className="mx-auto mt-14 grid max-w-4xl gap-6 pt-2 sm:grid-cols-2 sm:items-end sm:gap-8 lg:gap-10">
+            <ul className="mx-auto mt-14 grid max-w-4xl gap-6 pt-4 sm:grid-cols-2 sm:items-stretch sm:gap-8 lg:gap-10">
                 {landingPlans.map((plan) => (
                     <li
                         key={plan.id}
                         className={cn(
-                            'flex flex-col rounded-2xl border bg-white shadow-sm',
+                            'relative flex min-w-0 flex-col rounded-2xl border bg-white shadow-sm',
                             plan.highlighted
-                                ? 'border-gray-200/80 p-6 sm:mb-3 sm:p-8 -ml-14 -mb-8 z-10 relative shadow-lg h-[480px]'
-                                : 'border-gray-200/80 p-6 sm:mb-3 sm:p-8',
+                                ? 'z-10 border-cyan-200 p-6 shadow-lg sm:p-8'
+                                : 'border-gray-200/80 p-6 sm:p-8',
                         )}
                     >
                         {plan.badge ? (

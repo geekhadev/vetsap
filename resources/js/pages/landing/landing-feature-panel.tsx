@@ -17,14 +17,14 @@ export function LandingFeatureWindowChrome({ label }: { label: string }) {
 
 export function LandingFeaturePanel({ feature }: LandingFeaturePanelProps) {
     return (
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col">
             <LandingFeatureWindowChrome label={feature.windowLabel} />
             <img
                 src={feature.imageSrc}
                 alt={feature.imageAlt}
                 width={1200}
                 height={720}
-                className="aspect-4/3 w-full min-h-[15rem] sm:min-h-[17rem] lg:aspect-16/9 lg:min-h-[22rem] xl:min-h-[26rem]"
+                className="aspect-4/3 h-auto w-full max-w-full min-h-[15rem] object-cover object-top sm:min-h-[17rem] lg:aspect-16/9 lg:min-h-[22rem] xl:min-h-[26rem]"
             />
         </div>
     );

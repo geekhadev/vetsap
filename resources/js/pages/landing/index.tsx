@@ -34,7 +34,7 @@ export default function LandingIndex({
                     <LandingHeader canRegister={canRegister} />
                     <LandingHero canRegister={canRegister} />
                 </div>
-                <LandingSection tone="white" className="overflow-visible">
+                <LandingSection tone="white" className="overflow-x-clip">
                     <LandingFeatures />
                 </LandingSection>
                 <LandingSection tone="muted">

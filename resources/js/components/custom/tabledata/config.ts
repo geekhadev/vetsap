@@ -39,15 +39,23 @@ export const TABLEDATA_LIST_INERTIA_ONLY = ['data', 'filters'] as const;
 export const TABLEDATA_LIST_SHELL_ROOT_CLASS = 'space-y-3 px-4 py-3';
 
 export const TABLEDATA_LIST_SHELL_HEADER_ROW_CLASS =
-    'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between';
+    'flex flex-row items-center gap-2 sm:gap-3 lg:justify-between';
 
 export const TABLEDATA_LIST_SHELL_TOOLBAR_OUTER_CLASS =
-    'flex w-full flex-col gap-3 sm:flex-row';
+    'flex min-w-0 flex-1 items-center gap-2';
 
 export const TABLEDATA_LIST_SHELL_TOOLBAR_INNER_CLASS =
-    'flex w-full flex-col gap-3 sm:flex-row justify-end';
+    'flex shrink-0 items-center justify-end gap-2 max-sm:[&_button]:size-9 max-sm:[&_button]:shrink-0 max-sm:[&_button]:gap-0 max-sm:[&_button]:p-0 max-sm:[&_button]:has-[>svg]:px-0 max-sm:[&_button]:justify-center max-sm:[&_button]:text-[0px] max-sm:[&_button]:leading-none max-sm:[&_button_svg]:m-0 max-sm:[&_button_svg]:size-4 max-sm:[&_button_svg]:shrink-0';
 
-export const TABLEDATA_LIST_SHELL_SEARCH_WRAPPER_CLASS = 'max-w-48 flex-1';
+export const TABLEDATA_LIST_SHELL_SEARCH_WRAPPER_CLASS =
+    'min-w-0 flex-1 sm:max-w-48';
+
+/** Botón de acciones del toolbar (Columnas / Filtros): solo icono en móvil. */
+export const TABLEDATA_LIST_SHELL_ICON_BUTTON_CLASS =
+    'size-9 shrink-0 gap-0 px-0 sm:h-9 sm:w-auto sm:gap-1.5 sm:px-4';
+
+export const TABLEDATA_LIST_SHELL_ICON_BUTTON_LABEL_CLASS =
+    'hidden sm:inline';
 
 export const TABLEDATA_LIST_SHELL_TABLE_BLOCK_CLASS = 'flex flex-col gap-4';
 
@@ -94,10 +102,10 @@ export const TABLEDATA_PAGINATION_SUMMARY_EMPTY =
     'No hay resultados que mostrar';
 
 export const TABLEDATA_PAGINATION_FOOTER_LAYOUT_CLASS =
-    'flex shrink-0 flex-col gap-4 sm:flex-row sm:justify-between sm:items-center';
+    'flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4';
 
 export const TABLEDATA_PAGINATION_FOOTER_INNER_CLASS =
     'flex min-w-0 flex-col gap-3 sm:flex-row sm:gap-6 items-center';
 
 export const TABLEDATA_PAGINATION_FOOTER_PER_PAGE_WRAP_CLASS =
-    'w-full max-w-20 shrink-0 sm:w-40 flex items-center';
+    'hidden w-full max-w-20 shrink-0 items-center sm:flex sm:w-40';

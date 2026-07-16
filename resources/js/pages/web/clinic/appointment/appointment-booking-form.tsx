@@ -98,23 +98,23 @@ export function AppointmentBookingForm({
             </CardContent>
 
             {state.step !== 'success' && (
-                <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-4 sm:px-5">
+                <div className="flex flex-col-reverse gap-3 border-t border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     {showBack ? (
                         <Button
                             type="button"
                             variant="ghost"
-                            className={CLINIC_BOOKING_BACK_BUTTON}
+                            className={`${CLINIC_BOOKING_BACK_BUTTON} w-full whitespace-normal sm:w-auto`}
                             onClick={booking.goBack}
                         >
                             Cambiar horario o servicio
                         </Button>
                     ) : (
-                        <span />
+                        <span className="hidden sm:block" />
                     )}
                     {state.step === 'service' && (
                         <Button
                             type="button"
-                            className={CLINIC_BOOKING_ACTION_BUTTON}
+                            className={`${CLINIC_BOOKING_ACTION_BUTTON} w-full shrink-0 sm:w-auto`}
                             disabled={!booking.canContinueToDetails}
                             onClick={booking.continueToDetails}
                         >
@@ -124,7 +124,7 @@ export function AppointmentBookingForm({
                     {state.step === 'details' && (
                         <Button
                             type="button"
-                            className={CLINIC_BOOKING_ACTION_BUTTON}
+                            className={`${CLINIC_BOOKING_ACTION_BUTTON} w-full shrink-0 sm:w-auto`}
                             disabled={!booking.canSubmit}
                             onClick={() => void booking.submitBooking()}
                         >

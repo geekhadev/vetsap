@@ -171,14 +171,14 @@ export function PatientEditTabPanel({
                     </p>
                 </div>
 
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                <div className="flex w-full flex-row items-center gap-2 sm:w-auto">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 type="button"
                                 size="sm"
                                 variant="outline"
-                                className="w-full shrink-0 sm:w-auto"
+                                className="min-w-0 flex-1 shrink-0 sm:w-auto sm:flex-none"
                             >
                                 Acciones
                                 <ChevronDown className="size-4 opacity-60" aria-hidden />
@@ -214,7 +214,7 @@ export function PatientEditTabPanel({
                                 isDraftSheetOpen || hasDraftAttention ? 'default' : 'outline'
                             }
                             className={cn(
-                                'relative w-full shrink-0 sm:w-auto',
+                                'relative min-w-0 flex-1 shrink-0 sm:w-auto sm:flex-none',
                                 hasDraftAttention &&
                                     !isDraftSheetOpen &&
                                     'shadow-md ring-2 ring-primary/35 ring-offset-2 ring-offset-background',

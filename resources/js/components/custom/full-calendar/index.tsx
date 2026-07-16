@@ -38,6 +38,7 @@ import {
     CALENDAR_TIMEGRID_VIEW_OPTIONS,
     isTimeGridView,
     resolveCalendarScrollTime,
+    resolveDefaultCalendarView,
     viewIncludesToday,
 } from './config';
 import {
@@ -180,7 +181,9 @@ export function VetsapFullCalendar({
     const timeGridEventClickCleanups = useRef(
         new WeakMap<HTMLElement, () => void>(),
     );
-    const [activeView, setActiveView] = useState<CalendarViewId>('threeDay');
+    const [defaultView] = useState<CalendarViewId>(resolveDefaultCalendarView);
+    const [activeView, setActiveView] = useState<CalendarViewId>(defaultView);
+    const hasUserChangedViewRef = useRef(false);
     const initialScrollTime = useMemo(() => resolveCalendarScrollTime(), []);
 
     const holidayDates = useMemo(
@@ -576,6 +579,7 @@ export function VetsapFullCalendar({
         }
 
         const nextView = viewId as CalendarViewId;
+        hasUserChangedViewRef.current = true;
         calendarRef.current?.getApi().changeView(nextView);
         setActiveView(nextView);
     }, []);
@@ -672,7 +676,7 @@ export function VetsapFullCalendar({
                         listPlugin,
                         interactionPlugin,
                     ]}
-                    initialView="threeDay"
+                    initialView={defaultView}
                     headerToolbar={false}
                     locale={esLocale}
                     firstDay={1}
@@ -715,7 +719,24 @@ export function VetsapFullCalendar({
                         },
                     }}
                     datesSet={({ view }) => {
-                        setActiveView(view.type as CalendarViewId);
+                        const viewId = view.type as CalendarViewId;
+                        const isKnownView = CALENDAR_VIEWS.some(
+                            (option) => option.id === viewId,
+                        );
+
+                        if (isKnownView) {
+                            if (
+                                !hasUserChangedViewRef.current &&
+                                viewId !== defaultView
+                            ) {
+                                calendarRef.current
+                                    ?.getApi()
+                                    .changeView(defaultView);
+                                setActiveView(defaultView);
+                            } else {
+                                setActiveView(viewId);
+                            }
+                        }
 
                         requestAnimationFrame(() => {
                             annotateBlockedDays();

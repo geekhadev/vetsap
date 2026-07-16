@@ -67,7 +67,11 @@ export function LandingHeader({ canRegister }: LandingSectionProps) {
         <header
             className={cn(
                 'fixed inset-x-0 top-0 z-50 transition-colors duration-300',
-                isAtTop ? 'bg-transparent' : 'bg-white/80 shadow-sm backdrop-blur-sm',
+                isMenuOpen
+                    ? 'bg-white shadow-sm'
+                    : isAtTop
+                      ? 'bg-transparent'
+                      : 'bg-white/80 shadow-sm backdrop-blur-sm',
             )}
         >
             <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-6">
@@ -103,7 +107,7 @@ export function LandingHeader({ canRegister }: LandingSectionProps) {
                 <nav
                     className={cn(
                         'w-full transition-all duration-300 lg:w-auto',
-                        isMenuOpen ? 'block' : 'hidden',
+                        isMenuOpen ? 'block max-lg:border-t max-lg:border-gray-100 max-lg:bg-white max-lg:pt-4 max-lg:pb-2' : 'hidden',
                         'lg:block',
                     )}
                     aria-label="Secciones"

@@ -357,17 +357,17 @@ function AppointmentDetailContent({
                 </DetailSection>
             ) : null}
 
-            <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-row items-start gap-2 border-t pt-4 sm:justify-between">
                 {canDelete ? (
-                    <div className="space-y-1">
+                    <div className="min-w-0 flex-1 space-y-1 sm:flex-none">
                         <Button
                             type="button"
                             variant="outline"
-                            className="gap-2 border-destructive/40 text-destructive hover:bg-destructive/10"
+                            className="w-full gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 sm:w-auto"
                             disabled={deleting}
                             onClick={onDelete}
                         >
-                            <Trash2 aria-hidden className="size-4" />
+                            <Trash2 aria-hidden className="size-4 shrink-0" />
                             Eliminar cita
                         </Button>
                         {deleteError ? (
@@ -377,11 +377,11 @@ function AppointmentDetailContent({
                         ) : null}
                     </div>
                 ) : (
-                    <span aria-hidden />
+                    <span aria-hidden className="flex-1 sm:flex-none" />
                 )}
-                <Button type="button" className="gap-2">
+                <Button type="button" className="min-w-0 flex-1 gap-2 sm:flex-none sm:w-auto">
                     Iniciar atención
-                    <ArrowRight aria-hidden className="size-4" />
+                    <ArrowRight aria-hidden className="size-4 shrink-0" />
                 </Button>
             </div>
         </div>

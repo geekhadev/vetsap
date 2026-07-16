@@ -55,21 +55,6 @@ export const landingFeatures: readonly LandingFeature[] = [
         imageSrc: '/images/landing/feature-services.png',
         imageAlt: 'Panel de gestión de clínica veterinaria',
     },
-    {
-        id: 'sii',
-        tabLabel: 'Boletas SII',
-        windowLabel: 'Ventas · Boleta electrónica',
-        title: 'Facturación electrónica integrada',
-        description:
-            'Emite boletas desde el mismo sistema con folios CAF y certificado digital bajo control. Pensado para clínicas en Chile.',
-        bullets: [
-            'Tipos de documento del SII configurables',
-            'Folios y resolución en un solo lugar',
-            'Menos saltos entre sistemas al cobrar',
-        ],
-        imageSrc: 'https://placehold.co/1200x720/b2ebf2/006978?text=Boletas+SII',
-        imageAlt: 'Emisión de boletas electrónicas SII',
-    },
 ] as const;
 
 export const defaultLandingFeatureId = landingFeatures[0].id;

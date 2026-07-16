@@ -5,7 +5,7 @@ export function ClinicEditorToolbar() {
     const { isEditing, toggleEditing } = useClinicEditor();
 
     return (
-        <div className="fixed top-5 right-5 z-50">
+        <div className="fixed top-3 left-1/2 z-50 -translate-x-1/2">
             <button
                 type="button"
                 onClick={toggleEditing}

@@ -4,6 +4,8 @@ import type {Dispatch, SetStateAction} from 'react';
 import {
     TABLEDATA_COLUMN_VISIBILITY_MENU_TITLE,
     TABLEDATA_COLUMN_VISIBILITY_TRIGGER_LABEL,
+    TABLEDATA_LIST_SHELL_ICON_BUTTON_CLASS,
+    TABLEDATA_LIST_SHELL_ICON_BUTTON_LABEL_CLASS,
 } from '@/components/custom/tabledata/config';
 import {
     isColumnHideable,
@@ -21,6 +23,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 export type TabledataColumnPickerProps<T> = {
     /**
@@ -81,10 +84,13 @@ export function TabledataColumnPicker<T>({
                 <Button
                     type="button"
                     variant="outline"
-                    className="gap-1.5"
+                    aria-label={triggerLabel}
+                    className={cn(TABLEDATA_LIST_SHELL_ICON_BUTTON_CLASS, 'gap-1.5')}
                 >
                     <Columns3 className="size-4" />
-                    {triggerLabel}
+                    <span className={TABLEDATA_LIST_SHELL_ICON_BUTTON_LABEL_CLASS}>
+                        {triggerLabel}
+                    </span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

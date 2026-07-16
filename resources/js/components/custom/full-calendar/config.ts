@@ -1,3 +1,18 @@
+import type { CalendarViewId } from './types';
+
+/** Tailwind `md` breakpoint: below this, calendar opens in list view. */
+export const CALENDAR_MOBILE_MAX_WIDTH_QUERY = '(max-width: 767px)';
+
+export function resolveDefaultCalendarView(): CalendarViewId {
+    if (typeof window === 'undefined') {
+        return 'threeDay';
+    }
+
+    return window.matchMedia(CALENDAR_MOBILE_MAX_WIDTH_QUERY).matches
+        ? 'listWeek'
+        : 'threeDay';
+}
+
 /** Duración base de cada bloque horario del calendario. */
 export const CALENDAR_SLOT_DURATION_MINUTES = 30;
 
