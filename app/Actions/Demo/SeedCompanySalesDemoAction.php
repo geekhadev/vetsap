@@ -30,14 +30,14 @@ use RuntimeException;
 final class SeedCompanySalesDemoAction
 {
     /**
-     * @var list<array{name: string, specialty: string, price: string, duration_minutes: int}>
+     * @var list<array{name: string, specialty: string, price: string, duration_minutes: int, use_web: bool}>
      */
     private const SERVICES = [
-        ['name' => 'Consulta general', 'specialty' => 'Medicina General', 'price' => '20000', 'duration_minutes' => 30],
-        ['name' => 'Ecografía', 'specialty' => 'Exámenes', 'price' => '30000', 'duration_minutes' => 30],
-        ['name' => 'Tomografía', 'specialty' => 'Exámenes', 'price' => '30000', 'duration_minutes' => 30],
-        ['name' => 'Rayos X', 'specialty' => 'Exámenes', 'price' => '30000', 'duration_minutes' => 30],
-        ['name' => 'Exámen de sangre', 'specialty' => 'Exámenes', 'price' => '30000', 'duration_minutes' => 30],
+        ['name' => 'Consulta general', 'specialty' => 'Medicina General', 'price' => '20000', 'duration_minutes' => 30, 'use_web' => true],
+        ['name' => 'Ecografía', 'specialty' => 'Exámenes', 'price' => '30000', 'duration_minutes' => 30, 'use_web' => false],
+        ['name' => 'Tomografía', 'specialty' => 'Exámenes', 'price' => '30000', 'duration_minutes' => 30, 'use_web' => false],
+        ['name' => 'Rayos X', 'specialty' => 'Exámenes', 'price' => '30000', 'duration_minutes' => 30, 'use_web' => false],
+        ['name' => 'Exámen de sangre', 'specialty' => 'Exámenes', 'price' => '30000', 'duration_minutes' => 30, 'use_web' => false],
     ];
 
     /**
@@ -159,7 +159,15 @@ final class SeedCompanySalesDemoAction
                     'price' => $row['price'],
                     'duration_minutes' => $row['duration_minutes'],
                     'is_active' => true,
-                    'use_web' => false,
+                    'use_web' => $row['use_web'],
+                ]);
+            } else {
+                $service->update([
+                    'specialty_id' => $specialty->id,
+                    'price' => $row['price'],
+                    'duration_minutes' => $row['duration_minutes'],
+                    'is_active' => true,
+                    'use_web' => $row['use_web'],
                 ]);
             }
 
