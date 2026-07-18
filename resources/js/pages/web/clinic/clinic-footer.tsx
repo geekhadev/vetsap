@@ -21,7 +21,7 @@ export function ClinicFooter({ company, settings }: ClinicFooterProps) {
     const hasSocial = facebookUrl != null || instagramUrl != null;
 
     return (
-        <footer className="mx-auto w-full max-w-7xl rounded-t-lg bg-cyan-900 shadow">
+        <footer className="mx-auto w-full max-w-7xl rounded-t-lg bg-clinic-900 shadow">
             <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between md:gap-0">
                 <div className="flex flex-col gap-1">
                     <h4 className="text-sm text-gray-200">

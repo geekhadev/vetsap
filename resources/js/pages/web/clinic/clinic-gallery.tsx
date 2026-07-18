@@ -31,7 +31,7 @@ export function ClinicGallery({ settings }: ClinicGalleryProps) {
 
     return (
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-6 md:px-0" id="galeria">
-            <EditableText settingKey="gallery_title" value={sectionTitle} as="h3" className="text-5xl tracking-tight text-cyan-500" />
+            <EditableText settingKey="gallery_title" value={sectionTitle} as="h3" className="text-5xl tracking-tight text-clinic-500" />
             <EditableText settingKey="gallery_subtitle" value={sectionSubtitle} as="span" className="mb-6 text-balance text-gray-600" />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
                 {displaySlots.map(({ key, src, placeholder }, index) => (

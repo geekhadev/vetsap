@@ -24,7 +24,11 @@ export function EditableImage({ settingKey, src, alt, className, wrapperClassNam
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) void saveImage(settingKey, file);
+
+        if (file) {
+void saveImage(settingKey, file);
+}
+
         e.target.value = '';
     };
 
@@ -50,7 +54,7 @@ export function EditableImage({ settingKey, src, alt, className, wrapperClassNam
                     </span>
                 )}
             </div>
-            <div className="absolute inset-0 ring-2 ring-cyan-300 ring-inset rounded pointer-events-none" />
+            <div className="absolute inset-0 ring-2 ring-clinic-300 ring-inset rounded pointer-events-none" />
             <input
                 ref={inputRef}
                 type="file"
@@ -76,26 +80,32 @@ export function EditableImageSlot({ settingKey, src, alt, className, wrapperClas
     const inputRef = useRef<HTMLInputElement>(null);
     const isSaving = saving === settingKey;
 
-    if (!isEditing && !src) return null;
+    if (!isEditing && !src) {
+return null;
+}
 
     if (!src) {
         const handleClick = () => inputRef.current?.click();
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const file = e.target.files?.[0];
-            if (file) void saveImage(settingKey, file);
+
+            if (file) {
+void saveImage(settingKey, file);
+}
+
             e.target.value = '';
         };
 
         return (
             <div
-                className={`group flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-cyan-300 bg-cyan-50 min-h-[200px] ${wrapperClassName ?? ''}`}
+                className={`group flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-clinic-300 bg-clinic-50 min-h-[200px] ${wrapperClassName ?? ''}`}
                 onClick={handleClick}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && handleClick()}
                 aria-label="Agregar imagen a la galería"
             >
-                <span className="flex flex-col items-center gap-1 text-sm text-cyan-600">
+                <span className="flex flex-col items-center gap-1 text-sm text-clinic-600">
                     <ImagePlus size={24} />
                     {isSaving ? 'Subiendo…' : 'Agregar foto'}
                 </span>

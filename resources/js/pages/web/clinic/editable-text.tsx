@@ -20,6 +20,7 @@ export function EditableText({ settingKey, value, as: Tag = 'span', className }:
 
     const handleBlur = () => {
         const newValue = ref.current?.innerText.trim() ?? value;
+
         if (newValue !== value) {
             void saveField(settingKey, newValue);
         }
@@ -27,7 +28,10 @@ export function EditableText({ settingKey, value, as: Tag = 'span', className }:
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
-            if (ref.current) ref.current.innerText = value;
+            if (ref.current) {
+ref.current.innerText = value;
+}
+
             ref.current?.blur();
         }
     };
@@ -36,7 +40,7 @@ export function EditableText({ settingKey, value, as: Tag = 'span', className }:
         // @ts-expect-error — dynamic ref on polymorphic element
         <Tag
             ref={ref}
-            className={`${className ?? ''} cursor-text rounded-sm outline-none ring-2 ${isSaving ? 'ring-cyan-200' : 'ring-cyan-300 focus-visible:ring-cyan-500'} ring-offset-2`}
+            className={`${className ?? ''} cursor-text rounded-sm outline-none ring-2 ${isSaving ? 'ring-clinic-200' : 'ring-clinic-300 focus-visible:ring-clinic-500'} ring-offset-2`}
             contentEditable
             suppressContentEditableWarning
             onBlur={handleBlur}

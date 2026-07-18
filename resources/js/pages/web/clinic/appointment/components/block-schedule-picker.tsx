@@ -96,7 +96,7 @@ export function BlockSchedulePicker({
                             {multipleVets && (
                                 <Badge
                                     variant="secondary"
-                                        className="h-5 shrink-0 gap-0.5 border-cyan-200 bg-white px-1.5 text-[10px] text-cyan-800"
+                                        className="h-5 shrink-0 gap-0.5 border-clinic-200 bg-white px-1.5 text-[10px] text-clinic-800"
                                 >
                                     <Users className="size-2.5" aria-hidden />
                                     {row.slots.length}

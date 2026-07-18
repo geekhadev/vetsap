@@ -28,7 +28,7 @@ export function ClinicAbout({ settings }: ClinicAboutProps) {
             id="sobre-nosotros"
         >
             <div className="flex flex-col gap-4">
-                <EditableText settingKey="about_title" value={sectionTitle} as="h3" className="text-5xl font-bold tracking-tight text-cyan-500" />
+                <EditableText settingKey="about_title" value={sectionTitle} as="h3" className="text-5xl font-bold tracking-tight text-clinic-500" />
                 <div className="space-y-4 text-balance text-gray-700">
                     {paragraphs.map(({ key, value }) => (
                         <EditableText key={key} settingKey={key} value={value} as="p" />

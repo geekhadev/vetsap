@@ -11,7 +11,7 @@ export function ClinicEditorToolbar() {
                 onClick={toggleEditing}
                 className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium shadow-lg transition-colors ${
                     isEditing
-                        ? 'bg-cyan-600 text-white hover:bg-cyan-700'
+                        ? 'bg-clinic-600 text-white hover:bg-clinic-700'
                         : 'border border-amber-400 bg-amber-400 text-gray-700 hover:bg-amber-50'
                 }`}
             >

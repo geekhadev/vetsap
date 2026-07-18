@@ -55,8 +55,8 @@ export function EditableHours({ settingKey, value }: EditableHoursProps) {
                 }
             }}
             className={cn(
-                'w-full resize-y rounded-md border border-cyan-300 bg-white px-3 py-2 text-sm font-light text-gray-800 shadow-sm outline-none ring-2 ring-cyan-300 ring-offset-2 focus-visible:ring-cyan-500',
-                isSaving && 'ring-cyan-200 opacity-70',
+                'w-full resize-y rounded-md border border-clinic-300 bg-white px-3 py-2 text-sm font-light text-gray-800 shadow-sm outline-none ring-2 ring-clinic-300 ring-offset-2 focus-visible:ring-clinic-500',
+                isSaving && 'ring-clinic-200 opacity-70',
             )}
             placeholder={'Una línea por franja horaria, por ejemplo:\nLunes a Viernes: 09:00 — 19:00\nSábados: 09:00 — 14:00'}
         />

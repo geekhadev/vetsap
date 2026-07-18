@@ -68,7 +68,7 @@ export function LandingHero({ canRegister }: LandingSectionProps) {
 
                     <div className="w-full lg:col-span-6">
                         <img
-                            src="https://cdn.prod.website-files.com/67e1b055ac6bddee954b52a0/6833bec3da7d8cb8cd94a355_29e249162acea7c708a039a6dbdcc083_Frame%201000001740.webp"
+                            src="/images/landing/landing-hero.webp"
                             alt="Lo que obtienes al registrarte"
                             className="w-full h-auto object-contain"
                             width={500}

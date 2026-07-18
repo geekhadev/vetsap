@@ -97,7 +97,7 @@ export function BookingSuccessStep({
                 <div className="mt-5 w-full rounded-2xl bg-gray-50 px-4 py-4 text-left">
                     <p className="text-sm font-semibold text-gray-900">Añadir a mi calendario</p>
                     <div className="mt-2 flex items-start gap-2 text-sm text-gray-600">
-                        <CalendarDays className="mt-0.5 size-4 shrink-0 text-cyan-600" aria-hidden />
+                        <CalendarDays className="mt-0.5 size-4 shrink-0 text-clinic-600" aria-hidden />
                         <span className="leading-snug">
                             {formattedDate}
                             {timeLabel ? `, ${timeLabel}` : ''}
@@ -131,7 +131,7 @@ export function BookingSuccessStep({
                 <p className="text-sm font-semibold text-gray-900">Prepárate para la cita</p>
                 <ul className="mt-4 grid grid-cols-2 gap-3">
                     <li className="flex flex-col items-center gap-2 text-center text-balance">
-                        <span className="flex size-11 items-center justify-center rounded-full bg-cyan-100 text-cyan-700">
+                        <span className="flex size-11 items-center justify-center rounded-full bg-clinic-100 text-clinic-700">
                             <PhoneCall className="size-5" aria-hidden />
                         </span>
                         <span className="text-xs leading-snug text-gray-600">
