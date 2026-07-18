@@ -3,6 +3,7 @@ import { FormHexColorInput } from '@/components/custom/form-hex-color-input';
 import { FormImageUpload } from '@/components/custom/form-image-upload';
 import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { FormTextInput } from '@/components/custom/form-text-input';
+import { resolveGoogleMapsEmbedSrc } from '@/lib/google-maps-embed';
 import { SettingsSection } from '@/pages/configuration/calendar-settings/settings-section';
 import { useWebsiteSettingsForm } from '@/pages/configuration/website-settings/hooks/use-website-settings-form';
 import { CLINIC_DEFAULT_PRIMARY_COLOR } from '@/pages/web/clinic/clinic-theme';
@@ -155,16 +156,27 @@ export function WebsiteSettingsPanel() {
                     />
 
                     <FormTextInput
-                        label="Ubicación de la clínica (src del iframe de Google Maps)"
+                        label="Mapa de Google (iframe o URL embed)"
                         error={form.errors.contact_map_url}
                         inputProps={{
                             id: 'contact_map_url',
                             name: 'contact_map_url',
-                            placeholder: 'https://www.google.com/maps/embed?pb=…',
-                            maxLength: 2000,
+                            placeholder:
+                                'Pega el iframe de “Insertar un mapa” o la URL embed',
+                            maxLength: 4000,
                             value: form.data.contact_map_url,
                             onChange: (e) =>
                                 form.setData('contact_map_url', e.target.value),
+                            onBlur: (e) => {
+                                const resolved = resolveGoogleMapsEmbedSrc(
+                                    e.target.value,
+                                );
+
+                                form.setData(
+                                    'contact_map_url',
+                                    resolved ?? '',
+                                );
+                            },
                         }}
                     />
                 </div>

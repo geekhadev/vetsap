@@ -3,7 +3,6 @@
 namespace Database\Seeders\Configuration;
 
 use App\Actions\Configuration\CompanyOffices\UpsertCompanyMainOfficeFromCompanyAction;
-use App\Enums\CompanyDocumentType;
 use App\Models\Company;
 use App\Models\CompanyIntegrationSetting;
 use App\Support\Integration\CompanySiiIntegrationSettingKeys;
@@ -18,26 +17,7 @@ class CompaniesSeeder extends Seeder
     {
         $upsertMainOffice = app(UpsertCompanyMainOfficeFromCompanyAction::class);
 
-        $companies = [
-            [
-                'document_type' => CompanyDocumentType::Rut,
-                'document_number' => '98765432-1',
-                'name' => 'CATCARE SPA',
-                'alias' => 'CATCARE',
-                'email' => 'catcare@vetsap.app',
-                'phone' => '+56987654321',
-                'address' => 'AV. DE LOS CONQUISTADORES 2134',
-            ],
-            [
-                'document_type' => CompanyDocumentType::Rut,
-                'document_number' => '12345678-9',
-                'name' => 'DOGCARE SPA',
-                'alias' => 'DOGCARE',
-                'email' => 'dogcare@vetsap.app',
-                'phone' => '+56987654321',
-                'address' => 'AV. DE LOS CONQUISTADORES 2134',
-            ],
-        ];
+        $companies = [];
 
         foreach ($companies as $company) {
             $model = Company::query()->firstOrCreate(

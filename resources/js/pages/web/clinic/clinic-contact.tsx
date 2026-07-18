@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import { resolveGoogleMapsEmbedSrc } from '@/lib/google-maps-embed';
 import { EditableHours } from './editable-hours';
 import { EditableText } from './editable-text';
 import type { ClinicCompany, ClinicSettings } from './types';
@@ -38,8 +39,9 @@ export function ClinicContact({ company, settings }: ClinicContactProps) {
     const instagramUrl = settings['instagram_url'];
     const hasSocial = facebookUrl != null || instagramUrl != null;
 
+    const configuredMapSrc = resolveGoogleMapsEmbedSrc(settings['contact_map_url'] ?? '');
     const mapSrc =
-        settings['contact_map_url'] ??
+        configuredMapSrc ??
         (company.address
             ? `https://maps.google.com/maps?q=${encodeURIComponent(company.address)}&output=embed`
             : null);
@@ -70,7 +72,7 @@ export function ClinicContact({ company, settings }: ClinicContactProps) {
                         settingKey="contact_title"
                         value={title}
                         as="h3"
-                        className="text-5xl tracking-tight text-cyan-500"
+                        className="text-5xl tracking-tight text-clinic-500"
                     />
 
                     {hasSocial && (

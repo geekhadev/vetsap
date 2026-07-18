@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Web;
 
 use App\Models\Company;
+use App\Support\Web\GoogleMapsEmbedUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -36,7 +37,7 @@ class UpdateClinicWebSettingsRequest extends FormRequest
             'instagram_url' => ['nullable', 'string', 'max:500'],
             'whatsapp_phone' => ['nullable', 'string', 'max:30'],
             'whatsapp_message' => ['nullable', 'string', 'max:500'],
-            'contact_map_url' => ['nullable', 'string', 'max:2000'],
+            'contact_map_url' => ['nullable', 'string', 'max:4000'],
         ];
     }
 
@@ -52,6 +53,21 @@ class UpdateClinicWebSettingsRequest extends FormRequest
             'whatsapp_phone',
             'whatsapp_message',
             'contact_map_url',
+        ]);
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! $this->exists('contact_map_url')) {
+            return;
+        }
+
+        $mapUrl = $this->input('contact_map_url');
+
+        $this->merge([
+            'contact_map_url' => is_string($mapUrl)
+                ? GoogleMapsEmbedUrl::normalize($mapUrl)
+                : null,
         ]);
     }
 }

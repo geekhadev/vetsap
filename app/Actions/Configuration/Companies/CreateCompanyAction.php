@@ -3,6 +3,7 @@
 namespace App\Actions\Configuration\Companies;
 
 use App\Actions\Configuration\CompanyOffices\UpsertCompanyMainOfficeFromCompanyAction;
+use App\Actions\Demo\SeedCompanySalesDemoAction;
 use App\Models\Company;
 use App\Models\Configuration\Role;
 use App\Models\User;
@@ -12,6 +13,7 @@ class CreateCompanyAction
 {
     public function __construct(
         private UpsertCompanyMainOfficeFromCompanyAction $upsertMainOffice,
+        private SeedCompanySalesDemoAction $seedCompanySalesDemo,
     ) {}
 
     /**
@@ -39,6 +41,8 @@ class CreateCompanyAction
             'company_id' => $company->id,
             'role_id' => $ownerRole->id,
         ]);
+
+        $this->seedCompanySalesDemo->execute($company, $actor);
 
         return $company->fresh();
     }

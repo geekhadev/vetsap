@@ -4,6 +4,7 @@ namespace App\Http\Requests\Configuration;
 
 use App\Http\Requests\Concerns\InteractsWithSelectedCompanyRequest;
 use App\Models\Company;
+use App\Support\Web\GoogleMapsEmbedUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -45,7 +46,7 @@ class UpdateWebsiteSettingsRequest extends FormRequest
             'instagram_url' => ['nullable', 'string', 'max:500'],
             'whatsapp_phone' => ['nullable', 'string', 'max:30'],
             'whatsapp_message' => ['nullable', 'string', 'max:500'],
-            'contact_map_url' => ['nullable', 'string', 'max:2000'],
+            'contact_map_url' => ['nullable', 'string', 'max:4000'],
         ];
     }
 
@@ -66,25 +67,34 @@ class UpdateWebsiteSettingsRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $payload = [];
+
         $color = $this->input('primary_color');
 
-        if (! is_string($color)) {
-            return;
+        if (is_string($color)) {
+            $trimmed = trim($color);
+
+            if ($trimmed === '') {
+                $payload['primary_color'] = null;
+            } else {
+                if (! str_starts_with($trimmed, '#')) {
+                    $trimmed = '#'.$trimmed;
+                }
+
+                $payload['primary_color'] = strtoupper($trimmed);
+            }
         }
 
-        $trimmed = trim($color);
-
-        if ($trimmed === '') {
-            $this->merge(['primary_color' => null]);
-
-            return;
+        if ($this->exists('contact_map_url')) {
+            $mapUrl = $this->input('contact_map_url');
+            $payload['contact_map_url'] = is_string($mapUrl)
+                ? GoogleMapsEmbedUrl::normalize($mapUrl)
+                : null;
         }
 
-        if (! str_starts_with($trimmed, '#')) {
-            $trimmed = '#'.$trimmed;
+        if ($payload !== []) {
+            $this->merge($payload);
         }
-
-        $this->merge(['primary_color' => strtoupper($trimmed)]);
     }
 
     /**
