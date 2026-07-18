@@ -42,9 +42,9 @@ export default function ClinicShow() {
         };
     }, []);
 
-    const brandStyle = clinicPrimaryColorStyle(settings['primary_color']) as
-        | CSSProperties
-        | undefined;
+    const brandStyle = clinicPrimaryColorStyle(
+        settings['primary_color'],
+    ) as CSSProperties;
 
     const page = (
         <>

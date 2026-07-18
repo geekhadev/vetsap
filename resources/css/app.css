@@ -189,8 +189,8 @@
  * follow the app dark theme and clash with the page.
  */
 .clinic-page {
+    /* Fallback palette when inline brand vars are not set yet. */
     --clinic-primary: #06b6d4;
-    /* Override Tailwind theme tokens so text-clinic-* / bg-clinic-* pick up the brand color. */
     --color-clinic-50: color-mix(in srgb, var(--clinic-primary) 8%, white);
     --color-clinic-100: color-mix(in srgb, var(--clinic-primary) 18%, white);
     --color-clinic-200: color-mix(in srgb, var(--clinic-primary) 32%, white);
