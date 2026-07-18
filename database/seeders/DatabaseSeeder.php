@@ -12,6 +12,8 @@ use Database\Seeders\Medic\DoctorsSeeder;
 use Database\Seeders\Medic\ServicesSeeder;
 use Database\Seeders\Medic\SpecialtiesSeeder;
 use Database\Seeders\Medic\SpeciesSeeder;
+use Database\Seeders\Purchase\ExpenseTypesSeeder;
+use Database\Seeders\Purchase\PurchaseOrderStatusesSeeder;
 use Database\Seeders\Sale\CustomersSeeder;
 use Database\Seeders\Shared\CountriesSeeder;
 use Database\Seeders\Shared\PaymentMethodsSeeder;
@@ -43,6 +45,8 @@ class DatabaseSeeder extends Seeder
         $this->call(PermissionsSeeder::class);
         $this->call(RolesSeeder::class);
         $this->call(AppointmentStatusesSeeder::class);
+        $this->call(PurchaseOrderStatusesSeeder::class);
+        $this->call(ExpenseTypesSeeder::class);
         $this->call(CompaniesSeeder::class);
         $this->call(CustomersSeeder::class);
         $this->call(SpecialtiesSeeder::class);

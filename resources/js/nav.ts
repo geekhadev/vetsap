@@ -63,6 +63,9 @@ import { index as patientsIndex } from '@/routes/medic/patients';
 import { index as servicesIndex } from '@/routes/medic/services';
 import { index as specialtiesIndex } from '@/routes/medic/specialties';
 import { index as speciesIndex } from '@/routes/medic/species';
+import { index as expenseTypesIndex } from '@/routes/purchase/expense-types';
+import { index as purchaseOrderStatusesIndex } from '@/routes/purchase/purchase-order-statuses';
+import { index as suppliersIndex } from '@/routes/purchase/suppliers';
 import { index as customersIndex } from '@/routes/sale/customers';
 import { index as siiCafsIndex } from '@/routes/sale/sii-cafs';
 import { index as certificationSiiTicketsIndex } from '@/routes/sale/sii-certification-tickets';
@@ -248,21 +251,21 @@ export const mainNavItems: NavItem[] = [
             },
             {
                 title: 'Proveedores',
-                href: '#',
+                href: suppliersIndex(),
                 icon: Truck,
-                disabled: true,
+                permission: 'purchase.suppliers.list',
             },
             {
                 title: 'Estados Ord. de compra',
-                href: '#',
+                href: purchaseOrderStatusesIndex(),
                 icon: ListChecks,
-                disabled: true,
+                permission: 'purchase.purchase-order-statuses.list',
             },
             {
                 title: 'Tpo de gastos',
-                href: '#',
+                href: expenseTypesIndex(),
                 icon: Tags,
-                disabled: true,
+                permission: 'purchase.expense-types.list',
             },
         ],
     },

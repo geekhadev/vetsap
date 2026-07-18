@@ -87,6 +87,27 @@ class PermissionsSeeder extends Seeder
                 ],
             ],
             [
+                'system_name' => 'Compras',
+                'system_slug' => 'purchase',
+                'modules' => [
+                    [
+                        'module_name' => 'Proveedores',
+                        'module_slug' => 'suppliers',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Estados de orden de compra',
+                        'module_slug' => 'purchase-order-statuses',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Tipos de gastos',
+                        'module_slug' => 'expense-types',
+                        'permissions' => $permissions_crud,
+                    ],
+                ],
+            ],
+            [
                 'system_name' => 'Almacén',
                 'system_slug' => 'store',
                 'modules' => [
