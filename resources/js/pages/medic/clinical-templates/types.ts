@@ -36,6 +36,7 @@ export type ClinicalTemplateField = {
     label: string;
     field_order: number;
     is_required: boolean;
+    is_shared_with_client: boolean;
 };
 
 export type ClinicalTemplate = {

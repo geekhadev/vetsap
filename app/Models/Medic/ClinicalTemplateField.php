@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'label',
     'field_order',
     'is_required',
+    'is_shared_with_client',
 ])]
 class ClinicalTemplateField extends Model
 {
@@ -36,6 +37,7 @@ class ClinicalTemplateField extends Model
         return [
             'field_order' => 'integer',
             'is_required' => 'boolean',
+            'is_shared_with_client' => 'boolean',
         ];
     }
 }

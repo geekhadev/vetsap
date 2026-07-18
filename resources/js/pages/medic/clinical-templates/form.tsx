@@ -7,10 +7,10 @@ import { FormSelect } from '@/components/custom/form-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useClinicalTemplateForm } from '@/pages/medic/clinical-templates/hooks/use-form';
 import { CLINICAL_FIELD_CATALOG } from '@/pages/medic/clinical-templates/types';
 import type {
@@ -31,6 +31,7 @@ type SelectedField = {
     field_key: ClinicalFieldKey;
     label: string;
     is_required: boolean;
+    is_shared_with_client: boolean;
 };
 
 function buildSelectedFields(fields: ClinicalTemplateField[] | undefined): SelectedField[] {
@@ -44,6 +45,7 @@ function buildSelectedFields(fields: ClinicalTemplateField[] | undefined): Selec
             field_key: f.field_key,
             label: f.label,
             is_required: f.is_required,
+            is_shared_with_client: f.is_shared_with_client,
         }));
 }
 
@@ -91,7 +93,12 @@ return;
 
         setSelectedFields((prev) => [
             ...prev,
-            { field_key: key, label: catalogEntry.label, is_required: false },
+            {
+                field_key: key,
+                label: catalogEntry.label,
+                is_required: true,
+                is_shared_with_client: false,
+            },
         ]);
     }, []);
 
@@ -99,13 +106,14 @@ return;
         setSelectedFields((prev) => prev.filter((f) => f.field_key !== key));
     }, []);
 
-    const toggleRequired = useCallback((key: ClinicalFieldKey) => {
-        setSelectedFields((prev) =>
-            prev.map((f) =>
-                f.field_key === key ? { ...f, is_required: !f.is_required } : f,
-            ),
-        );
-    }, []);
+    const updateFieldFlag = useCallback(
+        (key: ClinicalFieldKey, flag: 'is_required' | 'is_shared_with_client', value: boolean) => {
+            setSelectedFields((prev) =>
+                prev.map((f) => (f.field_key === key ? { ...f, [flag]: value } : f)),
+            );
+        },
+        [],
+    );
 
     // Reset al abrir/cerrar
     const handleOpenChange = useCallback(
@@ -209,22 +217,59 @@ return;
                                             name={`fields[${index}][is_required]`}
                                             value={field.is_required ? '1' : '0'}
                                         />
+                                        <input
+                                            type="hidden"
+                                            name={`fields[${index}][is_shared_with_client]`}
+                                            value={field.is_shared_with_client ? '1' : '0'}
+                                        />
 
                                         <GripVertical className="text-muted-foreground size-4 shrink-0" />
 
-                                        <span className="min-w-0 flex-1 text-sm font-medium">
-                                            {field.label}
-                                        </span>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => toggleRequired(field.field_key)}
-                                            className="shrink-0"
-                                        >
-                                            <Badge variant={field.is_required ? 'default' : 'outline'}>
-                                                {field.is_required ? 'Requerido' : 'Opcional'}
-                                            </Badge>
-                                        </button>
+                                        <div className="flex min-w-0 flex-1 flex-col gap-2">
+                                            <span className="text-sm font-medium">
+                                                {field.label}
+                                            </span>
+                                            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-4">
+                                                <div className="flex items-center justify-between gap-2 sm:justify-start">
+                                                    <Label
+                                                        htmlFor={`fields-${index}-required`}
+                                                        className="text-muted-foreground text-xs font-normal"
+                                                    >
+                                                        Obligatorio
+                                                    </Label>
+                                                    <Switch
+                                                        id={`fields-${index}-required`}
+                                                        checked={field.is_required}
+                                                        onCheckedChange={(v) =>
+                                                            updateFieldFlag(
+                                                                field.field_key,
+                                                                'is_required',
+                                                                v,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="flex items-center justify-between gap-2 sm:justify-start">
+                                                    <Label
+                                                        htmlFor={`fields-${index}-shared`}
+                                                        className="text-muted-foreground text-xs font-normal"
+                                                    >
+                                                        Compartir con cliente
+                                                    </Label>
+                                                    <Switch
+                                                        id={`fields-${index}-shared`}
+                                                        checked={field.is_shared_with_client}
+                                                        onCheckedChange={(v) =>
+                                                            updateFieldFlag(
+                                                                field.field_key,
+                                                                'is_shared_with_client',
+                                                                v,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <Button
                                             type="button"

@@ -20,7 +20,7 @@ final class ListClinicalTemplatesForCompanyAction
 
         return ClinicalTemplate::query()
             ->forCompany($companyId)
-            ->with(['species:id,name', 'fields:id,template_id,field_key,label,field_order,is_required'])
+            ->with(['species:id,name', 'fields:id,template_id,field_key,label,field_order,is_required,is_shared_with_client'])
             ->filterIsActive($filters['is_active'] ?? null)
             ->filterSpecies($filters['species_id'] ?? null)
             ->search($filters['search'] ?? null)

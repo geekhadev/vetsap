@@ -21,6 +21,7 @@ type SelectedField = {
     field_key: ClinicalFieldKey;
     label: string;
     is_required: boolean;
+    is_shared_with_client: boolean;
 };
 
 type FormData = {
@@ -44,19 +45,19 @@ type TemplateFormPageProps = {
 const CATALOG_GROUPS = Array.from(
     CLINICAL_FIELD_CATALOG.reduce((acc, f) => {
         if (!acc.has(f.group)) {
-acc.set(f.group, []);
-}
+            acc.set(f.group, []);
+        }
 
         acc.get(f.group)!.push(f);
 
         return acc;
-    }, new Map<string, typeof CLINICAL_FIELD_CATALOG[number][]>()),
+    }, new Map<string, (typeof CLINICAL_FIELD_CATALOG)[number][]>()),
 );
 
 function buildInitialFields(fields?: ClinicalTemplateField[]): SelectedField[] {
     if (!fields?.length) {
-return [];
-}
+        return [];
+    }
 
     return [...fields]
         .sort((a, b) => a.field_order - b.field_order)
@@ -64,6 +65,7 @@ return [];
             field_key: f.field_key as ClinicalFieldKey,
             label: f.label,
             is_required: f.is_required,
+            is_shared_with_client: f.is_shared_with_client,
         }));
 }
 
@@ -99,7 +101,12 @@ export function TemplateFormPage({
                 const entry = CLINICAL_FIELD_CATALOG.find((f) => f.key === key)!;
                 form.setData('fields', [
                     ...form.data.fields,
-                    { field_key: key, label: entry.label, is_required: false },
+                    {
+                        field_key: key,
+                        label: entry.label,
+                        is_required: true,
+                        is_shared_with_client: false,
+                    },
                 ]);
             } else {
                 form.setData(
@@ -111,21 +118,24 @@ export function TemplateFormPage({
         [form],
     );
 
-    const toggleRequired = useCallback(
-        (key: ClinicalFieldKey) => {
+    const updateFieldFlag = useCallback(
+        (
+            key: ClinicalFieldKey,
+            flag: 'is_required' | 'is_shared_with_client',
+            value: boolean,
+        ) => {
             form.setData(
                 'fields',
                 form.data.fields.map((f) =>
-                    f.field_key === key ? { ...f, is_required: !f.is_required } : f,
+                    f.field_key === key ? { ...f, [flag]: value } : f,
                 ),
             );
         },
         [form],
     );
 
-    const isRequired = useCallback(
-        (key: ClinicalFieldKey) =>
-            form.data.fields.find((f) => f.field_key === key)?.is_required ?? false,
+    const getField = useCallback(
+        (key: ClinicalFieldKey) => form.data.fields.find((f) => f.field_key === key),
         [form.data.fields],
     );
 
@@ -241,55 +251,88 @@ export function TemplateFormPage({
                         <div>
                             <h2 className="text-sm font-semibold">Campos de la plantilla</h2>
                             <p className="text-muted-foreground mt-0.5 text-xs">
-                                Marca los campos que quieres incluir. En los marcados, define si son obligatorios u opcionales.
+                                Marca los campos que quieres incluir. En los marcados, define si son
+                                obligatorios y si se comparten con el cliente.
                             </p>
                         </div>
 
                         {CATALOG_GROUPS.map(([group, fields]) => (
                             <div key={group} className="flex flex-col gap-2">
-                                <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+                                <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                                     {group}
                                 </Label>
 
-                                <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                                     {fields.map((field) => {
                                         const checked = selectedKeys.has(field.key);
+                                        const selected = getField(field.key);
 
                                         return (
                                             <div
                                                 key={field.key}
-                                                className={`flex items-center gap-3 rounded-md border px-3 py-2.5 transition-colors ${
+                                                className={`flex flex-col gap-3 rounded-md border px-3 py-2.5 transition-colors ${
                                                     checked
                                                         ? 'border-primary/40 bg-primary/5'
                                                         : 'hover:bg-accent'
                                                 }`}
                                             >
-                                                <Checkbox
-                                                    checked={checked}
-                                                    onCheckedChange={(v) =>
-                                                        toggleField(field.key, v === true)
-                                                    }
-                                                    id={`field-${field.key}`}
-                                                />
-                                                <label
-                                                    htmlFor={`field-${field.key}`}
-                                                    className="min-w-0 flex-1 cursor-pointer text-sm"
-                                                >
-                                                    {field.label}
-                                                </label>
-
-                                                {checked && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => toggleRequired(field.key)}
-                                                        className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium transition-colors ${
-                                                            isRequired(field.key)
-                                                                ? 'bg-primary text-primary-foreground'
-                                                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                                                        }`}
+                                                <div className="flex items-center gap-3">
+                                                    <Checkbox
+                                                        checked={checked}
+                                                        onCheckedChange={(v) =>
+                                                            toggleField(field.key, v === true)
+                                                        }
+                                                        id={`field-${field.key}`}
+                                                    />
+                                                    <label
+                                                        htmlFor={`field-${field.key}`}
+                                                        className="min-w-0 flex-1 cursor-pointer text-sm"
                                                     >
-                                                        {isRequired(field.key) ? 'Obligatorio' : 'Opcional'}
-                                                    </button>
+                                                        {field.label}
+                                                    </label>
+                                                </div>
+
+                                                {checked && selected && (
+                                                    <div className="flex flex-col gap-2 border-t pt-2">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <Label
+                                                                htmlFor={`field-${field.key}-required`}
+                                                                className="text-muted-foreground text-xs font-normal"
+                                                            >
+                                                                Obligatorio
+                                                            </Label>
+                                                            <Switch
+                                                                id={`field-${field.key}-required`}
+                                                                checked={selected.is_required}
+                                                                onCheckedChange={(v) =>
+                                                                    updateFieldFlag(
+                                                                        field.key,
+                                                                        'is_required',
+                                                                        v,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <Label
+                                                                htmlFor={`field-${field.key}-shared`}
+                                                                className="text-muted-foreground text-xs font-normal"
+                                                            >
+                                                                Compartir con cliente
+                                                            </Label>
+                                                            <Switch
+                                                                id={`field-${field.key}-shared`}
+                                                                checked={selected.is_shared_with_client}
+                                                                onCheckedChange={(v) =>
+                                                                    updateFieldFlag(
+                                                                        field.key,
+                                                                        'is_shared_with_client',
+                                                                        v,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         );

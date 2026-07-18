@@ -51,6 +51,7 @@ final class ClinicalTemplatePayloadValidationRules
             'fields.*.field_key' => ['required', 'string', 'max:64'],
             'fields.*.label' => ['required', 'string', 'max:255'],
             'fields.*.is_required' => ['boolean'],
+            'fields.*.is_shared_with_client' => ['boolean'],
         ];
     }
 
@@ -85,7 +86,7 @@ final class ClinicalTemplatePayloadValidationRules
      *     description: string|null,
      *     is_default: bool,
      *     is_active: bool,
-     *     fields: array<int, array{field_key: string, label: string, field_order: int, is_required: bool}>
+     *     fields: array<int, array{field_key: string, label: string, field_order: int, is_required: bool, is_shared_with_client: bool}>
      * }
      */
     public static function payload(string $companyId, array $validated): array
@@ -96,7 +97,8 @@ final class ClinicalTemplatePayloadValidationRules
             'field_key' => (string) $f['field_key'],
             'label' => (string) $f['label'],
             'field_order' => $i,
-            'is_required' => (bool) ($f['is_required'] ?? false),
+            'is_required' => (bool) ($f['is_required'] ?? true),
+            'is_shared_with_client' => (bool) ($f['is_shared_with_client'] ?? false),
         ], $rawFields, array_keys($rawFields)));
 
         /** @var list<string> $speciesIds */

@@ -14,7 +14,7 @@ final class UpdateClinicalTemplateAction
      *     description: string|null,
      *     is_default: bool,
      *     is_active: bool,
-     *     fields: array<int, array{field_key: string, label: string, field_order: int, is_required: bool}>
+     *     fields: array<int, array{field_key: string, label: string, field_order: int, is_required: bool, is_shared_with_client: bool}>
      * }  $data
      */
     public function execute(ClinicalTemplate $template, array $data): ClinicalTemplate
