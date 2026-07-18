@@ -4,13 +4,20 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Production may have already run the stub that created a bare `suppliers`
+ * table. Fresh installs create `purchase_suppliers` in the original migration.
+ */
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        Schema::dropIfExists('suppliers');
+
+        if (Schema::hasTable('purchase_suppliers')) {
+            return;
+        }
+
         Schema::create('purchase_suppliers', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('company_id')
@@ -33,11 +40,9 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('purchase_suppliers');
+        // Intentionally empty: rolling this back would drop a table that may
+        // have been created by the original create_purchase_suppliers migration.
     }
 };
