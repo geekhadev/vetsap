@@ -98,18 +98,31 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
-                                            {headerMainNavItems.map((item) => (
-                                                <Link
-                                                    key={item.title}
-                                                    href={item.href}
-                                                    className="flex items-center space-x-2 font-medium"
-                                                >
-                                                    {item.icon && (
-                                                        <item.icon className="h-5 w-5" />
-                                                    )}
-                                                    <span>{item.title}</span>
-                                                </Link>
-                                            ))}
+                                            {headerMainNavItems.map((item) =>
+                                                item.disabled ? (
+                                                    <span
+                                                        key={item.title}
+                                                        aria-disabled="true"
+                                                        className="flex cursor-not-allowed items-center space-x-2 font-medium opacity-50"
+                                                    >
+                                                        {item.icon && (
+                                                            <item.icon className="h-5 w-5" />
+                                                        )}
+                                                        <span>{item.title}</span>
+                                                    </span>
+                                                ) : (
+                                                    <Link
+                                                        key={item.title}
+                                                        href={item.href}
+                                                        className="flex items-center space-x-2 font-medium"
+                                                    >
+                                                        {item.icon && (
+                                                            <item.icon className="h-5 w-5" />
+                                                        )}
+                                                        <span>{item.title}</span>
+                                                    </Link>
+                                                ),
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col space-y-4">
@@ -151,22 +164,42 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                         key={index}
                                         className="relative flex h-full items-center"
                                     >
-                                        <Link
-                                            href={item.href}
-                                            className={cn(
-                                                navigationMenuTriggerStyle(),
-                                                isCurrentOrParentUrl(item.href) &&
-                                                    activeItemStyles,
-                                                'h-9 cursor-pointer px-3',
-                                            )}
-                                        >
-                                            {item.icon && (
-                                                <item.icon className="mr-2 h-4 w-4" />
-                                            )}
-                                            {item.title}
-                                        </Link>
-                                        {isCurrentOrParentUrl(item.href) && (
-                                            <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
+                                        {item.disabled ? (
+                                            <span
+                                                aria-disabled="true"
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    'h-9 cursor-not-allowed px-3 opacity-50',
+                                                )}
+                                            >
+                                                {item.icon && (
+                                                    <item.icon className="mr-2 h-4 w-4" />
+                                                )}
+                                                {item.title}
+                                            </span>
+                                        ) : (
+                                            <>
+                                                <Link
+                                                    href={item.href}
+                                                    className={cn(
+                                                        navigationMenuTriggerStyle(),
+                                                        isCurrentOrParentUrl(
+                                                            item.href,
+                                                        ) && activeItemStyles,
+                                                        'h-9 cursor-pointer px-3',
+                                                    )}
+                                                >
+                                                    {item.icon && (
+                                                        <item.icon className="mr-2 h-4 w-4" />
+                                                    )}
+                                                    {item.title}
+                                                </Link>
+                                                {isCurrentOrParentUrl(
+                                                    item.href,
+                                                ) && (
+                                                    <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
+                                                )}
+                                            </>
                                         )}
                                     </NavigationMenuItem>
                                 ))}

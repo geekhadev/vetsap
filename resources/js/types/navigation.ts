@@ -12,6 +12,8 @@ export type NavLeafItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     permission?: string;
+    /** Placeholder visible en el menú sin navegación. */
+    disabled?: boolean;
 };
 
 /** Grupo con subenlaces; el padre no navega por sí mismo. */

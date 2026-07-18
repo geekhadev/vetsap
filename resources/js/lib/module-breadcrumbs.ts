@@ -27,6 +27,10 @@ function buildScopeByModuleHrefLookup(): Map<string, string> {
         }
 
         for (const child of item.items) {
+            if (child.disabled) {
+                continue;
+            }
+
             lookup.set(normalizeHref(child.href), item.title);
         }
     }

@@ -54,8 +54,8 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
         item: NavParentItem,
         nextOpen: boolean,
     ): void => {
-        const childActive = item.items.some((c) =>
-            isCurrentOrParentUrl(c.href),
+        const childActive = item.items.some(
+            (c) => !c.disabled && isCurrentOrParentUrl(c.href),
         );
 
         if (nextOpen) {
@@ -151,8 +151,8 @@ function NavMainCollapsibleParent({
     onOpenChange: (open: boolean) => void;
 }): ReactElement {
     const { isMobile, state } = useSidebar();
-    const childActive = item.items.some((c) =>
-        isCurrentOrParentUrl(c.href),
+    const childActive = item.items.some(
+        (c) => !c.disabled && isCurrentOrParentUrl(c.href),
     );
     const isOpen =
         (childActive && !sectionDismissed) ||
@@ -184,6 +184,18 @@ function NavMainCollapsibleParent({
                         <DropdownMenuLabel>{item.title}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {item.items.map((child) => {
+                            if (child.disabled) {
+                                return (
+                                    <DropdownMenuItem
+                                        key={child.title}
+                                        disabled
+                                    >
+                                        {child.icon && <child.icon />}
+                                        <span>{child.title}</span>
+                                    </DropdownMenuItem>
+                                );
+                            }
+
                             const isActive = isCurrentOrParentUrl(child.href);
 
                             return (
@@ -230,6 +242,23 @@ function NavMainCollapsibleParent({
                 <CollapsibleContent>
                     <SidebarMenuSub>
                         {item.items.map((child) => {
+                            if (child.disabled) {
+                                return (
+                                    <SidebarMenuSubItem key={child.title}>
+                                        <SidebarMenuSubButton
+                                            asChild
+                                            aria-disabled="true"
+                                            className="pointer-events-none opacity-50"
+                                        >
+                                            <span>
+                                                {child.icon && <child.icon />}
+                                                <span>{child.title}</span>
+                                            </span>
+                                        </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                );
+                            }
+
                             const isActive = isCurrentOrParentUrl(child.href);
 
                             return (
