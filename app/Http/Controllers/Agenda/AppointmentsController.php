@@ -7,14 +7,18 @@ use App\Actions\Agenda\Appointments\CreateAppointmentAction;
 use App\Actions\Agenda\Appointments\DeleteAppointmentAction;
 use App\Actions\Agenda\Appointments\RescheduleAppointmentAction;
 use App\Actions\Agenda\Appointments\ShowAppointmentAction;
+use App\Actions\Medic\ClinicalAttentions\StartAttentionFromAppointmentAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Agenda\AppointmentRescheduleRequest;
 use App\Http\Requests\Agenda\AppointmentStatusChangeRequest;
 use App\Http\Requests\Agenda\AppointmentStoreRequest;
 use App\Models\Agenda\Appointment;
 use App\Models\Company;
+use App\Models\Medic\ClinicalAttention;
+use App\Models\Medic\Patient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class AppointmentsController extends Controller
@@ -116,5 +120,42 @@ class AppointmentsController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Cita eliminada.']);
 
         return back();
+    }
+
+    public function startAttention(
+        Request $request,
+        Appointment $appointment,
+        StartAttentionFromAppointmentAction $action,
+    ): RedirectResponse {
+        $this->authorize('view', $appointment);
+        $this->authorize('create', ClinicalAttention::class);
+
+        $appointment->loadMissing('patient');
+
+        $patient = $appointment->patient;
+
+        if (! $patient instanceof Patient) {
+            return back()->withErrors([
+                'appointment' => 'La cita no tiene un paciente asociado.',
+            ]);
+        }
+
+        $this->authorize('update', $patient);
+
+        try {
+            $action->execute($appointment, $request->user()?->id);
+        } catch (\RuntimeException $exception) {
+            return back()->withErrors(['appointment' => $exception->getMessage()]);
+        }
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Atención en borrador iniciada.',
+        ]);
+
+        return redirect(route('medic.patients.edit', [
+            'patient' => $patient->id,
+            'tab' => 'nueva-atencion',
+        ]));
     }
 }

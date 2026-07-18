@@ -10,6 +10,7 @@ const AUTOSAVE_DELAY_MS = 700;
 export type DraftAttentionFormState = {
     template_id: string;
     doctor_id: string;
+    appointment_id: string | null;
     values: Record<string, string>;
     requested_service_ids: string[];
 };
@@ -40,6 +41,7 @@ function buildInitialState(
     return {
         template_id: draftAttention?.template_id ?? defaultTemplateId,
         doctor_id: draftAttention?.doctor_id ?? defaultDoctorId,
+        appointment_id: draftAttention?.appointment_id ?? null,
         values: valuesFromAttention(draftAttention),
         requested_service_ids: requestedServiceIdsFromAttention(draftAttention),
     };
@@ -49,6 +51,7 @@ function serializeDraftState(state: DraftAttentionFormState): string {
     return JSON.stringify({
         template_id: state.template_id,
         doctor_id: state.doctor_id,
+        appointment_id: state.appointment_id,
         values: state.values,
         requested_service_ids: [...state.requested_service_ids].sort(),
     });
@@ -96,6 +99,7 @@ export function usePatientDraftAttention({
     const autosaveHttp = useHttp({
         template_id: '',
         doctor_id: '',
+        appointment_id: null as string | null,
         values: {} as Record<string, string>,
         requested_service_ids: [] as string[],
     });
@@ -126,6 +130,7 @@ export function usePatientDraftAttention({
             autosaveHttp.transform(() => ({
                 template_id: current.template_id || null,
                 doctor_id: current.doctor_id || null,
+                appointment_id: current.appointment_id,
                 values: current.values,
                 requested_service_ids: current.requested_service_ids,
             }));
@@ -234,6 +239,7 @@ export function usePatientDraftAttention({
             {
                 template_id: formStateRef.current.template_id,
                 doctor_id: formStateRef.current.doctor_id,
+                appointment_id: formStateRef.current.appointment_id,
                 patient_id: patientId,
                 values: formStateRef.current.values,
                 requested_service_ids: formStateRef.current.requested_service_ids,

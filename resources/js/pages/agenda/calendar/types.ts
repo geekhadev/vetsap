@@ -51,6 +51,7 @@ export type CalendarIndexCan = {
     view: boolean;
     update: boolean;
     delete: boolean;
+    start_attention: boolean;
 };
 
 export type AppointmentStatusOption = {

@@ -14,7 +14,7 @@ import { formatAttentionDuration } from '@/pages/medic/patients/attention-view-h
 import type {
     AttentionRequestedExam,
     AttentionSummary,
-    FutureAppointmentSummary,
+    PatientAppointmentSummary,
 } from '@/pages/medic/patients/types';
 
 type TimelineAttentionEntry = {
@@ -26,17 +26,17 @@ type TimelineAttentionEntry = {
 type TimelineAppointmentEntry = {
     kind: 'appointment';
     sortAt: string;
-    appointment: FutureAppointmentSummary;
+    appointment: PatientAppointmentSummary;
 };
 
 type TimelineEntry = TimelineAttentionEntry | TimelineAppointmentEntry;
 
 type PatientClinicalTimelineProps = {
     attentions: AttentionSummary[];
-    futureAppointments: FutureAppointmentSummary[];
+    appointments: PatientAppointmentSummary[];
     onAttentionSelect?: (attention: AttentionSummary) => void;
     onDraftSelect?: (attention: AttentionSummary) => void;
-    onAppointmentSelect?: (appointment: FutureAppointmentSummary) => void;
+    onAppointmentSelect?: (appointment: PatientAppointmentSummary) => void;
 };
 
 function attentionTimelineMoment(attention: AttentionSummary): string {
@@ -49,9 +49,15 @@ function toSortableMs(value: string): number {
     return Number.isNaN(ms) ? 0 : ms;
 }
 
+function isUpcomingAppointment(startsAt: string): boolean {
+    const ms = Date.parse(startsAt);
+
+    return !Number.isNaN(ms) && ms > Date.now();
+}
+
 export function PatientClinicalTimeline({
     attentions,
-    futureAppointments,
+    appointments,
     onAttentionSelect,
     onDraftSelect,
     onAppointmentSelect,
@@ -63,18 +69,16 @@ export function PatientClinicalTimeline({
             attention,
         }));
 
-        const appointmentEntries: TimelineEntry[] = futureAppointments.map(
-            (appointment) => ({
-                kind: 'appointment',
-                sortAt: appointment.starts_at,
-                appointment,
-            }),
-        );
+        const appointmentEntries: TimelineEntry[] = appointments.map((appointment) => ({
+            kind: 'appointment',
+            sortAt: appointment.starts_at,
+            appointment,
+        }));
 
         return [...attentionEntries, ...appointmentEntries].sort(
             (left, right) => toSortableMs(right.sortAt) - toSortableMs(left.sortAt),
         );
-    }, [attentions, futureAppointments]);
+    }, [appointments, attentions]);
 
     if (entries.length === 0) {
         return (
@@ -98,6 +102,7 @@ export function PatientClinicalTimeline({
                         ? `Médico: ${appointment.doctor_name}`
                         : 'Sin médico asignado';
                     const statusLabel = appointment.status_name?.trim() || 'Cita';
+                    const upcoming = isUpcomingAppointment(appointment.starts_at);
 
                     return (
                         <li
@@ -113,8 +118,15 @@ export function PatientClinicalTimeline({
                                     mode="datetime"
                                     className="text-muted-foreground text-sm leading-none font-medium whitespace-nowrap tabular-nums"
                                 />
-                                <span className="text-teal-700 dark:text-teal-300 text-xs leading-none whitespace-nowrap">
-                                    Cita futura
+                                <span
+                                    className={cn(
+                                        'text-xs leading-none whitespace-nowrap',
+                                        upcoming
+                                            ? 'text-teal-700 dark:text-teal-300'
+                                            : 'text-orange-700 dark:text-orange-300',
+                                    )}
+                                >
+                                    {upcoming ? 'Cita futura' : 'Cita pendiente'}
                                 </span>
                             </div>
 
@@ -123,14 +135,21 @@ export function PatientClinicalTimeline({
                             <div className="flex min-w-0 items-center">
                                 <button
                                     type="button"
-                                    className="bg-card hover:bg-accent cursor-pointer focus-visible:ring-ring inline-flex w-full items-center gap-3 rounded-xl border border-teal-200/80 p-3 text-left shadow-xs transition-colors hover:border-teal-300 focus-visible:ring-2 focus-visible:outline-hidden dark:border-teal-900/40 dark:hover:border-teal-800"
+                                    className={cn(
+                                        'bg-card hover:bg-accent cursor-pointer focus-visible:ring-ring inline-flex w-full items-center gap-3 rounded-xl border p-3 text-left shadow-xs transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
+                                        upcoming
+                                            ? 'border-teal-200/80 hover:border-teal-300 dark:border-teal-900/40 dark:hover:border-teal-800'
+                                            : 'border-orange-200/90 hover:border-orange-300 dark:border-orange-900/40 dark:hover:border-orange-800',
+                                    )}
                                     onClick={() => onAppointmentSelect?.(appointment)}
                                     aria-label={`Ver cita: ${serviceLabel}`}
                                 >
                                     <div
                                         className={cn(
                                             'flex size-10 shrink-0 items-center justify-center rounded-lg border',
-                                            APPOINTMENT_STATUS_COLOR_BADGE_CLASS.teal,
+                                            upcoming
+                                                ? APPOINTMENT_STATUS_COLOR_BADGE_CLASS.teal
+                                                : APPOINTMENT_STATUS_COLOR_BADGE_CLASS.orange,
                                         )}
                                     >
                                         <CalendarClock className="size-4" aria-hidden />

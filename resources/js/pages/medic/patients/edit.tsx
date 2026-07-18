@@ -15,7 +15,7 @@ function PatientsEdit() {
         doctors,
         examServices,
         attentions,
-        futureAppointments,
+        appointments,
         appointmentFormOptions,
         appointmentHolidays,
         appointmentStatuses,
@@ -37,7 +37,7 @@ function PatientsEdit() {
                 doctors={doctors}
                 examServices={examServices}
                 attentions={attentions}
-                futureAppointments={futureAppointments}
+                appointments={appointments}
                 appointmentFormOptions={appointmentFormOptions}
                 appointmentHolidays={appointmentHolidays}
                 appointmentStatuses={appointmentStatuses}

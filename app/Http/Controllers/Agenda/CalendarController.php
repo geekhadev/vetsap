@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agenda\Appointment;
 use App\Models\Agenda\Calendar;
 use App\Models\Company;
+use App\Models\Medic\ClinicalAttention;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -61,6 +62,7 @@ class CalendarController extends Controller
                 'view' => $user?->can('viewAny', Appointment::class) ?? false,
                 'update' => $user?->can('updateAny', Appointment::class) ?? false,
                 'delete' => $user?->can('deleteAny', Appointment::class) ?? false,
+                'start_attention' => $user?->can('create', ClinicalAttention::class) ?? false,
             ],
         ]);
     }

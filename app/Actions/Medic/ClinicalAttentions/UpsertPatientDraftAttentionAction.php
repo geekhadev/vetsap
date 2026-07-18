@@ -52,9 +52,12 @@ final class UpsertPatientDraftAttentionAction
             $attributes = [
                 'template_id' => $templateId,
                 'doctor_id' => $doctorId,
-                'appointment_id' => $data['appointment_id'] ?? null,
                 'updated_by_user_id' => $userId,
             ];
+
+            if (array_key_exists('appointment_id', $data)) {
+                $attributes['appointment_id'] = $data['appointment_id'];
+            }
 
             if ($draft instanceof ClinicalAttention) {
                 $draft->update($attributes);

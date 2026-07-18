@@ -17,8 +17,8 @@ import type {
     AttentionSummary,
     CustomerOption,
     ExamServiceOption,
-    FutureAppointmentSummary,
     Patient,
+    PatientAppointmentSummary,
     PatientDoctorOption,
     PatientEditTabId,
     PatientTemplateOption,
@@ -37,7 +37,7 @@ type PatientFormPageProps = {
     doctors: PatientDoctorOption[];
     examServices: ExamServiceOption[];
     attentions: AttentionSummary[];
-    futureAppointments: FutureAppointmentSummary[];
+    appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];
     appointmentStatuses: AppointmentStatusOption[];
@@ -55,7 +55,7 @@ export function PatientFormPage({
     doctors,
     examServices,
     attentions,
-    futureAppointments,
+    appointments,
     appointmentFormOptions,
     appointmentHolidays,
     appointmentStatuses,
@@ -100,7 +100,7 @@ export function PatientFormPage({
                         doctors={doctors}
                         examServices={examServices}
                         attentions={attentions}
-                        futureAppointments={futureAppointments}
+                        appointments={appointments}
                         appointmentFormOptions={appointmentFormOptions}
                         appointmentHolidays={appointmentHolidays}
                         appointmentStatuses={appointmentStatuses}

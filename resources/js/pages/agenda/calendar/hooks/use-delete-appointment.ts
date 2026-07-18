@@ -17,7 +17,7 @@ export function useDeleteAppointment({ onDeleted }: UseDeleteAppointmentOptions 
 
             router.delete(AppointmentsController.destroy.url(appointmentId), {
                 preserveScroll: true,
-                only: ['appointments', 'futureAppointments'],
+                only: ['appointments'],
                 onSuccess: () => {
                     onDeleted?.();
                 },

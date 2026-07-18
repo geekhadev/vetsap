@@ -155,19 +155,29 @@ class PatientsController extends Controller
             ->orderByDesc('started_at')
             ->get();
 
-        $futureAppointments = Appointment::query()
+        $linkedAppointmentIds = $attentions
+            ->pluck('appointment_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $appointments = Appointment::query()
             ->where('patient_id', $patient->id)
-            ->where('starts_at', '>', now())
             ->whereHas(
                 'appointmentStatus',
                 static fn ($query) => $query->where('is_terminal', false),
+            )
+            ->when(
+                $linkedAppointmentIds !== [],
+                static fn ($query) => $query->whereNotIn('id', $linkedAppointmentIds),
             )
             ->with([
                 'service:id,name',
                 'doctor:id,first_name,last_name',
                 'appointmentStatus:id,name',
             ])
-            ->orderBy('starts_at')
+            ->orderByDesc('starts_at')
             ->get();
 
         $appointmentFormOptions = $company instanceof Company
@@ -244,7 +254,7 @@ class PatientsController extends Controller
                     ->values()
                     ->all(),
             ]),
-            'futureAppointments' => $futureAppointments->map(static fn (Appointment $appointment): array => [
+            'appointments' => $appointments->map(static fn (Appointment $appointment): array => [
                 'id' => $appointment->id,
                 'service_name' => $appointment->service?->name,
                 'doctor_name' => $appointment->doctor

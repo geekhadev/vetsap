@@ -36,8 +36,8 @@ import type {
     AttentionRequestedExam,
     AttentionSummary,
     ExamServiceOption,
-    FutureAppointmentSummary,
     Patient,
+    PatientAppointmentSummary,
     PatientDoctorOption,
     PatientEditTabId,
     PatientTemplateOption,
@@ -53,7 +53,7 @@ type PatientEditTabPanelProps = {
     doctors: PatientDoctorOption[];
     examServices: ExamServiceOption[];
     attentions: AttentionSummary[];
-    futureAppointments: FutureAppointmentSummary[];
+    appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];
     appointmentStatuses: AppointmentStatusOption[];
@@ -69,7 +69,7 @@ export function PatientEditTabPanel({
     doctors,
     examServices,
     attentions,
-    futureAppointments,
+    appointments,
     appointmentFormOptions,
     appointmentHolidays,
     appointmentStatuses,
@@ -139,7 +139,7 @@ export function PatientEditTabPanel({
         setAppointmentFormOpen(true);
     }, []);
 
-    const openAppointmentDetail = useCallback((appointment: FutureAppointmentSummary) => {
+    const openAppointmentDetail = useCallback((appointment: PatientAppointmentSummary) => {
         setAppointmentFormOpen(false);
         setSelectedAppointmentId(appointment.id);
         setAppointmentDetailOpen(true);
@@ -151,13 +151,13 @@ export function PatientEditTabPanel({
         if (!open) {
             setSelectedAppointmentId(null);
             router.reload({
-                only: ['futureAppointments'],
+                only: ['appointments'],
                 preserveScroll: true,
             });
         }
     }, []);
 
-    const timelineCount = attentions.length + futureAppointments.length;
+    const timelineCount = attentions.length + appointments.length;
 
     return (
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
@@ -246,7 +246,7 @@ export function PatientEditTabPanel({
             <div className="min-h-0 flex-1 overflow-y-auto pr-1">
                 <PatientClinicalTimeline
                     attentions={attentions}
-                    futureAppointments={futureAppointments}
+                    appointments={appointments}
                     onAttentionSelect={setViewAttention}
                     onDraftSelect={openDraftSheet}
                     onAppointmentSelect={openAppointmentDetail}
@@ -282,6 +282,7 @@ export function PatientEditTabPanel({
                 holidays={appointmentHolidays}
                 canUpdate={can.appointments.update}
                 canDelete={can.appointments.delete}
+                canStartAttention={can.attentions.create}
             />
 
             {can.appointments.create ? (
@@ -316,7 +317,7 @@ export function PatientEditTabPanel({
                             <SheetDescription>Completa los datos de la atención</SheetDescription>
                         </SheetHeader>
                         <PatientDraftAttentionForm
-                            key={`${patient.id}-${draftFormKey}`}
+                            key={`${patient.id}-${draftFormKey}-${draftAttention?.id ?? 'new'}-${draftAttention?.appointment_id ?? ''}`}
                             patientId={patient.id}
                             draftAttention={draftAttention}
                             templates={templates}

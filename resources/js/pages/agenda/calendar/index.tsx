@@ -74,6 +74,7 @@ export default function CalendarIndex({
                 holidays={holidays}
                 canUpdate={can.update}
                 canDelete={can.delete}
+                canStartAttention={can.start_attention}
             />
 
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">

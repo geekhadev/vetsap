@@ -110,7 +110,7 @@ export type AttentionSummary = {
     requested_exams: AttentionRequestedExam[];
 };
 
-export type FutureAppointmentSummary = {
+export type PatientAppointmentSummary = {
     id: string;
     service_name: string | null;
     doctor_name: string | null;
@@ -148,7 +148,7 @@ export type PatientsEditPageProps = {
     doctors: PatientDoctorOption[];
     examServices: ExamServiceOption[];
     attentions: AttentionSummary[];
-    futureAppointments: FutureAppointmentSummary[];
+    appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];
     appointmentStatuses: AppointmentStatusOption[];
