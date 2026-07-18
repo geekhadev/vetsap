@@ -149,6 +149,11 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'patients',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Plantillas y formatos',
+                        'module_slug' => 'document-templates',
+                        'permissions' => $permissions_crud,
+                    ],
                 ],
             ],
             [

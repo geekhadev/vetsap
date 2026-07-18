@@ -11,6 +11,7 @@ import type { ClinicalFieldKey } from '@/pages/medic/clinical-templates/types';
 import { CLINICAL_FIELD_CATALOG } from '@/pages/medic/clinical-templates/types';
 import { usePatientDraftAttention } from '@/pages/medic/patients/hooks/use-patient-draft-attention';
 import type {
+    DocumentTemplateOption,
     ExamServiceOption,
     PatientDoctorOption,
     PatientTemplateOption,
@@ -22,6 +23,7 @@ type PatientDraftAttentionFormProps = {
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
     examServices: ExamServiceOption[];
+    documentTemplates: DocumentTemplateOption[];
     title: string;
     description: string;
     onDraftSaved?: () => void;
@@ -35,6 +37,7 @@ export function PatientDraftAttentionForm({
     templates,
     doctors,
     examServices,
+    documentTemplates,
     title,
     description,
     onDraftSaved,
@@ -64,6 +67,7 @@ export function PatientDraftAttentionForm({
         setDoctorId,
         setFieldValue,
         setRequestedServiceIds,
+        setDocumentTemplateIds,
         closeAttention,
     } = usePatientDraftAttention({
         patientId,
@@ -90,6 +94,14 @@ export function PatientDraftAttentionForm({
     const examServiceOptions = useMemo(
         () => examServices.map((service) => ({ value: service.id, label: service.name })),
         [examServices],
+    );
+    const documentTemplateOptions = useMemo(
+        () =>
+            documentTemplates.map((template) => ({
+                value: template.id,
+                label: template.title,
+            })),
+        [documentTemplates],
     );
 
     const sortedFields = useMemo(
@@ -248,28 +260,53 @@ export function PatientDraftAttentionForm({
                 )}
 
                 {(otherFields.length > 0 || vitalFields.length > 0) &&
-                examServiceOptions.length > 0 ? (
+                (examServiceOptions.length > 0 || documentTemplateOptions.length > 0) ? (
                     <div className="border-border border-t" role="separator" />
                 ) : null}
 
-                {examServiceOptions.length > 0 ? (
-                    <section className="flex flex-col gap-4">
-                        <h3 className="text-base font-semibold">Solicitar exámenes</h3>
-                        <FormMultiSelect
-                            id="draft-attention-requested_service_ids"
-                            label="Exámenes"
-                            placeholder="Selecciona uno o más exámenes…"
-                            searchPlaceholder="Buscar examen…"
-                            emptyMessage="No hay exámenes disponibles."
-                            options={examServiceOptions}
-                            values={formState.requested_service_ids}
-                            onValuesChange={setRequestedServiceIds}
-                            error={
-                                closeErrors.requested_service_ids ??
-                                closeErrors['requested_service_ids.0']
-                            }
-                        />
-                    </section>
+                {examServiceOptions.length > 0 || documentTemplateOptions.length > 0 ? (
+                    <div
+                        className={cn(
+                            'grid grid-cols-1 gap-4',
+                            examServiceOptions.length > 0 &&
+                                documentTemplateOptions.length > 0 &&
+                                'sm:grid-cols-2',
+                        )}
+                    >
+                        {examServiceOptions.length > 0 ? (
+                            <FormMultiSelect
+                                id="draft-attention-requested_service_ids"
+                                label="Exámenes"
+                                placeholder="Selecciona uno o más exámenes…"
+                                searchPlaceholder="Buscar examen…"
+                                emptyMessage="No hay exámenes disponibles."
+                                options={examServiceOptions}
+                                values={formState.requested_service_ids}
+                                onValuesChange={setRequestedServiceIds}
+                                error={
+                                    closeErrors.requested_service_ids ??
+                                    closeErrors['requested_service_ids.0']
+                                }
+                            />
+                        ) : null}
+
+                        {documentTemplateOptions.length > 0 ? (
+                            <FormMultiSelect
+                                id="draft-attention-document_template_ids"
+                                label="Formatos"
+                                placeholder="Selecciona uno o más formatos…"
+                                searchPlaceholder="Buscar formato…"
+                                emptyMessage="No hay formatos disponibles."
+                                options={documentTemplateOptions}
+                                values={formState.document_template_ids}
+                                onValuesChange={setDocumentTemplateIds}
+                                error={
+                                    closeErrors.document_template_ids ??
+                                    closeErrors['document_template_ids.0']
+                                }
+                            />
+                        ) : null}
+                    </div>
                 ) : null}
             </div>
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Medic\ClinicalAttentionsController;
 use App\Http\Controllers\Medic\ClinicalTemplatesController;
 use App\Http\Controllers\Medic\DoctorsController;
+use App\Http\Controllers\Medic\DocumentTemplatesController;
 use App\Http\Controllers\Medic\PatientsController;
 use App\Http\Controllers\Medic\ServicesController;
 use App\Http\Controllers\Medic\SpecialtiesController;
@@ -29,9 +30,14 @@ Route::put('doctors/{doctor}/services', [DoctorsController::class, 'syncServices
 Route::put('doctors/{doctor}/schedule', [DoctorsController::class, 'syncSchedule'])
     ->name('doctors.schedule.sync');
 Route::resource('clinical-templates', ClinicalTemplatesController::class)->except(['show']);
+Route::resource('document-templates', DocumentTemplatesController::class)->except(['show']);
 Route::resource('clinical-attentions', ClinicalAttentionsController::class)->except(['show', 'create', 'edit', 'update']);
 Route::get('clinical-attentions/{clinical_attention}/pdf', [ClinicalAttentionsController::class, 'download'])
     ->name('clinical-attentions.download');
+Route::get(
+    'clinical-attentions/{clinical_attention}/document-templates/{document_template}/pdf',
+    [ClinicalAttentionsController::class, 'downloadDocumentTemplate'],
+)->name('clinical-attentions.document-templates.download');
 Route::get('clinical-attentions/{clinical_attention}/whatsapp', [ClinicalAttentionsController::class, 'whatsapp'])
     ->name('clinical-attentions.whatsapp');
 Route::post('clinical-attentions/{clinical_attention}/exam-results/{service}', [ClinicalAttentionsController::class, 'storeExamResult'])

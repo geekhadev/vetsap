@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { Check, ChevronDown, FileDown, Mail, MessageCircle, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, FileDown, FileText, Mail, MessageCircle, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { DateDisplay } from '@/components/custom/date-display';
@@ -28,11 +28,13 @@ import {
 } from '@/pages/medic/patients/attention-view-helpers';
 import { useAttentionExamUpload } from '@/pages/medic/patients/hooks/use-attention-exam-upload';
 import type {
+    AttentionDocumentTemplate,
     AttentionRequestedExam,
     AttentionSummary,
     PatientTemplateOption,
 } from '@/pages/medic/patients/types';
 import { destroy, download, whatsapp } from '@/routes/medic/clinical-attentions';
+import { download as downloadDocumentTemplate } from '@/routes/medic/clinical-attentions/document-templates';
 
 type PatientAttentionViewDialogProps = {
     attention: AttentionSummary | null;
@@ -61,6 +63,7 @@ export function PatientAttentionViewDialog({
     const [deleting, setDeleting] = useState(false);
 
     const exams = attention?.requested_exams ?? [];
+    const documentTemplates = attention?.document_templates ?? [];
     const canShareWhatsapp = toWhatsappPhoneDigits(tutorPhone ?? '') !== null;
 
     const fields = useMemo(
@@ -214,7 +217,7 @@ export function PatientAttentionViewDialog({
                     </DialogHeader>
 
                     <div className="min-h-0 flex-1 overflow-y-auto p-6">
-                        {fields.length === 0 && exams.length === 0 ? (
+                        {fields.length === 0 && exams.length === 0 && documentTemplates.length === 0 ? (
                             <p className="text-muted-foreground text-sm">
                                 Esta atención no tiene valores registrados.
                             </p>
@@ -351,6 +354,23 @@ export function PatientAttentionViewDialog({
                                         </ul>
                                     </section>
                                 ) : null}
+
+                                {documentTemplates.length > 0 && attention ? (
+                                    <section className="flex flex-col gap-4">
+                                        <h3 className="text-base font-semibold">
+                                            Plantillas y formatos
+                                        </h3>
+                                        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                                            {documentTemplates.map((template) => (
+                                                <AttentionDocumentTemplateItem
+                                                    key={template.id}
+                                                    attentionId={attention.id}
+                                                    template={template}
+                                                />
+                                            ))}
+                                        </ul>
+                                    </section>
+                                ) : null}
                             </div>
                         )}
                     </div>
@@ -368,5 +388,37 @@ export function PatientAttentionViewDialog({
                 onConfirm={handleDelete}
             />
         </>
+    );
+}
+
+function AttentionDocumentTemplateItem({
+    attentionId,
+    template,
+}: {
+    attentionId: string;
+    template: AttentionDocumentTemplate;
+}) {
+    return (
+        <li className="flex flex-col rounded-xl border p-3 shadow-xs">
+            <div className="flex min-w-0 items-start gap-2">
+                <FileText className="text-muted-foreground mt-0.5 size-4 shrink-0" aria-hidden />
+                <p className="min-w-0 flex-1 truncate text-sm font-medium">{template.title}</p>
+            </div>
+            <div className="mt-3">
+                <Button type="button" size="sm" variant="outline" className="w-full" asChild>
+                    <a
+                        href={downloadDocumentTemplate.url({
+                            clinical_attention: attentionId,
+                            document_template: template.id,
+                        })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <FileDown className="size-4" aria-hidden />
+                        Ver PDF
+                    </a>
+                </Button>
+            </div>
+        </li>
     );
 }

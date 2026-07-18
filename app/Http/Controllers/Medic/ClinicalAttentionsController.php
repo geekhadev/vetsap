@@ -9,6 +9,7 @@ use App\Actions\Medic\ClinicalAttentions\DeleteClinicalAttentionExamResultAction
 use App\Actions\Medic\ClinicalAttentions\GenerateClinicalAttentionPdfAction;
 use App\Actions\Medic\ClinicalAttentions\ListClinicalAttentionsForCompanyAction;
 use App\Actions\Medic\ClinicalAttentions\StoreClinicalAttentionExamResultAction;
+use App\Actions\Medic\DocumentTemplates\GenerateDocumentTemplatePdfAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Medic\ClinicalAttentionExamResultStoreRequest;
 use App\Http\Requests\Medic\ClinicalAttentionListRequest;
@@ -17,6 +18,7 @@ use App\Models\Company;
 use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\ClinicalTemplate;
 use App\Models\Medic\Doctor;
+use App\Models\Medic\DocumentTemplate;
 use App\Models\Medic\Patient;
 use App\Models\Medic\Service;
 use Illuminate\Http\JsonResponse;
@@ -140,6 +142,29 @@ class ClinicalAttentionsController extends Controller
         $this->authorize('view', $clinicalAttention);
 
         $pdf = $action->execute($clinicalAttention);
+
+        return response($pdf['content'], 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$pdf['filename'].'"',
+        ]);
+    }
+
+    public function downloadDocumentTemplate(
+        ClinicalAttention $clinicalAttention,
+        DocumentTemplate $document_template,
+        GenerateDocumentTemplatePdfAction $action,
+    ): HttpResponse {
+        $this->authorize('view', $clinicalAttention);
+
+        if ((string) $clinicalAttention->company_id !== (string) $document_template->company_id) {
+            abort(404);
+        }
+
+        try {
+            $pdf = $action->execute($clinicalAttention, $document_template);
+        } catch (\RuntimeException $exception) {
+            abort(422, $exception->getMessage());
+        }
 
         return response($pdf['content'], 200, [
             'Content-Type' => 'application/pdf',

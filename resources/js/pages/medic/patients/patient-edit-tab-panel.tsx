@@ -37,6 +37,7 @@ import { PatientDraftAttentionForm } from '@/pages/medic/patients/patient-draft-
 import type {
     AttentionRequestedExam,
     AttentionSummary,
+    DocumentTemplateOption,
     ExamServiceOption,
     Patient,
     PatientAppointmentSummary,
@@ -54,6 +55,7 @@ type PatientEditTabPanelProps = {
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
     examServices: ExamServiceOption[];
+    documentTemplates: DocumentTemplateOption[];
     attentions: AttentionSummary[];
     appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;
@@ -70,6 +72,7 @@ export function PatientEditTabPanel({
     templates,
     doctors,
     examServices,
+    documentTemplates,
     attentions,
     appointments,
     appointmentFormOptions,
@@ -361,6 +364,7 @@ export function PatientEditTabPanel({
                             templates={templates}
                             doctors={doctors}
                             examServices={examServices}
+                            documentTemplates={documentTemplates}
                             title={draftActionLabel}
                             description="Completa los datos de la atención"
                             onDraftSaved={handleDraftSaved}

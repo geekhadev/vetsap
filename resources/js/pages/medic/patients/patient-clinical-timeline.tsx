@@ -12,6 +12,7 @@ import { APPOINTMENT_STATUS_COLOR_BADGE_CLASS } from '@/lib/appointment-status-c
 import { cn } from '@/lib/utils';
 import { formatAttentionDuration } from '@/pages/medic/patients/attention-view-helpers';
 import type {
+    AttentionDocumentTemplate,
     AttentionRequestedExam,
     AttentionSummary,
     PatientAppointmentSummary,
@@ -257,10 +258,17 @@ export function PatientClinicalTimeline({
                                             {doctorLabel}
                                         </p>
                                     </div>
-                                    {attention.requested_exams.length > 0 ? (
+                                    {attention.requested_exams.length > 0 ||
+                                    attention.document_templates.length > 0 ? (
                                         <div className="flex flex-wrap gap-1">
                                             {attention.requested_exams.map((exam) => (
                                                 <TimelineExamBadge key={exam.id} exam={exam} />
+                                            ))}
+                                            {attention.document_templates.map((template) => (
+                                                <TimelineDocumentTemplateBadge
+                                                    key={template.id}
+                                                    template={template}
+                                                />
                                             ))}
                                         </div>
                                     ) : null}
@@ -303,6 +311,22 @@ function TimelineExamBadge({ exam }: { exam: AttentionRequestedExam }) {
                 {exam.is_uploaded ? <Check className="size-2.5" strokeWidth={3} /> : null}
             </span>
             <span className="truncate">{exam.name}</span>
+        </Badge>
+    );
+}
+
+function TimelineDocumentTemplateBadge({
+    template,
+}: {
+    template: AttentionDocumentTemplate;
+}) {
+    return (
+        <Badge
+            variant="outline"
+            className="border-sky-200/90 bg-sky-50 text-sky-800 max-w-full gap-1 rounded-full px-2 py-0.5 text-[11px] font-normal dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-200"
+            title="Formato vinculado"
+        >
+            <span className="truncate">{template.title}</span>
         </Badge>
     );
 }

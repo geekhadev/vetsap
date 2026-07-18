@@ -16,7 +16,8 @@ final class ClosePatientDraftAttentionAction
      *     doctor_id: string,
      *     updated_by_user_id?: string|null,
      *     values?: array<string, mixed>,
-     *     requested_service_ids?: list<string>
+     *     requested_service_ids?: list<string>,
+     *     document_template_ids?: list<string>
      * }  $data
      */
     public function execute(ClinicalAttention $attention, array $data): ClinicalAttention
@@ -28,7 +29,8 @@ final class ClosePatientDraftAttentionAction
         return DB::transaction(function () use ($attention, $data): ClinicalAttention {
             $values = $data['values'] ?? [];
             $requestedServiceIds = $data['requested_service_ids'] ?? [];
-            unset($data['values'], $data['requested_service_ids']);
+            $documentTemplateIds = $data['document_template_ids'] ?? [];
+            unset($data['values'], $data['requested_service_ids'], $data['document_template_ids']);
 
             $attention->update([
                 ...$data,
@@ -50,6 +52,7 @@ final class ClosePatientDraftAttentionAction
             }
 
             $attention->requestedServices()->sync($requestedServiceIds);
+            $attention->documentTemplates()->sync($documentTemplateIds);
 
             return $attention->refresh()->load([
                 'patient:id,name,record_number',
@@ -57,6 +60,7 @@ final class ClosePatientDraftAttentionAction
                 'template:id,name',
                 'values',
                 'requestedServices:id,name',
+                'documentTemplates:id,title',
             ]);
         });
     }

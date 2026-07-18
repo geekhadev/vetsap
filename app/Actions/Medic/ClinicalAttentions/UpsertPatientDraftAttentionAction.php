@@ -16,7 +16,8 @@ final class UpsertPatientDraftAttentionAction
      *     doctor_id?: string|null,
      *     appointment_id?: string|null,
      *     values?: array<string, mixed>,
-     *     requested_service_ids?: list<string>
+     *     requested_service_ids?: list<string>,
+     *     document_template_ids?: list<string>
      * }  $data
      */
     public function execute(Patient $patient, string $companyId, array $data, ?string $userId): ClinicalAttention
@@ -48,6 +49,7 @@ final class UpsertPatientDraftAttentionAction
             $doctorId = $data['doctor_id'] ?? null;
             $doctorId = ($doctorId === null || $doctorId === '') ? null : $doctorId;
             $requestedServiceIds = $data['requested_service_ids'] ?? [];
+            $documentTemplateIds = $data['document_template_ids'] ?? [];
 
             $attributes = [
                 'template_id' => $templateId,
@@ -88,8 +90,14 @@ final class UpsertPatientDraftAttentionAction
             }
 
             $draft->requestedServices()->sync($requestedServiceIds);
+            $draft->documentTemplates()->sync($documentTemplateIds);
 
-            return $draft->refresh()->load(['values', 'template.fields', 'requestedServices:id,name']);
+            return $draft->refresh()->load([
+                'values',
+                'template.fields',
+                'requestedServices:id,name',
+                'documentTemplates:id,title',
+            ]);
         });
     }
 }

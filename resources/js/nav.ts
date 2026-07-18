@@ -10,6 +10,7 @@ import {
     ClipboardPlus,
     Cog,
     FileType,
+    Files,
     Globe,
     GraduationCap,
     Heart,
@@ -51,6 +52,7 @@ import { index as websiteSettingsIndex } from '@/routes/configuration/website-se
 import { index as clinicalAttentionsIndex } from '@/routes/medic/clinical-attentions';
 import { index as clinicalTemplatesIndex } from '@/routes/medic/clinical-templates';
 import { index as doctorsIndex } from '@/routes/medic/doctors';
+import { index as documentTemplatesIndex } from '@/routes/medic/document-templates';
 import { index as patientsIndex } from '@/routes/medic/patients';
 import { index as servicesIndex } from '@/routes/medic/services';
 import { index as specialtiesIndex } from '@/routes/medic/specialties';
@@ -135,6 +137,12 @@ export const mainNavItems: NavItem[] = [
                 href: clinicalTemplatesIndex(),
                 icon: LayoutTemplate,
                 permission: 'medic.clinical-templates.list',
+            },
+            {
+                title: 'Plantillas y formatos',
+                href: documentTemplatesIndex(),
+                icon: Files,
+                permission: 'medic.document-templates.list',
             },
             {
                 title: 'Especialidades',

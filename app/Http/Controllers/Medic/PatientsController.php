@@ -27,6 +27,7 @@ use App\Models\Company;
 use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\ClinicalTemplate;
 use App\Models\Medic\Doctor;
+use App\Models\Medic\DocumentTemplate;
 use App\Models\Medic\Patient;
 use App\Models\Medic\Service;
 use App\Models\Medic\Species;
@@ -134,7 +135,7 @@ class PatientsController extends Controller
         $draftAttention = ClinicalAttention::query()
             ->where('patient_id', $patient->id)
             ->draft()
-            ->with(['values', 'template.fields', 'requestedServices:id,name'])
+            ->with(['values', 'template.fields', 'requestedServices:id,name', 'documentTemplates:id,title'])
             ->first();
 
         if (! $request->has('tab') && $draftAttention instanceof ClinicalAttention) {
@@ -152,6 +153,7 @@ class PatientsController extends Controller
                 'doctor:id,first_name,last_name',
                 'values',
                 'requestedServices:id,name',
+                'documentTemplates:id,title',
             ])
             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', [ClinicalAttentionStatus::Draft->value])
             ->orderByDesc('closed_at')
@@ -234,6 +236,18 @@ class PatientsController extends Controller
             'examServices' => $company instanceof Company
                 ? $this->examServicesForCompany($company->id)
                 : [],
+            'documentTemplates' => $company instanceof Company
+                ? DocumentTemplate::query()
+                    ->forCompany($company->id)
+                    ->orderBy('title')
+                    ->get(['id', 'title'])
+                    ->map(static fn (DocumentTemplate $template): array => [
+                        'id' => $template->id,
+                        'title' => $template->title,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
             'attentions' => $attentions->map(fn (ClinicalAttention $attention): array => [
                 'id' => $attention->id,
                 'status' => $attention->status instanceof ClinicalAttentionStatus
@@ -254,6 +268,13 @@ class PatientsController extends Controller
                     ->all(),
                 'requested_exams' => $attention->requestedServices
                     ->map(fn (Service $service): array => $this->mapRequestedExam($service))
+                    ->values()
+                    ->all(),
+                'document_templates' => $attention->documentTemplates
+                    ->map(static fn (DocumentTemplate $template): array => [
+                        'id' => $template->id,
+                        'title' => $template->title,
+                    ])
                     ->values()
                     ->all(),
             ]),

@@ -16,6 +16,7 @@ import { PatientEditTabPanel } from '@/pages/medic/patients/patient-edit-tab-pan
 import type {
     AttentionSummary,
     CustomerOption,
+    DocumentTemplateOption,
     ExamServiceOption,
     Patient,
     PatientAppointmentSummary,
@@ -36,6 +37,7 @@ type PatientFormPageProps = {
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
     examServices: ExamServiceOption[];
+    documentTemplates: DocumentTemplateOption[];
     attentions: AttentionSummary[];
     appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;
@@ -54,6 +56,7 @@ export function PatientFormPage({
     templates,
     doctors,
     examServices,
+    documentTemplates,
     attentions,
     appointments,
     appointmentFormOptions,
@@ -99,6 +102,7 @@ export function PatientFormPage({
                         templates={templates}
                         doctors={doctors}
                         examServices={examServices}
+                        documentTemplates={documentTemplates}
                         attentions={attentions}
                         appointments={appointments}
                         appointmentFormOptions={appointmentFormOptions}

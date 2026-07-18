@@ -97,6 +97,11 @@ export type AttentionRequestedExam = {
     mime_type: string | null;
 };
 
+export type AttentionDocumentTemplate = {
+    id: string;
+    title: string;
+};
+
 export type AttentionSummary = {
     id: string;
     status: AttentionStatus;
@@ -108,6 +113,7 @@ export type AttentionSummary = {
     created_at: string;
     values: Record<string, unknown>;
     requested_exams: AttentionRequestedExam[];
+    document_templates: AttentionDocumentTemplate[];
 };
 
 export type PatientAppointmentSummary = {
@@ -122,6 +128,11 @@ export type PatientAppointmentSummary = {
 export type ExamServiceOption = {
     id: string;
     name: string;
+};
+
+export type DocumentTemplateOption = {
+    id: string;
+    title: string;
 };
 
 export type PatientsEditCan = {
@@ -147,6 +158,7 @@ export type PatientsEditPageProps = {
     templates: PatientTemplateOption[];
     doctors: PatientDoctorOption[];
     examServices: ExamServiceOption[];
+    documentTemplates: DocumentTemplateOption[];
     attentions: AttentionSummary[];
     appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;

@@ -130,6 +130,21 @@ class ClinicalAttention extends Model
     }
 
     /**
+     * @return BelongsToMany<DocumentTemplate, $this>
+     */
+    public function documentTemplates(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DocumentTemplate::class,
+            'medic_clinical_attention_document_templates',
+            'attention_id',
+            'document_template_id',
+        )
+            ->withTimestamps()
+            ->orderBy('title');
+    }
+
+    /**
      * @param  Builder<$this>  $query
      * @return Builder<$this>
      */

@@ -10,6 +10,7 @@ const NESTED_OVERLAY_SELECTORS = [
   '[data-slot="select-content"]',
   '[data-radix-popper-content-wrapper]',
   '.rdp-root',
+  '[data-tippy-root]',
 ] as const
 
 function isNestedOverlayTarget(target: EventTarget | null): boolean {

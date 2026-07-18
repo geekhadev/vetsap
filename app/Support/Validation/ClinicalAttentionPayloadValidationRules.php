@@ -21,6 +21,7 @@ final class ClinicalAttentionPayloadValidationRules
             'values' => ['nullable', 'array'],
             'values.*' => ['nullable', 'string', 'max:5000'],
             ...self::requestedServiceIdsRules($companyId),
+            ...self::documentTemplateIdsRules($companyId),
         ];
     }
 
@@ -44,6 +45,7 @@ final class ClinicalAttentionPayloadValidationRules
             'values' => ['nullable', 'array'],
             'values.*' => ['nullable', 'string', 'max:5000'],
             ...self::requestedServiceIdsRules($companyId),
+            ...self::documentTemplateIdsRules($companyId),
         ];
     }
 
@@ -59,6 +61,21 @@ final class ClinicalAttentionPayloadValidationRules
                 Rule::exists('medic_services', 'id')
                     ->where('company_id', $companyId)
                     ->where('is_active', true),
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, ValidationRule|array<int, mixed|string>|string>
+     */
+    public static function documentTemplateIdsRules(string $companyId): array
+    {
+        return [
+            'document_template_ids' => ['nullable', 'array'],
+            'document_template_ids.*' => [
+                'uuid',
+                Rule::exists('medic_document_templates', 'id')
+                    ->where('company_id', $companyId),
             ],
         ];
     }
@@ -123,6 +140,7 @@ final class ClinicalAttentionPayloadValidationRules
             'doctor_id' => ($doctorId === null || $doctorId === '') ? null : (string) $doctorId,
             'values' => $validated['values'] ?? [],
             'requested_service_ids' => self::normalizedRequestedServiceIds($validated),
+            'document_template_ids' => self::normalizedDocumentTemplateIds($validated),
         ];
     }
 
@@ -170,6 +188,7 @@ final class ClinicalAttentionPayloadValidationRules
             'updated_by_user_id' => $userId,
             'values' => $validated['values'] ?? [],
             'requested_service_ids' => self::normalizedRequestedServiceIds($validated),
+            'document_template_ids' => self::normalizedDocumentTemplateIds($validated),
         ];
     }
 
@@ -179,8 +198,23 @@ final class ClinicalAttentionPayloadValidationRules
      */
     public static function normalizedRequestedServiceIds(array $validated): array
     {
-        $ids = $validated['requested_service_ids'] ?? [];
+        return self::normalizedUuidList($validated['requested_service_ids'] ?? []);
+    }
 
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return list<string>
+     */
+    public static function normalizedDocumentTemplateIds(array $validated): array
+    {
+        return self::normalizedUuidList($validated['document_template_ids'] ?? []);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function normalizedUuidList(mixed $ids): array
+    {
         if (! is_array($ids)) {
             return [];
         }

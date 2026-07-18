@@ -27,6 +27,11 @@ export type InertiaFormDialogProps<TForm extends object = Record<string, unknown
     formOptions?: FormProps<TForm>['options'];
     formClassName?: string;
     contentClassName?: string;
+    /** Props adicionales para `DialogContent` (p. ej. anidar otro modal). */
+    dialogContentProps?: Omit<
+        ComponentProps<typeof DialogContent>,
+        'className' | 'children'
+    >;
 };
 
 /**
@@ -43,10 +48,14 @@ export function InertiaFormDialog<TForm extends object = Record<string, unknown>
     formOptions,
     formClassName,
     contentClassName,
+    dialogContentProps,
 }: InertiaFormDialogProps<TForm>) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className={cn(contentClassName)}>
+            <DialogContent
+                className={cn(contentClassName)}
+                {...dialogContentProps}
+            >
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>

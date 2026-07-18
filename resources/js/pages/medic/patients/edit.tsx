@@ -14,6 +14,7 @@ function PatientsEdit() {
         templates,
         doctors,
         examServices,
+        documentTemplates,
         attentions,
         appointments,
         appointmentFormOptions,
@@ -36,6 +37,7 @@ function PatientsEdit() {
                 templates={templates}
                 doctors={doctors}
                 examServices={examServices}
+                documentTemplates={documentTemplates}
                 attentions={attentions}
                 appointments={appointments}
                 appointmentFormOptions={appointmentFormOptions}
