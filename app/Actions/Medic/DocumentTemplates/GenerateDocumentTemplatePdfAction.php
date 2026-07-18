@@ -31,14 +31,7 @@ final class GenerateDocumentTemplatePdfAction
             throw new RuntimeException('La plantilla no está asociada a esta atención.');
         }
 
-        $html = $this->resolveContent->execute($attention, $template);
-
-        $content = Pdf::loadView('medic.document-templates.pdf', [
-            'title' => $template->title,
-            'content' => $html,
-        ])
-            ->setPaper('letter')
-            ->output();
+        $content = $this->buildContent($attention, $template);
 
         $slug = Str::slug($template->title);
         if ($slug === '') {
@@ -49,5 +42,17 @@ final class GenerateDocumentTemplatePdfAction
             'content' => $content,
             'filename' => "{$slug}.pdf",
         ];
+    }
+
+    public function buildContent(ClinicalAttention $attention, DocumentTemplate $template): string
+    {
+        $html = $this->resolveContent->execute($attention, $template);
+
+        return Pdf::loadView('medic.document-templates.pdf', [
+            'title' => $template->title,
+            'content' => $html,
+        ])
+            ->setPaper('letter')
+            ->output();
     }
 }

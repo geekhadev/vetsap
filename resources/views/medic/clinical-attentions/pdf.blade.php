@@ -390,7 +390,18 @@
         </div>
     @endif
 
-    @if (count($vitals) === 0 && count($clinical) === 0 && count($exams) === 0)
+    @if (count($document_templates) > 0)
+        <div class="section">
+            <p class="section-title">Plantillas y formatos</p>
+            <ul class="exams-list">
+                @foreach ($document_templates as $templateTitle)
+                    <li>{{ $templateTitle }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (count($vitals) === 0 && count($clinical) === 0 && count($exams) === 0 && count($document_templates) === 0)
         <div class="section">
             <p class="empty-note">No hay información compartible con el cliente para esta atención.</p>
         </div>

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Medic\ClinicalAttentions;
 
+use App\Actions\Medic\DocumentTemplates\GenerateDocumentTemplatePdfAction;
 use App\Enums\Medic\DoctorDocumentType;
 use App\Enums\Medic\PatientSex;
 use App\Models\Medic\ClinicalAttention;
@@ -24,6 +25,7 @@ final class GenerateClinicalAttentionPdfAction
     public function __construct(
         private readonly MergePdfDocuments $mergePdfDocuments,
         private readonly StampPdfPageFooters $stampPdfPageFooters,
+        private readonly GenerateDocumentTemplatePdfAction $generateDocumentTemplatePdf,
     ) {}
 
     /**
@@ -52,6 +54,7 @@ final class GenerateClinicalAttentionPdfAction
             'template.fields',
             'values',
             'requestedServices:id,name',
+            'documentTemplates:id,title,content',
         ]);
 
         $payload = $this->buildPayload($attention);
@@ -59,7 +62,9 @@ final class GenerateClinicalAttentionPdfAction
             ->setPaper('letter')
             ->output();
 
-        return $this->appendExamAttachments($mainPdf, $attention);
+        $withExams = $this->appendExamAttachments($mainPdf, $attention);
+
+        return $this->appendDocumentTemplates($withExams, $attention);
     }
 
     public function footerText(ClinicalAttention $attention): string
@@ -122,6 +127,41 @@ final class GenerateClinicalAttentionPdfAction
             return $mainPdf;
         } finally {
             $this->deleteTemporaryLogoPath($logoPath);
+        }
+    }
+
+    private function appendDocumentTemplates(
+        string $mainPdf,
+        ClinicalAttention $attention,
+    ): string {
+        $parts = [];
+
+        foreach ($attention->documentTemplates as $template) {
+            try {
+                $documentPdf = $this->generateDocumentTemplatePdf->buildContent(
+                    $attention,
+                    $template,
+                );
+
+                if ($this->isReadablePdf($documentPdf)) {
+                    $parts[] = $documentPdf;
+                }
+            } catch (Throwable) {
+                continue;
+            }
+        }
+
+        if ($parts === []) {
+            return $mainPdf;
+        }
+
+        try {
+            return $this->mergePdfDocuments->merge([
+                $mainPdf,
+                ...$parts,
+            ]);
+        } catch (Throwable) {
+            return $mainPdf;
         }
     }
 
@@ -464,6 +504,10 @@ final class GenerateClinicalAttentionPdfAction
             'clinical' => $clinical,
             'exams' => $attention->requestedServices
                 ->map(fn ($service): string => (string) $service->name)
+                ->values()
+                ->all(),
+            'document_templates' => $attention->documentTemplates
+                ->map(fn ($template): string => (string) $template->title)
                 ->values()
                 ->all(),
         ];
