@@ -1,5 +1,6 @@
 export type WebsiteSettingsFormState = {
     slug: string;
+    primary_color: string;
     facebook_url: string;
     instagram_url: string;
     whatsapp_phone: string;

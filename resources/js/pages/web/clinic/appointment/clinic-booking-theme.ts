@@ -3,13 +3,13 @@ export const CLINIC_BOOKING_SELECTION_ROUNDED = 'rounded-lg';
 
 /** Primary CTA (Continuar, Confirmar). */
 export const CLINIC_BOOKING_ACTION_BUTTON =
-    'h-12 min-w-[9rem] rounded-full px-7 text-base font-semibold bg-cyan-600 text-white shadow-sm hover:bg-cyan-700';
+    'h-12 min-w-[9rem] rounded-full px-7 text-base font-semibold bg-clinic-600 text-white shadow-sm hover:bg-clinic-700';
 
 export const CLINIC_BOOKING_BACK_BUTTON =
-    'h-12 rounded-full px-5 text-base text-cyan-800 hover:bg-cyan-50 hover:text-cyan-900';
+    'h-12 rounded-full px-5 text-base text-clinic-800 hover:bg-clinic-50 hover:text-clinic-900';
 
 export const CLINIC_BOOKING_OUTLINE_BUTTON =
-    'h-12 shrink-0 rounded-full border-cyan-200 bg-white px-6 text-base font-semibold text-cyan-900 shadow-xs hover:border-cyan-500 hover:bg-cyan-50';
+    'h-12 shrink-0 rounded-full border-clinic-200 bg-white px-6 text-base font-semibold text-clinic-900 shadow-xs hover:border-clinic-500 hover:bg-clinic-50';
 
 /** Google Calendar CTA — white surface, brand mark. */
 export const CLINIC_BOOKING_GOOGLE_CALENDAR_BUTTON =
@@ -21,32 +21,32 @@ export const CLINIC_BOOKING_APPLE_CALENDAR_BUTTON =
 
 /** Hero / external link CTA on the clinic landing. */
 export const CLINIC_HERO_CTA_BUTTON =
-    'inline-flex h-12 items-center justify-center gap-2 rounded-full border border-cyan-100 bg-cyan-100 px-7 text-base font-semibold text-cyan-900 shadow-xs transition-all duration-300 hover:border-cyan-400 hover:bg-cyan-200';
+    'inline-flex h-12 items-center justify-center gap-2 rounded-full border border-clinic-100 bg-clinic-100 px-7 text-base font-semibold text-clinic-900 shadow-xs transition-all duration-300 hover:border-clinic-400 hover:bg-clinic-200';
 
-/** Selection and action styles aligned with the public clinic web (cyan palette). */
+/** Selection and action styles aligned with the public clinic brand palette. */
 
 export const CLINIC_BOOKING_SELECTED_FILLED =
-    'border-cyan-600 bg-cyan-600 text-white shadow-sm';
+    'border-clinic-600 bg-clinic-600 text-white shadow-sm';
 
 export const CLINIC_BOOKING_SELECTED_FILLED_MUTED = 'text-white/85';
 
-export const CLINIC_BOOKING_SELECTED_RING = 'border-cyan-600 bg-cyan-50 ring-2 ring-cyan-200';
+export const CLINIC_BOOKING_SELECTED_RING = 'border-clinic-600 bg-clinic-50 ring-2 ring-clinic-200';
 
 export const CLINIC_BOOKING_UNSELECTED = 'border-gray-200 bg-white';
 
-export const CLINIC_BOOKING_HOVER = 'hover:border-cyan-500 hover:bg-cyan-50';
+export const CLINIC_BOOKING_HOVER = 'hover:border-clinic-500 hover:bg-clinic-50';
 
-export const CLINIC_BOOKING_HIGHLIGHT_SURFACE = 'border-cyan-200 bg-cyan-50/60';
+export const CLINIC_BOOKING_HIGHLIGHT_SURFACE = 'border-clinic-200 bg-clinic-50/60';
 
-export const CLINIC_BOOKING_ACCENT_ICON = 'text-cyan-600';
+export const CLINIC_BOOKING_ACCENT_ICON = 'text-clinic-600';
 
-export const CLINIC_BOOKING_SELECTED_ACCENT_ICON = 'text-cyan-700';
+export const CLINIC_BOOKING_SELECTED_ACCENT_ICON = 'text-clinic-700';
 
-export const CLINIC_BOOKING_STEP_COMPLETE = 'border-cyan-600 bg-cyan-600 text-white';
+export const CLINIC_BOOKING_STEP_COMPLETE = 'border-clinic-600 bg-clinic-600 text-white';
 
-export const CLINIC_BOOKING_STEP_CURRENT = 'border-cyan-600 text-cyan-700';
+export const CLINIC_BOOKING_STEP_CURRENT = 'border-clinic-600 text-clinic-700';
 
-export const CLINIC_BOOKING_STEP_LABEL_CURRENT = 'text-cyan-700';
+export const CLINIC_BOOKING_STEP_LABEL_CURRENT = 'text-clinic-700';
 
 export const CLINIC_BOOKING_INPUT = 'h-11 text-base md:text-base';
 

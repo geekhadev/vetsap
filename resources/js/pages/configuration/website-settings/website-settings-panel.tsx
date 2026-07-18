@@ -1,9 +1,11 @@
 import { Save } from 'lucide-react';
+import { FormHexColorInput } from '@/components/custom/form-hex-color-input';
 import { FormImageUpload } from '@/components/custom/form-image-upload';
 import { FormSubmitButton } from '@/components/custom/form-submit-button';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { SettingsSection } from '@/pages/configuration/calendar-settings/settings-section';
 import { useWebsiteSettingsForm } from '@/pages/configuration/website-settings/hooks/use-website-settings-form';
+import { CLINIC_DEFAULT_PRIMARY_COLOR } from '@/pages/web/clinic/clinic-theme';
 
 export function WebsiteSettingsPanel() {
     const { form, logoForm, logoPreviewUrl, ogImageForm, ogImagePreviewUrl, submit, uploadLogo, uploadOgImage } =
@@ -14,7 +16,7 @@ export function WebsiteSettingsPanel() {
             <SettingsSection
                 title="Identidad y URL"
                 showSeparator={false}
-                tooltip="Define el logo y la dirección web pública de tu clínica."
+                tooltip="Define el logo, el color principal y la dirección web pública de tu clínica."
             >
                 <div className="grid items-start gap-8 lg:grid-cols-2">
                     <div className="space-y-2">
@@ -45,6 +47,20 @@ export function WebsiteSettingsPanel() {
                             </span>
                         </p>
                     </div>
+
+                    <FormHexColorInput
+                        label="Color principal"
+                        error={form.errors.primary_color}
+                        fallbackColor={CLINIC_DEFAULT_PRIMARY_COLOR}
+                        helperText="Se usa en el sitio público de la clínica (títulos, botones y acentos)."
+                        inputProps={{
+                            id: 'primary_color',
+                            name: 'primary_color',
+                            value: form.data.primary_color,
+                            onChange: (value) =>
+                                form.setData('primary_color', value),
+                        }}
+                    />
                 </div>
 
                 <div className="grid items-start gap-8 lg:grid-cols-2">

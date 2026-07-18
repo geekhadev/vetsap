@@ -19,6 +19,8 @@ final class ClinicWebSettingKeys
 
     public const WHATSAPP_MESSAGE = 'whatsapp_message';
 
+    public const PRIMARY_COLOR = 'primary_color';
+
     // Editorial — Hero
     public const HERO_TITLE = 'hero_title';
 
@@ -108,6 +110,7 @@ final class ClinicWebSettingKeys
             self::INSTAGRAM_URL => ClinicWebSettingType::Text,
             self::WHATSAPP_PHONE => ClinicWebSettingType::Text,
             self::WHATSAPP_MESSAGE => ClinicWebSettingType::Text,
+            self::PRIMARY_COLOR => ClinicWebSettingType::Text,
             self::HERO_TITLE => ClinicWebSettingType::Text,
             self::HERO_SUBTITLE => ClinicWebSettingType::Text,
             self::HERO_QUOTE => ClinicWebSettingType::Text,
@@ -178,6 +181,7 @@ final class ClinicWebSettingKeys
 
     /** Panel-visible text keys (saved from the "Sitio web" tab). */
     public const PANEL_TEXT_KEYS = [
+        self::PRIMARY_COLOR,
         self::FACEBOOK_URL,
         self::INSTAGRAM_URL,
         self::WHATSAPP_PHONE,

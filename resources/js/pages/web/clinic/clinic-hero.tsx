@@ -28,7 +28,7 @@ export function ClinicHero({ company, settings, bookingSchedule }: ClinicHeroPro
                 aria-hidden
                 className="pointer-events-none absolute inset-0 z-0 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]"
             >
-                <div className="absolute top-0 right-0 bottom-0 left-0 opacity-30 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)]" />
+                <div className="absolute top-0 right-0 bottom-0 left-0 opacity-30 bg-[radial-gradient(circle_500px_at_50%_200px,color-mix(in_srgb,var(--clinic-primary)_35%,white),transparent)]" />
             </div>
             <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center gap-8 px-6 py-24 md:px-0 lg:grid lg:grid-cols-12 lg:gap-10 xl:gap-12">
                 <div className="lg:col-span-6">
@@ -36,7 +36,7 @@ export function ClinicHero({ company, settings, bookingSchedule }: ClinicHeroPro
                         settingKey="hero_title"
                         value={title}
                         as="h1"
-                        className="mb-4 max-w-xl text-4xl leading-tight font-bold tracking-tight text-balance text-cyan-500 sm:text-3xl lg:text-5xl"
+                        className="mb-4 max-w-xl text-4xl leading-tight font-bold tracking-tight text-balance text-clinic-500 sm:text-3xl lg:text-5xl"
                     />
                     <EditableText
                         settingKey="hero_subtitle"
@@ -68,7 +68,7 @@ export function ClinicHero({ company, settings, bookingSchedule }: ClinicHeroPro
                         settingKey="hero_quote"
                         value={quote}
                         as="p"
-                        className="mt-6 max-w-xl border-l-4 border-cyan-400 pl-4 text-balance text-sm font-medium text-cyan-800 md:text-base"
+                        className="mt-6 max-w-xl border-l-4 border-clinic-400 pl-4 text-balance text-sm font-medium text-clinic-800 md:text-base"
                     />
                 </div>
                 <div className="order-first w-full lg:order-last lg:col-span-6">

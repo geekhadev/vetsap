@@ -66,6 +66,18 @@
 
     /* Ancho tipo “8xl” para layouts de selección (≈88rem). */
     --max-width-8xl: 88rem;
+
+    /* Clinic brand palette defaults (overridden on .clinic-page via --clinic-primary). */
+    --color-clinic-50: #ecfeff;
+    --color-clinic-100: #cffafe;
+    --color-clinic-200: #a5f3fc;
+    --color-clinic-300: #67e8f9;
+    --color-clinic-400: #22d3ee;
+    --color-clinic-500: #06b6d4;
+    --color-clinic-600: #0891b2;
+    --color-clinic-700: #0e7490;
+    --color-clinic-800: #155e75;
+    --color-clinic-900: #164e63;
 }
 
 :root {
@@ -176,6 +188,21 @@
  * Keep semantic UI tokens light so primitives (Card, Input, Select) don't
  * follow the app dark theme and clash with the page.
  */
+.clinic-page {
+    --clinic-primary: #06b6d4;
+    /* Override Tailwind theme tokens so text-clinic-* / bg-clinic-* pick up the brand color. */
+    --color-clinic-50: color-mix(in srgb, var(--clinic-primary) 8%, white);
+    --color-clinic-100: color-mix(in srgb, var(--clinic-primary) 18%, white);
+    --color-clinic-200: color-mix(in srgb, var(--clinic-primary) 32%, white);
+    --color-clinic-300: color-mix(in srgb, var(--clinic-primary) 48%, white);
+    --color-clinic-400: color-mix(in srgb, var(--clinic-primary) 72%, white);
+    --color-clinic-500: var(--clinic-primary);
+    --color-clinic-600: color-mix(in srgb, var(--clinic-primary) 82%, black);
+    --color-clinic-700: color-mix(in srgb, var(--clinic-primary) 68%, black);
+    --color-clinic-800: color-mix(in srgb, var(--clinic-primary) 52%, black);
+    --color-clinic-900: color-mix(in srgb, var(--clinic-primary) 38%, black);
+}
+
 .dark :is(.landing-page, .clinic-page) {
     color-scheme: light;
     --background: oklch(1 0 0);

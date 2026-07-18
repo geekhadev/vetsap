@@ -72,6 +72,7 @@ export function useWebsiteSettingsForm() {
 
     const form = useForm<WebsiteSettingsFormState>({
         slug: slug ?? '',
+        primary_color: webSettings?.['primary_color'] ?? '',
         facebook_url: webSettings?.['facebook_url'] ?? '',
         instagram_url: webSettings?.['instagram_url'] ?? '',
         whatsapp_phone: webSettings?.['whatsapp_phone'] ?? '',

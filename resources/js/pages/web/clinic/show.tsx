@@ -1,6 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { ClinicAbout } from './clinic-about';
 import { ClinicContact } from './clinic-contact';
 import { ClinicEditorProvider } from './clinic-editor-context';
@@ -10,6 +10,7 @@ import { ClinicGallery } from './clinic-gallery';
 import { ClinicHeader } from './clinic-header';
 import { ClinicHero } from './clinic-hero';
 import { ClinicServices } from './clinic-services';
+import { clinicPrimaryColorStyle } from './clinic-theme';
 import { ClinicWhatsappButton } from './clinic-whatsapp-button';
 import type { ClinicShowProps } from './types';
 
@@ -41,6 +42,10 @@ export default function ClinicShow() {
         };
     }, []);
 
+    const brandStyle = clinicPrimaryColorStyle(settings['primary_color']) as
+        | CSSProperties
+        | undefined;
+
     const page = (
         <>
             <Head>
@@ -50,7 +55,10 @@ export default function ClinicShow() {
                     content={`${company.name} — clínica veterinaria. Agenda tu cita en línea.`}
                 />
             </Head>
-            <div className="clinic-page flex min-h-screen flex-col bg-white text-gray-900 [&_#hero]:scroll-mt-0 [&_[id]]:scroll-mt-24">
+            <div
+                className="clinic-page flex min-h-screen flex-col bg-white text-gray-900 [&_#hero]:scroll-mt-0 [&_[id]]:scroll-mt-24"
+                style={brandStyle}
+            >
                 <main className="flex flex-col">
                     <div className="relative">
                         <ClinicHeader logo={settings['logo']} companyName={company.name} />

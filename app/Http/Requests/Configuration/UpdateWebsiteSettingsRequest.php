@@ -40,6 +40,7 @@ class UpdateWebsiteSettingsRequest extends FormRequest
                 'regex:/^[a-z0-9-]+$/',
                 Rule::unique('configuration_companies', 'slug')->ignore($company->id),
             ],
+            'primary_color' => ['nullable', 'hex_color'],
             'facebook_url' => ['nullable', 'string', 'max:500'],
             'instagram_url' => ['nullable', 'string', 'max:500'],
             'whatsapp_phone' => ['nullable', 'string', 'max:30'],
@@ -49,12 +50,51 @@ class UpdateWebsiteSettingsRequest extends FormRequest
     }
 
     /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'primary_color' => 'color principal',
+            'facebook_url' => 'URL de Facebook',
+            'instagram_url' => 'URL de Instagram',
+            'whatsapp_phone' => 'número de WhatsApp',
+            'whatsapp_message' => 'mensaje de WhatsApp',
+            'contact_map_url' => 'ubicación de la clínica',
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $color = $this->input('primary_color');
+
+        if (! is_string($color)) {
+            return;
+        }
+
+        $trimmed = trim($color);
+
+        if ($trimmed === '') {
+            $this->merge(['primary_color' => null]);
+
+            return;
+        }
+
+        if (! str_starts_with($trimmed, '#')) {
+            $trimmed = '#'.$trimmed;
+        }
+
+        $this->merge(['primary_color' => strtoupper($trimmed)]);
+    }
+
+    /**
      * @return array<string, string|null>
      */
     public function settingsPayload(): array
     {
         /** @var array<string, string|null> */
         return $this->safe()->only([
+            'primary_color',
             'facebook_url',
             'instagram_url',
             'whatsapp_phone',
