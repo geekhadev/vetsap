@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { FormBarcodeInput } from '@/components/custom/form-barcode-input';
 import { FormBooleanSwitch } from '@/components/custom/form-boolean-switch';
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormSelect } from '@/components/custom/form-select';
@@ -111,7 +112,7 @@ export function ProductForm({
                         }}
                     />
 
-                    <FormTextInput
+                    <FormBarcodeInput
                         label="Código de barras"
                         placeholder="Opcional"
                         error={errors.barcode}
@@ -120,6 +121,7 @@ export function ProductForm({
                             name: 'barcode',
                             maxLength: 64,
                             defaultValue: entity?.barcode ?? '',
+                            autoComplete: 'off',
                         }}
                     />
 

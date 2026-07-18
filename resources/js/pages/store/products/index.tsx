@@ -37,6 +37,12 @@ function ProductsIndex() {
                 hideable: false,
             },
             {
+                key: 'barcode',
+                label: 'Código de barras',
+                sortable: true,
+                render: (row) => row.barcode?.trim() || '—',
+            },
+            {
                 key: 'product_category',
                 label: 'Categoría',
                 sortable: false,
