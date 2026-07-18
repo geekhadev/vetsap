@@ -1,5 +1,5 @@
-import { usePage } from '@inertiajs/react';
-import { format } from 'date-fns';
+import { router, usePage } from '@inertiajs/react';
+import { format, isAfter } from 'date-fns';
 import {
     ArrowRight,
     ChevronDown,
@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
+import { startAttention } from '@/actions/App/Http/Controllers/Agenda/AppointmentsController';
 import { ConfirmDialog } from '@/components/custom/confirm-dialog';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
 import { formatDateDisplay } from '@/components/custom/date-display';
@@ -33,6 +34,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
 import { useClipboard } from '@/hooks/use-clipboard';
 import {
     appointmentStatusColorToDotClass,
@@ -62,6 +64,7 @@ type AppointmentDetailModalProps = {
     holidays: CalendarHoliday[];
     canUpdate: boolean;
     canDelete: boolean;
+    canStartAttention?: boolean;
 };
 
 function joinDetailParts(parts: Array<string | null | undefined>): string {
@@ -102,33 +105,39 @@ function AppointmentDetailContent({
     appointmentStatuses,
     canUpdate,
     canDelete,
+    canStartAttention,
     statusChanging,
     statusChangeError,
     rescheduling,
     rescheduleError,
     deleting,
     deleteError,
+    startingAttention,
     holidays,
     onStatusChange,
     onScheduleChange,
     onDelete,
+    onStartAttention,
     scheduleFieldKey,
 }: {
     appointment: AppointmentDetail;
     appointmentStatuses: AppointmentStatusOption[];
     canUpdate: boolean;
     canDelete: boolean;
+    canStartAttention: boolean;
     statusChanging: boolean;
     statusChangeError: string | null;
     rescheduling: boolean;
     rescheduleError: string | null;
     deleting: boolean;
     deleteError: string | null;
+    startingAttention: boolean;
     holidays: CalendarHoliday[];
     scheduleFieldKey: number;
     onStatusChange: (statusId: string) => void;
     onScheduleChange: (schedule: AppointmentScheduleValue) => void;
     onDelete: () => void;
+    onStartAttention: () => void;
 }) {
     const { company_selected: companySelected } = usePage().props;
     const companyName = companySelected?.name?.trim() || 'nuestra clínica';
@@ -186,6 +195,10 @@ function AppointmentDetailContent({
             : null,
         birthDate !== '' ? `Cumpleaños: ${birthDate}` : null,
     ]);
+
+    const startsAt = new Date(appointment.starts_at);
+    const isFutureAppointment =
+        !Number.isNaN(startsAt.getTime()) && isAfter(startsAt, new Date());
 
     return (
         <div className="space-y-4">
@@ -357,33 +370,60 @@ function AppointmentDetailContent({
                 </DetailSection>
             ) : null}
 
-            <div className="flex flex-row items-start gap-2 border-t pt-4 sm:justify-between">
-                {canDelete ? (
-                    <div className="min-w-0 flex-1 space-y-1 sm:flex-none">
+            {canDelete || (canStartAttention && !isFutureAppointment) ? (
+                <div className="flex flex-row items-start gap-2 border-t pt-4 sm:justify-between">
+                    {canDelete ? (
+                        <div className="min-w-0 flex-1 space-y-1 sm:flex-none">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 sm:w-auto"
+                                disabled={deleting || startingAttention}
+                                onClick={onDelete}
+                            >
+                                <Trash2
+                                    aria-hidden
+                                    className="size-4 shrink-0"
+                                />
+                                Eliminar cita
+                            </Button>
+                            {deleteError ? (
+                                <p
+                                    className="text-destructive text-xs"
+                                    role="alert"
+                                >
+                                    {deleteError}
+                                </p>
+                            ) : null}
+                        </div>
+                    ) : (
+                        <span aria-hidden className="flex-1 sm:flex-none" />
+                    )}
+                    {canStartAttention && !isFutureAppointment ? (
                         <Button
                             type="button"
-                            variant="outline"
-                            className="w-full gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 sm:w-auto"
-                            disabled={deleting}
-                            onClick={onDelete}
+                            className="min-w-0 flex-1 gap-2 sm:w-auto sm:flex-none"
+                            disabled={startingAttention || deleting}
+                            onClick={onStartAttention}
                         >
-                            <Trash2 aria-hidden className="size-4 shrink-0" />
-                            Eliminar cita
+                            {startingAttention ? (
+                                <>
+                                    <Spinner className="size-4" />
+                                    Iniciando…
+                                </>
+                            ) : (
+                                <>
+                                    Iniciar atención
+                                    <ArrowRight
+                                        aria-hidden
+                                        className="size-4 shrink-0"
+                                    />
+                                </>
+                            )}
                         </Button>
-                        {deleteError ? (
-                            <p className="text-destructive text-xs" role="alert">
-                                {deleteError}
-                            </p>
-                        ) : null}
-                    </div>
-                ) : (
-                    <span aria-hidden className="flex-1 sm:flex-none" />
-                )}
-                <Button type="button" className="min-w-0 flex-1 gap-2 sm:flex-none sm:w-auto">
-                    Iniciar atención
-                    <ArrowRight aria-hidden className="size-4 shrink-0" />
-                </Button>
-            </div>
+                    ) : null}
+                </div>
+            ) : null}
         </div>
     );
 }
@@ -409,6 +449,7 @@ export function AppointmentDetailModal({
     holidays,
     canUpdate,
     canDelete,
+    canStartAttention = false,
 }: AppointmentDetailModalProps) {
     const { appointment, setAppointment, loading, error, fetchAppointment, reset } =
         useAppointmentDetail();
@@ -426,6 +467,7 @@ export function AppointmentDetailModal({
     } = useRescheduleAppointment();
     const [scheduleFieldKey, setScheduleFieldKey] = useState(0);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [startingAttention, setStartingAttention] = useState(false);
     const {
         deleteAppointment,
         deleting,
@@ -491,6 +533,35 @@ export function AppointmentDetailModal({
         deleteAppointment(appointmentId);
     }, [appointmentId, deleteAppointment]);
 
+    const handleStartAttention = useCallback(() => {
+        if (appointmentId === null || startingAttention) {
+            return;
+        }
+
+        setStartingAttention(true);
+
+        router.post(startAttention.url(appointmentId), {}, {
+            preserveScroll: true,
+            onError: () => {
+                toast.error('No se pudo iniciar la atención.');
+            },
+            onFinish: () => {
+                setStartingAttention(false);
+            },
+        });
+    }, [appointmentId, startingAttention]);
+
+    const handleOpenChange = useCallback(
+        (nextOpen: boolean) => {
+            if (!nextOpen) {
+                setStartingAttention(false);
+            }
+
+            onOpenChange(nextOpen);
+        },
+        [onOpenChange],
+    );
+
     useEffect(() => {
         if (!open || appointmentId === null) {
             return;
@@ -517,7 +588,7 @@ export function AppointmentDetailModal({
 
     return (
         <>
-            <Dialog open={open} onOpenChange={onOpenChange}>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogContent className="gap-0 overflow-y-auto sm:max-w-lg">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Detalle de cita</DialogTitle>
@@ -540,17 +611,20 @@ export function AppointmentDetailModal({
                             appointmentStatuses={appointmentStatuses}
                             canUpdate={canUpdate}
                             canDelete={canDelete}
+                            canStartAttention={canStartAttention}
                             statusChanging={statusChanging}
                             statusChangeError={statusChangeError}
                             rescheduling={rescheduling}
                             rescheduleError={rescheduleError}
                             deleting={deleting}
                             deleteError={deleteError}
+                            startingAttention={startingAttention}
                             holidays={holidays}
                             scheduleFieldKey={scheduleFieldKey}
                             onStatusChange={handleStatusChange}
                             onScheduleChange={handleScheduleChange}
                             onDelete={() => setConfirmDeleteOpen(true)}
+                            onStartAttention={handleStartAttention}
                         />
                     ) : null}
                 </DialogContent>
