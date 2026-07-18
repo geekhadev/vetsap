@@ -1,5 +1,6 @@
 import { ScanBarcode } from 'lucide-react';
 import { useId, useState } from 'react';
+import type { FocusEvent } from 'react';
 
 import { BarcodeScannerDialog } from '@/components/custom/barcode-scanner-dialog';
 import InputError from '@/components/input-error';
@@ -24,12 +25,15 @@ export function FormBarcodeInput({
     scanButtonLabel = 'Escanear',
     scannerTitle = 'Escanear código de barras',
     scannerDescription = 'Apunta la cámara al código de barras del producto.',
+    onValueChange,
+    onCommit,
     inputProps = {},
 }: FormBarcodeInputProps) {
     const {
         defaultValue,
         className: inputPropsClassName,
         id: inputPropsId,
+        onBlur: inputOnBlur,
         'aria-describedby': inputAriaDescribedBy,
         'aria-invalid': inputAriaInvalid,
         ...restInputProps
@@ -49,9 +53,20 @@ export function FormBarcodeInput({
     const ariaDescribedBy =
         describedByParts.length > 0 ? describedByParts.join(' ') : undefined;
 
+    const updateBarcode = (next: string) => {
+        setBarcode(next);
+        onValueChange?.(next);
+    };
+
     const handleScan = (decoded: string) => {
-        setBarcode(decoded);
+        updateBarcode(decoded);
         setScannerOpen(false);
+        onCommit?.(decoded);
+    };
+
+    const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
+        inputOnBlur?.(event);
+        onCommit?.(event.target.value);
     };
 
     return (
@@ -72,8 +87,9 @@ export function FormBarcodeInput({
                     placeholder={placeholder}
                     value={barcode}
                     onChange={(event) => {
-                        setBarcode(event.target.value);
+                        updateBarcode(event.target.value);
                     }}
+                    onBlur={handleBlur}
                     className={cn(
                         'rounded-e-none',
                         inputPropsClassName,

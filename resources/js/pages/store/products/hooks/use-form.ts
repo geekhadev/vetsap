@@ -7,7 +7,7 @@ export function useProductForm(entity: Product | null) {
     const headTitle = isEdit ? 'Editar producto' : 'Nuevo producto';
     const description = isEdit
         ? 'Modifica los datos del producto.'
-        : 'Completa categoría, tipo y nombre. Categoría y tipo pueden ser globales o de la empresa.';
+        : 'El código de barras es opcional: si lo dejas vacío, el sistema asigna uno. Completa nombre, categoría y tipo.';
 
     const formProps = useMemo(() => {
         if (isEdit && entity) {

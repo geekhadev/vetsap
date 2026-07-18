@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps, FocusEvent, ReactNode } from 'react';
 
 export type FormBarcodeInputProps = {
     label?: ReactNode;
@@ -13,5 +13,17 @@ export type FormBarcodeInputProps = {
     scanButtonLabel?: string;
     scannerTitle?: string;
     scannerDescription?: string;
-    inputProps?: Omit<ComponentProps<'input'>, 'type' | 'value' | 'onChange'>;
+    /** Se dispara en cada cambio (escritura o escaneo). */
+    onValueChange?: (value: string) => void;
+    /**
+     * Se dispara al terminar de ingresar el código: blur del input o escaneo exitoso.
+     * Útil para validar unicidad sin esperar al submit.
+     */
+    onCommit?: (value: string) => void;
+    inputProps?: Omit<
+        ComponentProps<'input'>,
+        'type' | 'value' | 'onChange' | 'onBlur'
+    > & {
+        onBlur?: (event: FocusEvent<HTMLInputElement>) => void;
+    };
 };

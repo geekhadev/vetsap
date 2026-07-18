@@ -6,6 +6,7 @@ import { FormSelect } from '@/components/custom/form-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
 import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
+import { useBarcodeAvailability } from '@/pages/store/products/hooks/use-barcode-availability';
 import { useProductForm } from '@/pages/store/products/hooks/use-form';
 import { formatMasterLabel } from '@/pages/store/products/types';
 import type { MasterOption, Product } from '@/pages/store/products/types';
@@ -29,14 +30,25 @@ type ProductFormFields = Pick<
     | 'is_active'
 >;
 
-export function ProductForm({
-    open,
-    onOpenChange,
+type ProductFormFieldsProps = {
+    entity: Product | null;
+    productCategories: MasterOption[];
+    productTypes: MasterOption[];
+    processing: boolean;
+    errors: Partial<Record<keyof ProductFormFields, string>>;
+    onCancel: () => void;
+};
+
+function ProductFormFields({
     entity,
     productCategories,
     productTypes,
-}: ProductFormProps) {
-    const { formProps, headTitle, description } = useProductForm(entity);
+    processing,
+    errors,
+    onCancel,
+}: ProductFormFieldsProps) {
+    const { clientError, clearClientError, validateBarcode } =
+        useBarcodeAvailability(entity?.id);
 
     const categoryOptions = useMemo(
         () =>
@@ -63,6 +75,117 @@ export function ProductForm({
     );
 
     return (
+        <>
+            <FormBarcodeInput
+                label="Código de barras"
+                placeholder="Opcional — se asigna automáticamente si se deja vacío"
+                error={clientError ?? errors.barcode}
+                onValueChange={clearClientError}
+                onCommit={validateBarcode}
+                inputProps={{
+                    id: 'product-barcode',
+                    name: 'barcode',
+                    maxLength: 64,
+                    defaultValue: entity?.barcode ?? '',
+                    autoComplete: 'off',
+                    autoFocus: true,
+                }}
+            />
+
+            <FormTextInput
+                label="Nombre"
+                placeholder='Ej. "Antiparasitario 10 kg"'
+                required
+                error={errors.name}
+                inputProps={{
+                    id: 'product-name',
+                    name: 'name',
+                    maxLength: 255,
+                    defaultValue: entity?.name ?? '',
+                }}
+            />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+                <FormSelect
+                    label="Categoría de producto"
+                    required
+                    placeholder="Selecciona…"
+                    options={categoryOptions}
+                    error={errors.product_category_id}
+                    selectProps={{
+                        id: 'product-product_category_id',
+                        name: 'product_category_id',
+                        defaultValue: entity?.product_category_id ?? '',
+                    }}
+                />
+
+                <FormSelect
+                    label="Tipo de producto"
+                    required
+                    placeholder="Selecciona…"
+                    options={typeOptions}
+                    error={errors.product_type_id}
+                    selectProps={{
+                        id: 'product-product_type_id',
+                        name: 'product_type_id',
+                        defaultValue: entity?.product_type_id ?? '',
+                    }}
+                />
+            </div>
+
+            <FormTextInput
+                label="Precio"
+                placeholder="Opcional"
+                error={errors.price}
+                inputProps={{
+                    id: 'product-price',
+                    name: 'price',
+                    type: 'number',
+                    min: 0,
+                    step: 1,
+                    defaultValue: entity?.price ?? '',
+                }}
+            />
+
+            <FormTextarea
+                label="Descripción"
+                placeholder="Opcional"
+                error={errors.description}
+                textareaProps={{
+                    id: 'product-description',
+                    name: 'description',
+                    maxLength: 2000,
+                    rows: 3,
+                    defaultValue: entity?.description ?? '',
+                }}
+            />
+
+            <FormBooleanSwitch
+                label="Activo"
+                name="is_active"
+                defaultChecked={entity?.is_active ?? true}
+                error={errors.is_active}
+            />
+
+            <FormDialogFooter
+                onCancel={onCancel}
+                processing={processing}
+                isEdit={entity !== null}
+            />
+        </>
+    );
+}
+
+export function ProductForm({
+    open,
+    onOpenChange,
+    entity,
+    productCategories,
+    productTypes,
+}: ProductFormProps) {
+    const { formProps, headTitle, description } = useProductForm(entity);
+
+    return (
         <InertiaFormDialog<ProductFormFields>
             open={open}
             onOpenChange={onOpenChange}
@@ -72,99 +195,14 @@ export function ProductForm({
             inertiaForm={{ ...formProps }}
         >
             {({ processing, errors }) => (
-                <>
-                    <FormSelect
-                        label="Categoría de producto"
-                        required
-                        placeholder="Selecciona…"
-                        options={categoryOptions}
-                        error={errors.product_category_id}
-                        selectProps={{
-                            id: 'product-product_category_id',
-                            name: 'product_category_id',
-                            defaultValue: entity?.product_category_id ?? '',
-                        }}
-                    />
-
-                    <FormSelect
-                        label="Tipo de producto"
-                        required
-                        placeholder="Selecciona…"
-                        options={typeOptions}
-                        error={errors.product_type_id}
-                        selectProps={{
-                            id: 'product-product_type_id',
-                            name: 'product_type_id',
-                            defaultValue: entity?.product_type_id ?? '',
-                        }}
-                    />
-
-                    <FormTextInput
-                        label="Nombre"
-                        placeholder='Ej. "Antiparasitario 10 kg"'
-                        required
-                        error={errors.name}
-                        inputProps={{
-                            id: 'product-name',
-                            name: 'name',
-                            maxLength: 255,
-                            defaultValue: entity?.name ?? '',
-                        }}
-                    />
-
-                    <FormBarcodeInput
-                        label="Código de barras"
-                        placeholder="Opcional"
-                        error={errors.barcode}
-                        inputProps={{
-                            id: 'product-barcode',
-                            name: 'barcode',
-                            maxLength: 64,
-                            defaultValue: entity?.barcode ?? '',
-                            autoComplete: 'off',
-                        }}
-                    />
-
-                    <FormTextInput
-                        label="Precio"
-                        placeholder="Opcional"
-                        error={errors.price}
-                        inputProps={{
-                            id: 'product-price',
-                            name: 'price',
-                            type: 'number',
-                            min: 0,
-                            step: 1,
-                            defaultValue: entity?.price ?? '',
-                        }}
-                    />
-
-                    <FormTextarea
-                        label="Descripción"
-                        placeholder="Opcional"
-                        error={errors.description}
-                        textareaProps={{
-                            id: 'product-description',
-                            name: 'description',
-                            maxLength: 2000,
-                            rows: 3,
-                            defaultValue: entity?.description ?? '',
-                        }}
-                    />
-
-                    <FormBooleanSwitch
-                        label="Activo"
-                        name="is_active"
-                        defaultChecked={entity?.is_active ?? true}
-                        error={errors.is_active}
-                    />
-
-                    <FormDialogFooter
-                        onCancel={() => onOpenChange(false)}
-                        processing={processing}
-                        isEdit={entity !== null}
-                    />
-                </>
+                <ProductFormFields
+                    entity={entity}
+                    productCategories={productCategories}
+                    productTypes={productTypes}
+                    processing={processing}
+                    errors={errors}
+                    onCancel={() => onOpenChange(false)}
+                />
             )}
         </InertiaFormDialog>
     );

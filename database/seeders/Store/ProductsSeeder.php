@@ -39,7 +39,7 @@ class ProductsSeeder extends Seeder
                     'product_category_id' => $general->id,
                     'product_type_id' => $servicios->id,
                     'price' => 25000,
-                    'barcode' => null,
+                    'barcode' => '2000000000001',
                 ],
             ];
 

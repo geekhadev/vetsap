@@ -3,6 +3,7 @@
 namespace App\Actions\Store\Products;
 
 use App\Models\Store\Product;
+use App\Support\Store\ProductBarcodeGenerator;
 
 final class UpdateProductAction
 {
@@ -19,6 +20,13 @@ final class UpdateProductAction
      */
     public function execute(Product $product, array $data): Product
     {
+        if (ProductBarcodeGenerator::isBlank($data['barcode'] ?? null)) {
+            $data['barcode'] = ProductBarcodeGenerator::uniqueForCompany(
+                $product->company_id,
+                $product->id,
+            );
+        }
+
         $product->update($data);
 
         return $product;
