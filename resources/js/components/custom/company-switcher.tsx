@@ -1,6 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
-import { Building2, ChevronsUpDown, Globe, Plus } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { Building2, Check, ChevronsUpDown, Globe, Plus } from 'lucide-react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { CompanyCreateDialog } from '@/components/custom/company-switcher/company-create-dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,16 +30,6 @@ function companyPrimaryLabel(row: {
     return trimmed ? trimmed : row.name;
 }
 
-function companyDocumentLine(row: {
-    document_type: string | null;
-    document_number: string | null;
-}): string {
-    const tipo = row.document_type?.trim() || '—';
-    const numero = row.document_number?.trim() || '—';
-
-    return `${tipo} ${numero}`;
-}
-
 export function CompanySwitcher() {
     const page = usePage<{
         show_company_switcher: boolean;
@@ -65,21 +55,28 @@ export function CompanySwitcher() {
         return companyPrimaryLabel(selected);
     }, [selected]);
 
-    const selectCompany = useCallback((companyId: string) => {
-        router.post(
-            companySelectionStore.url(),
-            { company_id: companyId },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    // Las respuestas prefetch del menú incluyen props compartidas antiguas
-                    // (p. ej. `company_selected`); sin vaciar la caché, la siguiente visita
-                    // puede reutilizar datos obsoletos hasta que expire el prefetch.
-                    router.flushAll();
+    const selectCompany = useCallback(
+        (companyId: string) => {
+            if (companyId === selected?.id) {
+                return;
+            }
+
+            router.post(
+                companySelectionStore.url(),
+                { company_id: companyId },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        // Las respuestas prefetch del menú incluyen props compartidas antiguas
+                        // (p. ej. `company_selected`); sin vaciar la caché, la siguiente visita
+                        // puede reutilizar datos obsoletos hasta que expire el prefetch.
+                        router.flushAll();
+                    },
                 },
-            },
-        );
-    }, []);
+            );
+        },
+        [selected?.id],
+    );
 
     const clinicSlug = selected?.slug?.trim();
 
@@ -137,27 +134,34 @@ export function CompanySwitcher() {
                                 Cambiar empresa
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            {options.map((row) => (
-                                <DropdownMenuItem
-                                    key={row.id}
-                                    onSelect={() => selectCompany(row.id)}
-                                    disabled={row.id === selected?.id}
-                                    className={cn(
-                                        row.id === selected?.id
-                                            ? 'cursor-not-allowed font-bold text-blue-500'
-                                            : 'cursor-pointer',
-                                    )}
-                                >
-                                    <div className="flex min-w-0 flex-col gap-0.5">
-                                        <span className="truncate font-medium">
-                                            {companyPrimaryLabel(row)}
-                                        </span>
-                                        <span className="text-muted-foreground truncate text-xs">
-                                            {companyDocumentLine(row)}
-                                        </span>
-                                    </div>
-                                </DropdownMenuItem>
-                            ))}
+                            {options.map((row, index) => {
+                                const isSelected = row.id === selected?.id;
+
+                                return (
+                                    <Fragment key={row.id}>
+                                        {index > 0 ? (
+                                            <DropdownMenuSeparator />
+                                        ) : null}
+                                        <DropdownMenuItem
+                                            onSelect={() =>
+                                                selectCompany(row.id)
+                                            }
+                                            className={cn(
+                                                'cursor-pointer',
+                                                isSelected &&
+                                                    'bg-accent text-accent-foreground font-semibold',
+                                            )}
+                                        >
+                                            <span className="min-w-0 flex-1 truncate">
+                                                {companyPrimaryLabel(row)}
+                                            </span>
+                                            {isSelected ? (
+                                                <Check className="text-accent-foreground size-4 shrink-0" />
+                                            ) : null}
+                                        </DropdownMenuItem>
+                                    </Fragment>
+                                );
+                            })}
                             {canCreateCompany ? (
                                 <>
                                     <DropdownMenuSeparator />

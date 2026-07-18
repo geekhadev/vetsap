@@ -1,6 +1,5 @@
 import { Form, Head, router } from '@inertiajs/react';
 import { ArrowRight, Building2, LogOut } from 'lucide-react';
-import { DocumentBadge } from '@/components/custom/document-badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -82,11 +81,7 @@ export default function CompanySelection({
                                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                                         <span>{c.name}</span>
                                                     </div>
-                                                ): null}
-                                                <DocumentBadge
-                                                    documentType={c.document_type}
-                                                    documentNumber={c.document_number}
-                                                />
+                                                ) : null}
                                                 <Form
                                                     {...companySelectionStore.form()}
                                                     className="mt-auto flex justify-end pt-3"
