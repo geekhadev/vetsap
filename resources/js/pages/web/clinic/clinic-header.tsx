@@ -89,10 +89,20 @@ export function ClinicHeader({ logo, companyName }: ClinicHeaderProps) {
                             <img
                                 src={logo}
                                 alt={companyName}
-                                className="h-10 w-auto object-contain md:h-11"
+                                className={cn(
+                                    'w-auto object-contain transition-[height] duration-300',
+                                    isAtTop ? 'h-14 md:h-[3.85rem]' : 'h-10 md:h-11',
+                                )}
                             />
                         ) : (
-                            <span className="text-lg font-semibold text-cyan-700">{companyName}</span>
+                            <span
+                                className={cn(
+                                    'font-semibold text-clinic-700 transition-[font-size] duration-300',
+                                    isAtTop ? 'text-[1.575rem]' : 'text-lg',
+                                )}
+                            >
+                                {companyName}
+                            </span>
                         )}
                     </a>
                     <button
@@ -128,8 +138,8 @@ export function ClinicHeader({ logo, companyName }: ClinicHeaderProps) {
                                         className={cn(
                                             'inline-block text-base transition-colors',
                                             isActive
-                                                ? 'font-bold text-cyan-700'
-                                                : 'font-medium text-gray-600 hover:text-cyan-600',
+                                                ? 'font-bold text-clinic-700'
+                                                : 'font-medium text-gray-600 hover:text-clinic-600',
                                         )}
                                     >
                                         {link.title}
