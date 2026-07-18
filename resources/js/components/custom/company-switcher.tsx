@@ -92,8 +92,8 @@ export function CompanySwitcher() {
                         <TooltipTrigger asChild>
                             <Button
                                 variant="ghost"
-                                size="icon"
-                                className="border-sidebar-border/70 text-muted-foreground size-9 shrink-0"
+                                size="sm"
+                                className="border-sidebar-border/70 text-muted-foreground h-9 shrink-0 gap-1.5 px-2.5"
                                 asChild
                             >
                                 <a
@@ -103,6 +103,7 @@ export function CompanySwitcher() {
                                     aria-label="Ver sitio web de la empresa"
                                 >
                                     <Globe className="size-4" />
+                                    <span>Web</span>
                                 </a>
                             </Button>
                         </TooltipTrigger>
