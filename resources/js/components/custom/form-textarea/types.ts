@@ -11,4 +11,11 @@ export type FormTextareaProps = {
     labelClassName?: string;
     errorClassName?: string;
     textareaProps?: ComponentProps<'textarea'>;
+    /**
+     * Muestra un botón de micrófono para dictar por voz (Web Speech API).
+     * Requiere `textareaProps.value` + `textareaProps.onChange` controlados, o un `defaultValue` no controlado.
+     */
+    speechToText?: boolean;
+    /** Locale BCP 47 para el reconocimiento. Por defecto `es-CL`. */
+    speechLang?: string;
 };

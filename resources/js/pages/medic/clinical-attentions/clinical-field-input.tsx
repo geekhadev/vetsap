@@ -67,6 +67,7 @@ export function ClinicalFieldInput({
             <FormTextarea
                 label={label}
                 error={error}
+                speechToText
                 textareaProps={{
                     id: inputId,
                     name: inputName,
