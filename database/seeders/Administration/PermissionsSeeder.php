@@ -91,6 +91,16 @@ class PermissionsSeeder extends Seeder
                 'system_slug' => 'purchase',
                 'modules' => [
                     [
+                        'module_name' => 'Órdenes de compra',
+                        'module_slug' => 'purchase-orders',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Gastos',
+                        'module_slug' => 'expenses',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
                         'module_name' => 'Proveedores',
                         'module_slug' => 'suppliers',
                         'permissions' => $permissions_crud,
