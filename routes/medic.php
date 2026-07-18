@@ -19,6 +19,10 @@ Route::put('patients/{patient}/draft-attention', [PatientsController::class, 'up
     ->name('patients.draft-attention.upsert');
 Route::post('patients/{patient}/draft-attention/close', [PatientsController::class, 'closeDraftAttention'])
     ->name('patients.draft-attention.close');
+Route::get('patients/{patient}/clinical-history/pdf', [PatientsController::class, 'downloadClinicalHistory'])
+    ->name('patients.clinical-history.download');
+Route::get('patients/{patient}/clinical-history/whatsapp', [PatientsController::class, 'whatsappClinicalHistory'])
+    ->name('patients.clinical-history.whatsapp');
 Route::resource('doctors', DoctorsController::class)->except(['show']);
 Route::put('doctors/{doctor}/services', [DoctorsController::class, 'syncServices'])
     ->name('doctors.services.sync');
@@ -26,6 +30,10 @@ Route::put('doctors/{doctor}/schedule', [DoctorsController::class, 'syncSchedule
     ->name('doctors.schedule.sync');
 Route::resource('clinical-templates', ClinicalTemplatesController::class)->except(['show']);
 Route::resource('clinical-attentions', ClinicalAttentionsController::class)->except(['show', 'create', 'edit', 'update']);
+Route::get('clinical-attentions/{clinical_attention}/pdf', [ClinicalAttentionsController::class, 'download'])
+    ->name('clinical-attentions.download');
+Route::get('clinical-attentions/{clinical_attention}/whatsapp', [ClinicalAttentionsController::class, 'whatsapp'])
+    ->name('clinical-attentions.whatsapp');
 Route::post('clinical-attentions/{clinical_attention}/exam-results/{service}', [ClinicalAttentionsController::class, 'storeExamResult'])
     ->name('clinical-attentions.exam-results.store');
 Route::delete('clinical-attentions/{clinical_attention}/exam-results/{service}', [ClinicalAttentionsController::class, 'destroyExamResult'])

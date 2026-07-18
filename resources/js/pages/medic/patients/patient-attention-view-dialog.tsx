@@ -21,6 +21,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { toWhatsappPhoneDigits } from '@/pages/agenda/calendar/appointment-share';
 import {
     formatAttentionDuration,
     resolveAttentionViewFields,
@@ -31,13 +32,14 @@ import type {
     AttentionSummary,
     PatientTemplateOption,
 } from '@/pages/medic/patients/types';
-import { destroy } from '@/routes/medic/clinical-attentions';
+import { destroy, download, whatsapp } from '@/routes/medic/clinical-attentions';
 
 type PatientAttentionViewDialogProps = {
     attention: AttentionSummary | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     patientId: string;
+    tutorPhone?: string | null;
     templates: PatientTemplateOption[];
     canDelete: boolean;
     canUpdateExams: boolean;
@@ -49,6 +51,7 @@ export function PatientAttentionViewDialog({
     open,
     onOpenChange,
     patientId,
+    tutorPhone = null,
     templates,
     canDelete,
     canUpdateExams,
@@ -58,6 +61,7 @@ export function PatientAttentionViewDialog({
     const [deleting, setDeleting] = useState(false);
 
     const exams = attention?.requested_exams ?? [];
+    const canShareWhatsapp = toWhatsappPhoneDigits(tutorPhone ?? '') !== null;
 
     const fields = useMemo(
         () => (attention ? resolveAttentionViewFields(attention, templates) : []),
@@ -139,14 +143,37 @@ export function PatientAttentionViewDialog({
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="min-w-56">
-                                        <DropdownMenuItem>
-                                            <FileDown className="size-4" aria-hidden />
-                                            Descargar atención en PDF
+                                        <DropdownMenuItem asChild>
+                                            <a
+                                                href={
+                                                    attention
+                                                        ? download.url(attention.id)
+                                                        : undefined
+                                                }
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <FileDown className="size-4" aria-hidden />
+                                                Ver atención en PDF
+                                            </a>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <MessageCircle className="size-4" aria-hidden />
-                                            Enviar atención por WhatsApp
-                                        </DropdownMenuItem>
+                                        {canShareWhatsapp && attention ? (
+                                            <DropdownMenuItem asChild>
+                                                <a
+                                                    href={whatsapp.url(attention.id)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <MessageCircle className="size-4" aria-hidden />
+                                                    Enviar atención por WhatsApp
+                                                </a>
+                                            </DropdownMenuItem>
+                                        ) : (
+                                            <DropdownMenuItem disabled>
+                                                <MessageCircle className="size-4" aria-hidden />
+                                                Enviar atención por WhatsApp
+                                            </DropdownMenuItem>
+                                        )}
                                         <DropdownMenuItem>
                                             <Mail className="size-4" aria-hidden />
                                             Enviar atención por email

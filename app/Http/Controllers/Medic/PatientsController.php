@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Medic;
 use App\Actions\Agenda\Appointments\BuildAppointmentFormOptionsAction;
 use App\Actions\Agenda\AppointmentStatuses\ListActiveAppointmentStatusesForCalendarAction;
 use App\Actions\Agenda\Holidays\ListActiveHolidaysForCalendarAction;
+use App\Actions\Medic\ClinicalAttentions\BuildPatientClinicalHistoryWhatsappShareUrlAction;
 use App\Actions\Medic\ClinicalAttentions\ClosePatientDraftAttentionAction;
+use App\Actions\Medic\ClinicalAttentions\GeneratePatientClinicalHistoryPdfAction;
 use App\Actions\Medic\ClinicalAttentions\UpsertPatientDraftAttentionAction;
 use App\Actions\Medic\Patients\CreatePatientAction;
 use App\Actions\Medic\Patients\DeletePatientAction;
@@ -33,6 +35,7 @@ use App\Support\Storage\PublicStorageUrl;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
@@ -439,6 +442,39 @@ class PatientsController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Foto del paciente actualizada.']);
 
         return back();
+    }
+
+    public function downloadClinicalHistory(
+        Patient $patient,
+        GeneratePatientClinicalHistoryPdfAction $action,
+    ): HttpResponse {
+        $this->authorize('update', $patient);
+
+        try {
+            $pdf = $action->execute($patient);
+        } catch (\RuntimeException $exception) {
+            abort(404, $exception->getMessage());
+        }
+
+        return response($pdf['content'], 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$pdf['filename'].'"',
+        ]);
+    }
+
+    public function whatsappClinicalHistory(
+        Patient $patient,
+        BuildPatientClinicalHistoryWhatsappShareUrlAction $action,
+    ): RedirectResponse {
+        $this->authorize('update', $patient);
+
+        try {
+            return redirect()->away($action->execute($patient));
+        } catch (\RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
     }
 
     public function destroy(Patient $patient, DeletePatientAction $action, Request $request): RedirectResponse

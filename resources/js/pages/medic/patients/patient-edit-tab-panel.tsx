@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { CalendarPlus, ChevronDown, FileDown, Mail, MessageCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { downloadClinicalHistory, whatsappClinicalHistory } from '@/actions/App/Http/Controllers/Medic/PatientsController';
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { AppointmentDetailModal } from '@/pages/agenda/calendar/appointment-detail-modal';
 import { AppointmentForm } from '@/pages/agenda/calendar/appointment-form';
+import { toWhatsappPhoneDigits } from '@/pages/agenda/calendar/appointment-share';
 import type {
     AppointmentFormOptions,
     AppointmentStatusOption,
@@ -75,6 +77,15 @@ export function PatientEditTabPanel({
     appointmentStatuses,
     can,
 }: PatientEditTabPanelProps) {
+    const closedAttentionsCount = useMemo(
+        () => attentions.filter((attention) => attention.status === 'closed').length,
+        [attentions],
+    );
+    const canShareWhatsapp = useMemo(
+        () => toWhatsappPhoneDigits(patient.customer?.phone ?? '') !== null,
+        [patient.customer?.phone],
+    );
+
     const [hasDraftAttention, setHasDraftAttention] = useState(draftAttention !== null);
     const [draftFormKey, setDraftFormKey] = useState(0);
     const [viewAttention, setViewAttention] = useState<AttentionSummary | null>(null);
@@ -191,14 +202,40 @@ export function PatientEditTabPanel({
                                     Programar cita
                                 </DropdownMenuItem>
                             ) : null}
-                            <DropdownMenuItem>
-                                <FileDown className="size-4" aria-hidden />
-                                Descargar historial PDF
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <MessageCircle className="size-4" aria-hidden />
-                                Enviar historial por WhatsApp
-                            </DropdownMenuItem>
+                            {closedAttentionsCount > 0 ? (
+                                <DropdownMenuItem asChild>
+                                    <a
+                                        href={downloadClinicalHistory.url(patient.id)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <FileDown className="size-4" aria-hidden />
+                                        Ver historial en PDF
+                                    </a>
+                                </DropdownMenuItem>
+                            ) : (
+                                <DropdownMenuItem disabled>
+                                    <FileDown className="size-4" aria-hidden />
+                                    Ver historial en PDF
+                                </DropdownMenuItem>
+                            )}
+                            {closedAttentionsCount > 0 && canShareWhatsapp ? (
+                                <DropdownMenuItem asChild>
+                                    <a
+                                        href={whatsappClinicalHistory.url(patient.id)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <MessageCircle className="size-4" aria-hidden />
+                                        Enviar historial por WhatsApp
+                                    </a>
+                                </DropdownMenuItem>
+                            ) : (
+                                <DropdownMenuItem disabled>
+                                    <MessageCircle className="size-4" aria-hidden />
+                                    Enviar historial por WhatsApp
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem>
                                 <Mail className="size-4" aria-hidden />
                                 Enviar historial por email
@@ -262,6 +299,7 @@ export function PatientEditTabPanel({
                     }
                 }}
                 patientId={patient.id}
+                tutorPhone={patient.customer?.phone ?? null}
                 templates={templates}
                 canDelete={can.attentions.delete}
                 canUpdateExams={can.attentions.update}

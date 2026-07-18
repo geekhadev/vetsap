@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Medic;
 
+use App\Actions\Medic\ClinicalAttentions\BuildClinicalAttentionWhatsappShareUrlAction;
 use App\Actions\Medic\ClinicalAttentions\CreateClinicalAttentionAction;
 use App\Actions\Medic\ClinicalAttentions\DeleteClinicalAttentionAction;
 use App\Actions\Medic\ClinicalAttentions\DeleteClinicalAttentionExamResultAction;
+use App\Actions\Medic\ClinicalAttentions\GenerateClinicalAttentionPdfAction;
 use App\Actions\Medic\ClinicalAttentions\ListClinicalAttentionsForCompanyAction;
 use App\Actions\Medic\ClinicalAttentions\StoreClinicalAttentionExamResultAction;
 use App\Http\Controllers\Controller;
@@ -20,6 +22,7 @@ use App\Models\Medic\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
@@ -128,6 +131,35 @@ class ClinicalAttentionsController extends Controller
         }
 
         return to_route('medic.clinical-attentions.index');
+    }
+
+    public function download(
+        ClinicalAttention $clinicalAttention,
+        GenerateClinicalAttentionPdfAction $action,
+    ): HttpResponse {
+        $this->authorize('view', $clinicalAttention);
+
+        $pdf = $action->execute($clinicalAttention);
+
+        return response($pdf['content'], 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.$pdf['filename'].'"',
+        ]);
+    }
+
+    public function whatsapp(
+        ClinicalAttention $clinicalAttention,
+        BuildClinicalAttentionWhatsappShareUrlAction $action,
+    ): RedirectResponse {
+        $this->authorize('view', $clinicalAttention);
+
+        try {
+            return redirect()->away($action->execute($clinicalAttention));
+        } catch (\RuntimeException $exception) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => $exception->getMessage()]);
+
+            return back();
+        }
     }
 
     public function storeExamResult(
