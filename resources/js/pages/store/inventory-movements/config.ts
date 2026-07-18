@@ -8,7 +8,6 @@ import type {
     InventoryMovementsIndexFiltersDraftFull,
     MovementCategoryOption,
     MovementTypeOption,
-    ProductOption,
 } from '@/pages/store/inventory-movements/types';
 import { INVENTORY_MOVEMENTS_INDEX_MODULE_FILTER_KEYS } from '@/pages/store/inventory-movements/types';
 import { index as inventoryMovementsIndex } from '@/routes/store/inventory-movements';
@@ -20,7 +19,6 @@ export type InventoryMovementsIndexPageProps = {
     filters: InventoryMovementsIndexFiltersDraftFull;
     movementTypes: MovementTypeOption[];
     movementCategories: MovementCategoryOption[];
-    products: ProductOption[];
     can: InventoryMovementsIndexCan;
 };
 

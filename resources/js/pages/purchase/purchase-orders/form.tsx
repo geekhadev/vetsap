@@ -3,6 +3,7 @@ import { CirclePlus, ScanBarcode, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { BarcodeScannerDialog } from '@/components/custom/barcode-scanner-dialog';
+import { CurrencyDisplay } from '@/components/custom/currency-display';
 import { FormDatePickerField } from '@/components/custom/form-date-picker-field';
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormSelect } from '@/components/custom/form-select';
@@ -13,70 +14,93 @@ import type { ProductAutocompleteOption } from '@/components/custom/product-auto
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useInventoryMovementForm } from '@/pages/store/inventory-movements/hooks/use-form';
-import type {
-    InventoryMovementDetailLine,
-    InventoryMovementTypeValue,
-    MovementCategoryOption,
-} from '@/pages/store/inventory-movements/types';
+import { usePurchaseOrderForm } from '@/pages/purchase/purchase-orders/hooks/use-form';
 import {
-    barcode as productBarcodeLookup,
-    search as productAutocompleteSearch,
-} from '@/routes/store/products';
+    formatLineTotal,
+    formatSupplierLabel,
+    orderTotalFromLines,
+} from '@/pages/purchase/purchase-orders/types';
+import type {
+    PurchaseOrder,
+    PurchaseOrderDetailLine,
+    PurchaseOrderStatusOption,
+    SupplierOption,
+} from '@/pages/purchase/purchase-orders/types';
+import { barcode as productBarcodeLookup, search as productAutocompleteSearch } from '@/routes/store/products';
 
-type InventoryMovementFormProps = {
+type PurchaseOrderFormProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    type: InventoryMovementTypeValue | null;
-    formSessionKey: number;
-    movementCategories: MovementCategoryOption[];
+    entity: PurchaseOrder | null;
+    suppliers: SupplierOption[];
+    purchaseOrderStatuses: PurchaseOrderStatusOption[];
 };
 
 type BarcodeLookupResponse = {
     data: ProductAutocompleteOption | null;
 };
 
-function createEmptyLine(): InventoryMovementDetailLine {
+function createEmptyLine(): PurchaseOrderDetailLine {
     return {
         key: crypto.randomUUID(),
         product_id: '',
         product_name: '',
         product_barcode: null,
-        quantity: '',
+        quantity: '1',
+        unit_price: '',
     };
 }
 
 function lineFromProduct(
     product: ProductAutocompleteOption,
-): InventoryMovementDetailLine {
+): PurchaseOrderDetailLine {
     return {
         key: crypto.randomUUID(),
         product_id: product.id,
         product_name: product.name,
         product_barcode: product.barcode,
         quantity: '1',
+        unit_price: product.price,
     };
 }
 
-type InventoryMovementFormFieldsProps = {
-    type: InventoryMovementTypeValue;
-    movementCategories: MovementCategoryOption[];
+function linesFromEntity(entity: PurchaseOrder | null): PurchaseOrderDetailLine[] {
+    if (!entity?.details?.length) {
+        return [createEmptyLine()];
+    }
+
+    return entity.details.map((detail) => ({
+        key: crypto.randomUUID(),
+        product_id: detail.product_id,
+        product_name: detail.product?.name ?? '',
+        product_barcode: detail.product?.barcode ?? null,
+        quantity: String(detail.quantity),
+        unit_price: String(detail.unit_price),
+    }));
+}
+
+type PurchaseOrderFormFieldsProps = {
+    entity: PurchaseOrder | null;
+    suppliers: SupplierOption[];
+    purchaseOrderStatuses: PurchaseOrderStatusOption[];
     processing: boolean;
+    isEdit: boolean;
     errors: Record<string, string>;
     onCancel: () => void;
 };
 
-function InventoryMovementFormFields({
-    type,
-    movementCategories,
+function PurchaseOrderFormFields({
+    entity,
+    suppliers,
+    purchaseOrderStatuses,
     processing,
+    isEdit,
     errors,
     onCancel,
-}: InventoryMovementFormFieldsProps) {
-    const [lines, setLines] = useState<InventoryMovementDetailLine[]>(() => [
-        createEmptyLine(),
-    ]);
-    const [categoryId, setCategoryId] = useState('');
+}: PurchaseOrderFormFieldsProps) {
+    const [lines, setLines] = useState<PurchaseOrderDetailLine[]>(() =>
+        linesFromEntity(entity),
+    );
     const [scannerOpen, setScannerOpen] = useState(false);
     const linesRef = useRef(lines);
     const barcodeHttp = useHttp({ barcode: '' });
@@ -90,18 +114,22 @@ function InventoryMovementFormFields({
         barcodeHttpRef.current = barcodeHttp;
     }, [barcodeHttp]);
 
-    const categoryOptions = useMemo(
+    const supplierOptions = useMemo(
         () =>
-            movementCategories
-                .filter(
-                    (category) =>
-                        category.type === type && category.is_active,
-                )
-                .map((category) => ({
-                    id: category.id,
-                    label: category.name,
-                })),
-        [movementCategories, type],
+            suppliers.map((supplier) => ({
+                id: supplier.id,
+                label: formatSupplierLabel(supplier),
+            })),
+        [suppliers],
+    );
+
+    const statusOptions = useMemo(
+        () =>
+            purchaseOrderStatuses.map((status) => ({
+                id: status.id,
+                label: status.name,
+            })),
+        [purchaseOrderStatuses],
     );
 
     const productSearchUrl = productAutocompleteSearch.url();
@@ -111,10 +139,19 @@ function InventoryMovementFormFields({
         .map((line) => line.product_id)
         .filter((id) => id !== '');
 
-    const updateQuantity = (key: string, value: string) => {
+    const orderTotal = orderTotalFromLines(lines);
+
+    const defaultOrderedAt =
+        entity?.ordered_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+
+    const updateLineField = (
+        key: string,
+        field: 'quantity' | 'unit_price',
+        value: string,
+    ) => {
         setLines((current) =>
             current.map((line) =>
-                line.key === key ? { ...line, quantity: value } : line,
+                line.key === key ? { ...line, [field]: value } : line,
             ),
         );
     };
@@ -128,6 +165,7 @@ function InventoryMovementFormFields({
                           product_id: product.id,
                           product_name: product.name,
                           product_barcode: product.barcode,
+                          unit_price: product.price,
                       }
                     : line,
             ),
@@ -143,6 +181,7 @@ function InventoryMovementFormFields({
                           product_id: '',
                           product_name: '',
                           product_barcode: null,
+                          unit_price: '',
                       }
                     : line,
             ),
@@ -157,33 +196,6 @@ function InventoryMovementFormFields({
         );
     };
 
-    const incrementLineQuantity = (
-        current: InventoryMovementDetailLine[],
-        match: (line: InventoryMovementDetailLine) => boolean,
-    ): { lines: InventoryMovementDetailLine[]; nextQuantity: number } | null => {
-        const index = current.findIndex(match);
-
-        if (index < 0) {
-            return null;
-        }
-
-        const line = current[index];
-        const currentQuantity = Number.parseInt(line.quantity, 10);
-        const nextQuantity =
-            Number.isFinite(currentQuantity) && currentQuantity > 0
-                ? currentQuantity + 1
-                : 1;
-
-        return {
-            nextQuantity,
-            lines: current.map((item, itemIndex) =>
-                itemIndex === index
-                    ? { ...item, quantity: String(nextQuantity) }
-                    : item,
-            ),
-        };
-    };
-
     const handleBarcodeScan = async (barcode: string) => {
         const normalized = barcode.trim();
 
@@ -191,28 +203,17 @@ function InventoryMovementFormFields({
             return;
         }
 
-        const normalizedLower = normalized.toLowerCase();
+        const alreadyInTable = linesRef.current.some((line) => {
+            if (line.product_id === '') {
+                return false;
+            }
 
-        const existingByBarcode = incrementLineQuantity(
-            linesRef.current,
-            (line) => {
-                if (line.product_id === '') {
-                    return false;
-                }
+            const lineBarcode = line.product_barcode?.trim().toLowerCase() ?? '';
 
-                const lineBarcode =
-                    line.product_barcode?.trim().toLowerCase() ?? '';
+            return lineBarcode !== '' && lineBarcode === normalized.toLowerCase();
+        });
 
-                return lineBarcode !== '' && lineBarcode === normalizedLower;
-            },
-        );
-
-        if (existingByBarcode) {
-            setLines(existingByBarcode.lines);
-            toast.success(
-                `${existingByBarcode.lines.find((line) => line.product_barcode?.trim().toLowerCase() === normalizedLower)?.product_name ?? 'Producto'}: cantidad ${existingByBarcode.nextQuantity}`,
-            );
-
+        if (alreadyInTable) {
             return;
         }
 
@@ -225,28 +226,16 @@ function InventoryMovementFormFields({
             const product = response?.data ?? null;
 
             if (!product) {
-                toast.error(
-                    `No se encontró un producto con el código «${normalized}».`,
-                );
-
-                return;
-            }
-
-            const existingById = incrementLineQuantity(
-                linesRef.current,
-                (line) => line.product_id === product.id,
-            );
-
-            if (existingById) {
-                setLines(existingById.lines);
-                toast.success(
-                    `${product.name}: cantidad ${existingById.nextQuantity}`,
-                );
+                toast.error(`No se encontró un producto con el código «${normalized}».`);
 
                 return;
             }
 
             setLines((current) => {
+                if (current.some((line) => line.product_id === product.id)) {
+                    return current;
+                }
+
                 const emptyIndex = current.findIndex(
                     (line) => line.product_id === '',
                 );
@@ -259,7 +248,11 @@ function InventoryMovementFormFields({
                                   product_id: product.id,
                                   product_name: product.name,
                                   product_barcode: product.barcode,
-                                  quantity: '1',
+                                  unit_price: product.price,
+                                  quantity:
+                                      line.quantity.trim() === ''
+                                          ? '1'
+                                          : line.quantity,
                               }
                             : line,
                     );
@@ -282,29 +275,39 @@ function InventoryMovementFormFields({
                 onScan={handleBarcodeScan}
             />
 
-            <input type="hidden" name="type" value={type} />
-
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
                 <FormDatePickerField
                     label="Fecha"
-                    name="moved_at"
+                    name="ordered_at"
                     required
-                    defaultValue={new Date().toISOString().slice(0, 10)}
-                    error={errors.moved_at}
+                    defaultValue={defaultOrderedAt}
+                    error={errors.ordered_at}
                     portalled={false}
                 />
 
                 <FormSelect
-                    label="Categoría de movimiento"
+                    label="Proveedor"
                     required
                     placeholder="Selecciona…"
-                    options={categoryOptions}
-                    error={errors.movement_category_id}
+                    options={supplierOptions}
+                    error={errors.supplier_id}
                     selectProps={{
-                        id: 'inventory-movement-category',
-                        name: 'movement_category_id',
-                        value: categoryId,
-                        onChange: (e) => setCategoryId(e.target.value),
+                        id: 'purchase-order-supplier_id',
+                        name: 'supplier_id',
+                        defaultValue: entity?.supplier_id ?? '',
+                    }}
+                />
+
+                <FormSelect
+                    label="Estado de la orden"
+                    required
+                    placeholder="Selecciona…"
+                    options={statusOptions}
+                    error={errors.purchase_order_status_id}
+                    selectProps={{
+                        id: 'purchase-order-status_id',
+                        name: 'purchase_order_status_id',
+                        defaultValue: entity?.purchase_order_status_id ?? '',
                     }}
                 />
             </div>
@@ -354,7 +357,7 @@ function InventoryMovementFormFields({
                         return (
                             <div
                                 key={line.key}
-                                className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+                                className="grid gap-3 sm:grid-cols-[minmax(0,1.4fr)_5.5rem_7rem_7rem_auto]"
                             >
                                 <ProductAutocomplete
                                     label={index === 0 ? 'Producto' : undefined}
@@ -375,39 +378,70 @@ function InventoryMovementFormFields({
                                     error={
                                         errors[`details.${index}.product_id`]
                                     }
-                                    id={`inventory-movement-product-${line.key}`}
+                                    id={`purchase-order-product-${line.key}`}
                                     onSelect={(product) =>
                                         selectProduct(line.key, product)
                                     }
                                     onClear={() => clearProduct(line.key)}
                                 />
 
-                                <div className="flex items-end gap-1">
-                                    <FormTextInput
-                                        label={
-                                            index === 0 ? 'Cantidad' : undefined
-                                        }
-                                        required
-                                        containerClassName="w-32"
-                                        error={
-                                            errors[`details.${index}.quantity`]
-                                        }
-                                        inputProps={{
-                                            id: `inventory-movement-qty-${line.key}`,
-                                            name: `details[${index}][quantity]`,
-                                            type: 'number',
-                                            min: 1,
-                                            step: 1,
-                                            inputMode: 'numeric',
-                                            value: line.quantity,
-                                            onChange: (e) =>
-                                                updateQuantity(
-                                                    line.key,
-                                                    e.target.value,
-                                                ),
-                                        }}
-                                    />
+                                <FormTextInput
+                                    label={index === 0 ? 'Cantidad' : undefined}
+                                    required
+                                    error={errors[`details.${index}.quantity`]}
+                                    inputProps={{
+                                        id: `purchase-order-qty-${line.key}`,
+                                        name: `details[${index}][quantity]`,
+                                        type: 'number',
+                                        min: 1,
+                                        step: 1,
+                                        inputMode: 'numeric',
+                                        value: line.quantity,
+                                        onChange: (e) =>
+                                            updateLineField(
+                                                line.key,
+                                                'quantity',
+                                                e.target.value,
+                                            ),
+                                    }}
+                                />
 
+                                <FormTextInput
+                                    label={index === 0 ? 'Precio' : undefined}
+                                    required
+                                    error={
+                                        errors[`details.${index}.unit_price`]
+                                    }
+                                    inputProps={{
+                                        id: `purchase-order-price-${line.key}`,
+                                        name: `details[${index}][unit_price]`,
+                                        type: 'number',
+                                        min: 0,
+                                        step: 1,
+                                        inputMode: 'numeric',
+                                        value: line.unit_price,
+                                        onChange: (e) =>
+                                            updateLineField(
+                                                line.key,
+                                                'unit_price',
+                                                e.target.value,
+                                            ),
+                                    }}
+                                />
+
+                                <div className="grid gap-2">
+                                    {index === 0 ? (
+                                        <Label>Total</Label>
+                                    ) : null}
+                                    <div className="text-muted-foreground flex h-9 items-center text-sm">
+                                        {formatLineTotal(
+                                            line.quantity,
+                                            line.unit_price,
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-end">
                                     <Button
                                         type="button"
                                         variant="ghost"
@@ -425,28 +459,34 @@ function InventoryMovementFormFields({
                 </div>
             </div>
 
+            <div className="flex items-center justify-end gap-2 border-t pt-3">
+                <span className="text-muted-foreground text-sm">
+                    Total de la orden
+                </span>
+                <CurrencyDisplay
+                    value={orderTotal}
+                    className="text-base font-medium"
+                />
+            </div>
+
             <FormDialogFooter
                 onCancel={onCancel}
                 processing={processing}
-                isEdit={false}
-                submitLabel="Registrar"
+                isEdit={isEdit}
             />
         </>
     );
 }
 
-export function InventoryMovementForm({
+export function PurchaseOrderForm({
     open,
     onOpenChange,
-    type,
-    formSessionKey,
-    movementCategories,
-}: InventoryMovementFormProps) {
-    const { formProps, headTitle, description } = useInventoryMovementForm(type);
-
-    if (type === null) {
-        return null;
-    }
+    entity,
+    suppliers,
+    purchaseOrderStatuses,
+}: PurchaseOrderFormProps) {
+    const { isEdit, formProps, headTitle, description } =
+        usePurchaseOrderForm(entity);
 
     return (
         <InertiaFormDialog
@@ -454,16 +494,18 @@ export function InventoryMovementForm({
             onOpenChange={onOpenChange}
             title={headTitle}
             description={description}
-            formKey={`create-${type}-${formSessionKey}`}
+            formKey={entity?.id ?? 'create'}
             inertiaForm={{ ...formProps }}
-            contentClassName="sm:max-w-3xl"
+            contentClassName="sm:max-w-4xl"
         >
             {({ processing, errors }) => (
-                <InventoryMovementFormFields
-                    key={`fields-${type}-${formSessionKey}`}
-                    type={type}
-                    movementCategories={movementCategories}
+                <PurchaseOrderFormFields
+                    key={entity?.id ?? 'create'}
+                    entity={entity}
+                    suppliers={suppliers}
+                    purchaseOrderStatuses={purchaseOrderStatuses}
                     processing={processing}
+                    isEdit={isEdit}
                     errors={errors}
                     onCancel={() => onOpenChange(false)}
                 />

@@ -4,16 +4,24 @@ namespace App\Http\Controllers\Store;
 
 use App\Actions\Store\Products\CreateProductAction;
 use App\Actions\Store\Products\DeleteProductAction;
+use App\Actions\Store\Products\FindProductByBarcodeForCompanyAction;
 use App\Actions\Store\Products\ListProductsForCompanyAction;
+use App\Actions\Store\Products\SearchProductsForCompanyAction;
 use App\Actions\Store\Products\UpdateProductAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Store\ProductAutocompleteSearchRequest;
+use App\Http\Requests\Store\ProductBarcodeLookupRequest;
 use App\Http\Requests\Store\ProductListRequest;
 use App\Http\Requests\Store\ProductStoreRequest;
 use App\Http\Requests\Store\ProductUpdateRequest;
 use App\Models\Company;
+use App\Models\Purchase\PurchaseOrder;
+use App\Models\Store\InventoryMovement;
 use App\Models\Store\Product;
 use App\Models\Store\ProductCategory;
 use App\Models\Store\ProductType;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
@@ -55,6 +63,45 @@ class ProductsController extends Controller
                 'delete' => $user?->can('deleteAny', Product::class) ?? false,
             ],
         ]);
+    }
+
+    public function search(
+        ProductAutocompleteSearchRequest $request,
+        SearchProductsForCompanyAction $search,
+    ): JsonResponse {
+        $this->authorizeProductAutocomplete($request->user());
+
+        $company = $request->selectedCompany();
+        if (! $company instanceof Company) {
+            return response()->json(['data' => []]);
+        }
+
+        $results = $search->execute(
+            $company->id,
+            (string) $request->validated('q'),
+            $request->excludeIds(),
+        );
+
+        return response()->json(['data' => $results]);
+    }
+
+    public function lookupByBarcode(
+        ProductBarcodeLookupRequest $request,
+        FindProductByBarcodeForCompanyAction $find,
+    ): JsonResponse {
+        $this->authorizeProductAutocomplete($request->user());
+
+        $company = $request->selectedCompany();
+        if (! $company instanceof Company) {
+            return response()->json(['data' => null]);
+        }
+
+        $product = $find->execute(
+            $company->id,
+            (string) $request->validated('barcode'),
+        );
+
+        return response()->json(['data' => $product]);
     }
 
     public function create(): RedirectResponse
@@ -110,6 +157,19 @@ class ProductsController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Producto eliminado.']);
 
         return to_route('store.products.index');
+    }
+
+    private function authorizeProductAutocomplete(?User $user): void
+    {
+        abort_unless(
+            $user instanceof User
+            && (
+                $user->can('viewAny', Product::class)
+                || $user->can('viewAny', PurchaseOrder::class)
+                || $user->can('viewAny', InventoryMovement::class)
+            ),
+            403,
+        );
     }
 
     /**

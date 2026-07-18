@@ -21,7 +21,7 @@ import type {
 import { formatMovementType } from '@/pages/store/inventory-movements/types';
 
 function InventoryMovementsIndex() {
-    const { can, movementTypes, movementCategories, products } =
+    const { can, movementTypes, movementCategories } =
         usePage<InventoryMovementsIndexPageProps>().props;
     const { formOpen, formSessionKey, movementType, openCreate, handleFormOpenChange } =
         useInventoryMovementDialogState();
@@ -67,7 +67,6 @@ function InventoryMovementsIndex() {
                 type={movementType}
                 formSessionKey={formSessionKey}
                 movementCategories={movementCategories}
-                products={products}
             />
 
             <TabledataProvider<

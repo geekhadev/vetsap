@@ -1,4 +1,3 @@
-import { formatNumberDisplay } from '@/components/custom/number-display';
 import type { TabledataListStandardDraft } from '@/components/custom/tabledata';
 import type {
     InventoryMovementTypeValue,
@@ -12,14 +11,6 @@ export type MovementCategoryOption = {
     id: string;
     name: string;
     type: InventoryMovementTypeValue;
-    is_active: boolean;
-};
-
-export type ProductOption = {
-    id: string;
-    name: string;
-    barcode: string | null;
-    stock: number;
     is_active: boolean;
 };
 
@@ -45,6 +36,8 @@ export type InventoryMovement = {
 export type InventoryMovementDetailLine = {
     key: string;
     product_id: string;
+    product_name: string;
+    product_barcode: string | null;
     quantity: string;
 };
 
@@ -76,11 +69,4 @@ export function formatMovementType(
     options: MovementTypeOption[],
 ): string {
     return options.find((option) => option.value === type)?.label ?? type;
-}
-
-export function formatProductLabel(product: ProductOption): string {
-    const barcode = product.barcode ? ` · ${product.barcode}` : '';
-    const stock = formatNumberDisplay(product.stock);
-
-    return `${product.name}${barcode} (stock: ${stock})`;
 }

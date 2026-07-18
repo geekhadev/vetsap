@@ -30,6 +30,7 @@ class Product extends Model
 
     public const SORTABLE_COLUMNS = [
         'name',
+        'barcode',
         'price',
         'stock',
         'is_active',
@@ -104,11 +105,11 @@ class Product extends Model
             return $query;
         }
 
-        $term = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $search).'%';
+        $term = '%'.str_replace(['%', '_'], ['\\%', '\\_'], mb_strtolower($search)).'%';
 
         return $query->where(function (Builder $inner) use ($term): void {
-            $inner->where('name', 'like', $term)
-                ->orWhere('barcode', 'like', $term);
+            $inner->whereRaw('LOWER(name) LIKE ?', [$term])
+                ->orWhereRaw('LOWER(barcode) LIKE ?', [$term]);
         });
     }
 

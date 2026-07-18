@@ -11,7 +11,6 @@ use App\Http\Requests\Store\InventoryMovementStoreRequest;
 use App\Models\Company;
 use App\Models\Store\InventoryMovement;
 use App\Models\Store\MovementCategory;
-use App\Models\Store\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
@@ -44,9 +43,6 @@ class InventoryMovementsController extends Controller
             'movementTypes' => $this->movementTypeOptions(),
             'movementCategories' => $company instanceof Company
                 ? $this->categoryOptions($company->id)
-                : [],
-            'products' => $company instanceof Company
-                ? $this->productOptions($company->id)
                 : [],
             'can' => [
                 'create' => $user?->can('create', InventoryMovement::class) ?? false,
@@ -115,26 +111,6 @@ class InventoryMovementsController extends Controller
                 'id' => $row->id,
                 'name' => $row->name,
                 'type' => $row->type->value,
-                'is_active' => $row->is_active,
-            ])
-            ->all();
-    }
-
-    /**
-     * @return list<array{id: string, name: string, barcode: string|null, stock: int, is_active: bool}>
-     */
-    private function productOptions(string $companyId): array
-    {
-        return Product::query()
-            ->forCompany($companyId)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'barcode', 'stock', 'is_active'])
-            ->map(fn (Product $row): array => [
-                'id' => $row->id,
-                'name' => $row->name,
-                'barcode' => $row->barcode,
-                'stock' => (int) $row->stock,
                 'is_active' => $row->is_active,
             ])
             ->all();
