@@ -6,26 +6,26 @@ const DEFAULT_SERVICES = [
     {
         key: 1,
         title: 'Medicina General',
-        description: 'Consultas de rutina, vacunas, desparasitación y control de salud preventiva para tu mascota.',
+        description: 'Consultas de rutina, chequeos y control preventivo para cuidar la salud de tu mascota.',
         image: 'https://placehold.co/600x400/e0f7fa/00838f?text=Medicina+General',
     },
     {
         key: 2,
         title: 'Cirugía',
-        description: 'Procedimientos quirúrgicos con equipamiento moderno y personal altamente capacitado.',
+        description: 'Procedimientos quirúrgicos seguros con equipo moderno y personal altamente capacitado.',
         image: 'https://placehold.co/600x400/e0f7fa/00838f?text=Cirugía',
     },
     {
         key: 3,
-        title: 'Urgencias',
-        description: 'Atención de emergencias para cuando tu mascota más te necesita, con respuesta rápida.',
-        image: 'https://placehold.co/600x400/e0f7fa/00838f?text=Urgencias',
+        title: 'Vacunación',
+        description: 'Vacunas al día con esquemas preventivos pensados para proteger la salud de tu mascota.',
+        image: 'https://placehold.co/600x400/e0f7fa/00838f?text=Vacunación',
     },
     {
         key: 4,
-        title: 'Odontología',
-        description: 'Limpieza dental, extracciones y cuidado bucal profesional para mantener la salud oral.',
-        image: 'https://placehold.co/600x400/e0f7fa/00838f?text=Odontología',
+        title: 'Nutrición',
+        description: 'Planes alimenticios a medida y asesoría nutricional pensados para cuidar a tu mascota.',
+        image: 'https://placehold.co/600x400/e0f7fa/00838f?text=Nutrición',
     },
 ] as const;
 
@@ -50,7 +50,7 @@ export function ClinicServices({ settings }: ClinicServicesProps) {
 
     return (
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-6 md:px-0" id="servicios">
-            <EditableText settingKey="services_title" value={sectionTitle} as="h3" className="text-5xl tracking-tight text-cyan-500" />
+            <EditableText settingKey="services_title" value={sectionTitle} as="h3" className="text-5xl tracking-tight text-clinic-500" />
             <EditableText settingKey="services_subtitle" value={sectionSubtitle} as="span" className="mb-6 text-balance text-gray-600" />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {services.map((service) => (
