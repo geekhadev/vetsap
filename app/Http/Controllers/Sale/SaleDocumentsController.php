@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sale;
 
+use App\Actions\Sale\SaleDocuments\BuildSaleDocumentPaymentsAction;
 use App\Actions\Sale\SaleDocuments\BuildSaleDocumentPreviewAction;
 use App\Actions\Sale\SaleDocuments\DeleteSaleDocumentAction;
 use App\Actions\Sale\SaleDocuments\ListSaleDocumentsForCompanyAction;
@@ -57,6 +58,17 @@ class SaleDocumentsController extends Controller
                     'delete' => $request->user()?->can('delete', $saleDocument) ?? false,
                 ],
             ],
+        ]);
+    }
+
+    public function payments(
+        SaleDocument $saleDocument,
+        BuildSaleDocumentPaymentsAction $buildPayments,
+    ): JsonResponse {
+        $this->authorize('view', $saleDocument);
+
+        return response()->json([
+            'data' => $buildPayments->execute($saleDocument),
         ]);
     }
 

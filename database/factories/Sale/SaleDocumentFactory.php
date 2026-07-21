@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Sale;
 
+use App\Enums\Sale\SaleDocumentPaymentStatus;
 use App\Enums\Sale\SaleDocumentStatus;
 use App\Models\Company;
 use App\Models\Sale\Customer;
@@ -24,6 +25,7 @@ class SaleDocumentFactory extends Factory
             'company_id' => Company::factory(),
             'customer_id' => Customer::factory(),
             'status' => SaleDocumentStatus::Draft,
+            'payment_status' => SaleDocumentPaymentStatus::Pending,
             'customer_name' => fake()->name(),
             'customer_document_type' => 'rut',
             'customer_document_number' => '11.111.111-1',
@@ -49,7 +51,17 @@ class SaleDocumentFactory extends Factory
     public function paid(): static
     {
         return $this->state(fn (): array => [
-            'status' => SaleDocumentStatus::Paid,
+            'status' => SaleDocumentStatus::Issued,
+            'payment_status' => SaleDocumentPaymentStatus::Paid,
+            'issued_at' => now(),
+        ]);
+    }
+
+    public function issued(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => SaleDocumentStatus::Issued,
+            'payment_status' => SaleDocumentPaymentStatus::Pending,
             'issued_at' => now(),
         ]);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Sale\SaleDocuments;
 
+use App\Enums\Sale\SaleDocumentPaymentStatus;
 use App\Enums\Sale\SaleDocumentStatus;
 use App\Models\Medic\ClinicalAttention;
 use App\Models\Sale\Customer;
@@ -52,6 +53,7 @@ final class EnsureDraftSaleDocumentForAttentionAction
                     'customer_id' => $customer->id,
                     'clinical_attention_id' => $attention->id,
                     'status' => SaleDocumentStatus::Draft,
+                    'payment_status' => SaleDocumentPaymentStatus::Pending,
                     'customer_name' => $customer->name,
                     'customer_document_type' => $customer->document_type?->value,
                     'customer_document_number' => $customer->document_number,

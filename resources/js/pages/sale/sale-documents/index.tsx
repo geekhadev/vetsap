@@ -20,15 +20,21 @@ import {
 } from '@/components/custom/tabledata';
 import type { TabledataColumn } from '@/components/custom/tabledata';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { CONFIG_TABLEDATA } from '@/pages/sale/sale-documents/config';
 import { SaleDocumentsIndexFilters } from '@/pages/sale/sale-documents/filters';
+import { SaleDocumentPaymentsDialog } from '@/pages/sale/sale-documents/payments-dialog';
 import type {
     SaleDocument,
     SaleDocumentListFilters,
+    SaleDocumentPaymentStatus,
     SaleDocumentsIndexFiltersDraftFull,
     SaleDocumentStatus,
 } from '@/pages/sale/sale-documents/types';
-import { SALE_DOCUMENT_STATUS_LABEL } from '@/pages/sale/sale-documents/types';
+import {
+    SALE_DOCUMENT_PAYMENT_STATUS_LABEL,
+    SALE_DOCUMENT_STATUS_LABEL,
+} from '@/pages/sale/sale-documents/types';
 
 const STATUS_BADGE: Record<
     SaleDocumentStatus,
@@ -36,13 +42,24 @@ const STATUS_BADGE: Record<
 > = {
     draft: { tone: 'neutral', icon: CircleDot },
     issued: { tone: 'neutral', icon: CircleDot },
-    paid: { tone: 'positive', icon: CircleCheck },
     voided: { tone: 'negative', icon: CircleMinus },
     merged: { tone: 'neutral', icon: GitMerge },
 };
 
+const PAYMENT_STATUS_BADGE: Record<
+    SaleDocumentPaymentStatus,
+    { tone: StatusPillTone; icon: typeof CircleCheck }
+> = {
+    pending: { tone: 'danger', icon: CircleDot },
+    partial: { tone: 'warning', icon: CircleDot },
+    paid: { tone: 'positive', icon: CircleCheck },
+};
+
 function SaleDocumentsIndex() {
     const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(
+        null,
+    );
+    const [paymentsDocumentId, setPaymentsDocumentId] = useState<string | null>(
         null,
     );
 
@@ -80,20 +97,6 @@ function SaleDocumentsIndex() {
                 render: (row) => row.customer_name,
             },
             {
-                key: 'status',
-                label: 'Estado',
-                sortable: true,
-                render: (row) => {
-                    const badge = STATUS_BADGE[row.status];
-
-                    return (
-                        <StatusPillBadge icon={badge.icon} tone={badge.tone}>
-                            {SALE_DOCUMENT_STATUS_LABEL[row.status]}
-                        </StatusPillBadge>
-                    );
-                },
-            },
-            {
                 key: 'net_amount',
                 label: 'Neto',
                 sortable: false,
@@ -116,6 +119,56 @@ function SaleDocumentsIndex() {
                 label: 'Total',
                 sortable: true,
                 render: (row) => <CurrencyDisplay value={row.total_amount} />,
+            },
+            {
+                key: 'paid_amount',
+                label: 'Pagado',
+                sortable: true,
+                render: (row) => (
+                    <button
+                        type="button"
+                        className={cn(
+                            'inline-flex cursor-pointer border-0 bg-transparent p-0 text-left',
+                            'underline-offset-2 hover:underline',
+                        )}
+                        title="Ver detalle de pagos"
+                        onClick={() => setPaymentsDocumentId(row.id)}
+                    >
+                        <CurrencyDisplay value={row.paid_amount} />
+                    </button>
+                ),
+            },
+            {
+                key: 'status',
+                label: 'Estado',
+                sortable: true,
+                render: (row) => {
+                    const badge = STATUS_BADGE[row.status];
+
+                    return (
+                        <StatusPillBadge icon={badge.icon} tone={badge.tone}>
+                            {SALE_DOCUMENT_STATUS_LABEL[row.status]}
+                        </StatusPillBadge>
+                    );
+                },
+            },
+            {
+                key: 'payment_status',
+                label: 'Pago',
+                sortable: true,
+                render: (row) => {
+                    const badge = PAYMENT_STATUS_BADGE[row.payment_status];
+
+                    return (
+                        <StatusPillBadge icon={badge.icon} tone={badge.tone}>
+                            {
+                                SALE_DOCUMENT_PAYMENT_STATUS_LABEL[
+                                    row.payment_status
+                                ]
+                            }
+                        </StatusPillBadge>
+                    );
+                },
             },
             {
                 key: 'actions',
@@ -180,6 +233,16 @@ function SaleDocumentsIndex() {
                         only: [...TABLEDATA_LIST_INERTIA_ONLY],
                         preserveScroll: true,
                     });
+                }}
+            />
+
+            <SaleDocumentPaymentsDialog
+                open={paymentsDocumentId !== null}
+                saleDocumentId={paymentsDocumentId}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) {
+                        setPaymentsDocumentId(null);
+                    }
                 }}
             />
         </>

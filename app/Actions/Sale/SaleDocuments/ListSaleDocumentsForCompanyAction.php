@@ -34,6 +34,10 @@ final class ListSaleDocumentsForCompanyAction
                 filled($filters['status'] ?? null),
                 fn ($query) => $query->where('status', $filters['status']),
             )
+            ->when(
+                filled($filters['payment_status'] ?? null),
+                fn ($query) => $query->where('payment_status', $filters['payment_status']),
+            )
             ->orderByColumn($sort, $direction)
             ->paginate($perPage)
             ->withQueryString();

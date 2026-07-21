@@ -42,13 +42,33 @@ export function SaleDocumentsIndexFilters({
                     options={[
                         { id: 'draft', label: 'Borrador' },
                         { id: 'issued', label: 'Emitido' },
-                        { id: 'paid', label: 'Pagado' },
                         { id: 'voided', label: 'Anulado' },
                     ]}
                     selectProps={{
                         value: filters.status,
                         onChange: (event) =>
                             setFilter('status', event.target.value),
+                    }}
+                />
+            </FilterRowWithClear>
+
+            <FilterRowWithClear
+                canClear={filters.payment_status.trim() !== ''}
+                onClear={() => setFilter('payment_status', '')}
+                clearLabel="Limpiar filtro de estado de pago"
+            >
+                <FormSelect
+                    label="Estado de pago"
+                    placeholder="Todos"
+                    options={[
+                        { id: 'pending', label: 'Pendiente' },
+                        { id: 'partial', label: 'Parcial' },
+                        { id: 'paid', label: 'Pagado' },
+                    ]}
+                    selectProps={{
+                        value: filters.payment_status,
+                        onChange: (event) =>
+                            setFilter('payment_status', event.target.value),
                     }}
                 />
             </FilterRowWithClear>

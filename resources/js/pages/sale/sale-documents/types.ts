@@ -1,7 +1,9 @@
 import type { TabledataListStandardDraft } from '@/components/custom/tabledata';
 import type { PaginatedListFilters } from '@/types/list-filters';
 
-export type SaleDocumentStatus = 'draft' | 'issued' | 'paid' | 'voided' | 'merged';
+export type SaleDocumentStatus = 'draft' | 'issued' | 'voided' | 'merged';
+
+export type SaleDocumentPaymentStatus = 'pending' | 'partial' | 'paid';
 
 export type SaleDocumentCustomerRef = {
     id: string;
@@ -24,6 +26,7 @@ export type SaleDocument = {
     id: string;
     company_id: string;
     status: SaleDocumentStatus;
+    payment_status: SaleDocumentPaymentStatus;
     document_number: string | null;
     issued_at: string | null;
     customer_name: string;
@@ -43,7 +46,10 @@ export type SaleDocumentsIndexCan = {
     create: boolean;
 };
 
-export const SALE_DOCUMENTS_INDEX_MODULE_FILTER_KEYS = ['status'] as const;
+export const SALE_DOCUMENTS_INDEX_MODULE_FILTER_KEYS = [
+    'status',
+    'payment_status',
+] as const;
 
 export type SaleDocumentsIndexModuleFilterKey =
     (typeof SALE_DOCUMENTS_INDEX_MODULE_FILTER_KEYS)[number];
@@ -62,7 +68,15 @@ export type SaleDocumentsIndexFiltersDraftFull =
 export const SALE_DOCUMENT_STATUS_LABEL: Record<SaleDocumentStatus, string> = {
     draft: 'Borrador',
     issued: 'Emitido',
-    paid: 'Pagado',
     voided: 'Anulado',
     merged: 'Fusionado',
+};
+
+export const SALE_DOCUMENT_PAYMENT_STATUS_LABEL: Record<
+    SaleDocumentPaymentStatus,
+    string
+> = {
+    pending: 'Pendiente',
+    partial: 'Parcial',
+    paid: 'Pagado',
 };

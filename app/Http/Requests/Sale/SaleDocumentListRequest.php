@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Sale;
 
+use App\Enums\Sale\SaleDocumentPaymentStatus;
 use App\Enums\Sale\SaleDocumentStatus;
 use App\Http\Requests\Concerns\InteractsWithPaginatedListQuery;
 use App\Models\Sale\SaleDocument;
@@ -29,6 +30,7 @@ class SaleDocumentListRequest extends FormRequest
             'direction' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
             'per_page' => ['nullable', 'integer', Rule::in([20, 50, 100])],
             'status' => ['nullable', 'string', Rule::enum(SaleDocumentStatus::class)],
+            'payment_status' => ['nullable', 'string', Rule::enum(SaleDocumentPaymentStatus::class)],
         ];
     }
 
@@ -46,6 +48,10 @@ class SaleDocumentListRequest extends FormRequest
         if ($this->input('status') === '') {
             $this->merge(['status' => null]);
         }
+
+        if ($this->input('payment_status') === '') {
+            $this->merge(['payment_status' => null]);
+        }
     }
 
     /**
@@ -59,6 +65,7 @@ class SaleDocumentListRequest extends FormRequest
         return [
             ...$this->standardListFiltersForAction($validated),
             'status' => $validated['status'] ?? null,
+            'payment_status' => $validated['payment_status'] ?? null,
         ];
     }
 
@@ -70,6 +77,7 @@ class SaleDocumentListRequest extends FormRequest
         return [
             ...$this->standardListFiltersForFrontend(),
             'status' => $this->input('status') ?? '',
+            'payment_status' => $this->input('payment_status') ?? '',
         ];
     }
 }

@@ -101,6 +101,7 @@ final class BuildSaleDocumentPreviewAction
         return [
             'id' => $document->id,
             'status' => $document->status->value,
+            'payment_status' => $document->payment_status->value,
             'document_number' => $document->document_number,
             'issued_at' => $document->issued_at?->toIso8601String()
                 ?? $document->created_at?->toIso8601String(),

@@ -183,12 +183,6 @@ export const mainNavItems: NavItem[] = [
                 permission: 'sale.sale-documents.list',
             },
             {
-                title: 'Ctas. por cobrar',
-                href: '#',
-                icon: CircleDollarSign,
-                disabled: true,
-            },
-            {
                 title: 'Pagos recibidos',
                 href: receivedPaymentsIndex(),
                 icon: Banknote,

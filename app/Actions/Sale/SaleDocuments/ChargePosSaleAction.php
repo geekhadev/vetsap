@@ -3,6 +3,7 @@
 namespace App\Actions\Sale\SaleDocuments;
 
 use App\Enums\Sale\SaleDocumentDetailType;
+use App\Enums\Sale\SaleDocumentPaymentStatus;
 use App\Enums\Sale\SaleDocumentStatus;
 use App\Enums\Sale\TaxTreatment;
 use App\Models\Sale\CashRegister;
@@ -172,6 +173,7 @@ final class ChargePosSaleAction
                 'sii_tax_document_type_id' => $siiTaxDocumentTypeId,
                 'payment_type_id' => $paymentType->id,
                 'status' => SaleDocumentStatus::Issued,
+                'payment_status' => SaleDocumentPaymentStatus::Pending,
                 'document_number' => $documentNumber,
                 'issued_at' => now(),
                 'customer_name' => $customer->name,
@@ -350,9 +352,11 @@ final class ChargePosSaleAction
 
             $paidDocument->update([
                 'paid_amount' => $paymentsTotal,
-                'status' => $isFullySettled
-                    ? SaleDocumentStatus::Paid
-                    : SaleDocumentStatus::Issued,
+                'status' => SaleDocumentStatus::Issued,
+                'payment_status' => SaleDocumentPaymentStatus::fromAmounts(
+                    $documentTotal,
+                    $paymentsTotal,
+                ),
             ]);
 
             // Varios borradores: el consolidado ya es el emitido; se eliminan las fuentes.

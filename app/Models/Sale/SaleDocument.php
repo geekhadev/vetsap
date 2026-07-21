@@ -2,6 +2,7 @@
 
 namespace App\Models\Sale;
 
+use App\Enums\Sale\SaleDocumentPaymentStatus;
 use App\Enums\Sale\SaleDocumentStatus;
 use App\Models\Company;
 use App\Models\CompanyOffice;
@@ -29,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'payment_type_id',
     'merged_into_sale_document_id',
     'status',
+    'payment_status',
     'document_number',
     'issued_at',
     'customer_name',
@@ -70,7 +72,9 @@ class SaleDocument extends Model
     public const SORTABLE_COLUMNS = [
         'issued_at',
         'total_amount',
+        'paid_amount',
         'status',
+        'payment_status',
         'created_at',
         'document_number',
     ];
@@ -212,6 +216,7 @@ class SaleDocument extends Model
     {
         return [
             'status' => SaleDocumentStatus::class,
+            'payment_status' => SaleDocumentPaymentStatus::class,
             'issued_at' => 'datetime',
             'tax_percent' => 'decimal:2',
             'tax_amount' => 'integer',

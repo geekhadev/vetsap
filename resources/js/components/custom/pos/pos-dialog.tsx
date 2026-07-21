@@ -576,7 +576,18 @@ export function PosDialog({
                         />
 
                         {cart.customer ? (
-                            <div className="bg-muted/40 space-y-1 rounded-md border p-3 text-sm">
+                            <div className="bg-muted/40 relative space-y-1 rounded-md border p-3 pr-10 text-sm">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-1.5 right-1.5 size-7 text-muted-foreground hover:text-foreground"
+                                    title="Quitar cliente"
+                                    aria-label="Quitar cliente"
+                                    onClick={cart.clearCustomer}
+                                >
+                                    <X className="size-3.5" />
+                                </Button>
                                 <p className="font-medium">
                                     {cart.customer.name}
                                 </p>
@@ -592,16 +603,6 @@ export function PosDialog({
                                     abierta
                                     {cart.attentions.length === 1 ? '' : 's'}
                                 </p>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="mt-1 h-8 px-2"
-                                    onClick={cart.clearCustomer}
-                                >
-                                    <X className="size-3.5" />
-                                    Quitar cliente
-                                </Button>
                             </div>
                         ) : null}
 

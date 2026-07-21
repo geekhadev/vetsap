@@ -1,9 +1,13 @@
 export type SaleDocumentPreviewStatus =
     | 'draft'
     | 'issued'
-    | 'paid'
     | 'voided'
     | 'merged';
+
+export type SaleDocumentPreviewPaymentStatus =
+    | 'pending'
+    | 'partial'
+    | 'paid';
 
 export type SaleDocumentPreviewSiiType = {
     id: string;
@@ -50,6 +54,7 @@ export type SaleDocumentPreviewPayment = {
 export type SaleDocumentPreview = {
     id: string;
     status: SaleDocumentPreviewStatus;
+    payment_status: SaleDocumentPreviewPaymentStatus;
     document_number: string | null;
     issued_at: string | null;
     tax_percent: number;

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Sale\SaleDocuments;
 
+use App\Enums\Sale\SaleDocumentPaymentStatus;
 use App\Enums\Sale\SaleDocumentStatus;
 use App\Models\Sale\Customer;
 use App\Models\Sale\SaleDocument;
@@ -32,6 +33,7 @@ final class EnsureOpenDraftSaleDocumentForCustomerAction
                 'company_id' => $customer->company_id,
                 'customer_id' => $customer->id,
                 'status' => SaleDocumentStatus::Draft,
+                'payment_status' => SaleDocumentPaymentStatus::Pending,
                 'customer_name' => $customer->name,
                 'customer_document_type' => $customer->document_type?->value,
                 'customer_document_number' => $customer->document_number,

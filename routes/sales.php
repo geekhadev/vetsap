@@ -25,6 +25,9 @@ Route::get('sale-documents', [SaleDocumentsController::class, 'index'])
 Route::get('sale-documents/{sale_document}', [SaleDocumentsController::class, 'show'])
     ->whereUuid('sale_document')
     ->name('sale-documents.show');
+Route::get('sale-documents/{sale_document}/payments', [SaleDocumentsController::class, 'payments'])
+    ->whereUuid('sale_document')
+    ->name('sale-documents.payments');
 Route::delete('sale-documents/{sale_document}', [SaleDocumentsController::class, 'destroy'])
     ->whereUuid('sale_document')
     ->name('sale-documents.destroy');
