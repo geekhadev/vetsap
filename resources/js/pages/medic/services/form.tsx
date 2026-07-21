@@ -16,6 +16,7 @@ type ServiceFormProps = {
     entity: Service | null;
     specialties: SpecialtyOption[];
     timeBlockMinutes: number;
+    isFirstService?: boolean;
 };
 
 type ServiceFormFields = Pick<
@@ -27,6 +28,7 @@ type ServiceFormFields = Pick<
     | 'duration_minutes'
     | 'is_active'
     | 'use_web'
+    | 'is_default'
 >;
 
 export function ServiceForm({
@@ -35,6 +37,7 @@ export function ServiceForm({
     entity,
     specialties,
     timeBlockMinutes,
+    isFirstService = false,
 }: ServiceFormProps) {
     const { isEdit, formProps, headTitle, description } = useServiceForm(entity);
 
@@ -122,6 +125,9 @@ export function ServiceForm({
                                 defaultValue: entity?.price ?? '',
                             }}
                         />
+                        <p className="text-muted-foreground text-xs sm:col-span-2">
+                            Los servicios son siempre exentos de IVA.
+                        </p>
 
                         <FormSelect
                             label="Bloques de tiempo"
@@ -152,6 +158,18 @@ export function ServiceForm({
                     <ServiceUseWebSwitch
                         defaultChecked={entity?.use_web ?? false}
                         error={errors.use_web}
+                    />
+
+                    <FormBooleanSwitch
+                        label="Servicio por defecto"
+                        name="is_default"
+                        defaultChecked={entity?.is_default ?? isFirstService}
+                        error={errors.is_default}
+                        description={
+                            isFirstService && !isEdit
+                                ? 'El primer servicio de la empresa queda marcado como por defecto.'
+                                : 'Solo puede haber un servicio por defecto. Al activar esta opción, se desmarca el predeterminado actual (también en configuración del calendario).'
+                        }
                     />
 
                     <FormDialogFooter

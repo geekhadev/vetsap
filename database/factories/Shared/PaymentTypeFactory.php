@@ -23,6 +23,17 @@ class PaymentTypeFactory extends Factory
         return [
             'name' => fake()->unique()->words(2, true),
             'code' => fake()->unique()->regexify('[A-Z]{2,4}'),
+            'is_credit' => false,
         ];
+    }
+
+    /**
+     * @return $this
+     */
+    public function credit(): static
+    {
+        return $this->state(fn (): array => [
+            'is_credit' => true,
+        ]);
     }
 }

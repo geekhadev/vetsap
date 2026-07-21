@@ -17,6 +17,8 @@ class CreateSiiTaxDocumentTypeAction
             'abbreviation' => $data['abbreviation'],
             'use_sale' => $data['use_sale'],
             'use_purchase' => $data['use_purchase'],
+            // Tipos creados manualmente: numeración interna (no catálogo SII oficial).
+            'is_global' => false,
         ]);
     }
 }

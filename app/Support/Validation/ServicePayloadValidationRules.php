@@ -42,6 +42,7 @@ final class ServicePayloadValidationRules
             'duration_minutes' => self::durationMinutesRules($timeBlockMinutes),
             'is_active' => ['required', 'boolean'],
             'use_web' => ['required', 'boolean'],
+            'is_default' => ['required', 'boolean'],
         ];
     }
 
@@ -79,6 +80,7 @@ final class ServicePayloadValidationRules
             'duration_minutes' => self::durationMinutesRules($timeBlockMinutes),
             'is_active' => ['required', 'boolean'],
             'use_web' => ['required', 'boolean'],
+            'is_default' => ['required', 'boolean'],
         ];
     }
 
@@ -141,9 +143,11 @@ final class ServicePayloadValidationRules
      *     name: string,
      *     description: string|null,
      *     price: string|null,
+     *     tax_treatment: string,
      *     duration_minutes: int,
      *     is_active: bool,
-     *     use_web: bool
+     *     use_web: bool,
+     *     is_default: bool
      * }
      */
     public static function storePayload(string $companyId, array $validated): array
@@ -154,9 +158,11 @@ final class ServicePayloadValidationRules
             'name' => (string) $validated['name'],
             'description' => $validated['description'] ?? null,
             'price' => self::normalizePrice($validated['price'] ?? null),
+            'tax_treatment' => 'exempt',
             'duration_minutes' => self::normalizeDuration($validated['duration_minutes']),
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
             'use_web' => filter_var($validated['use_web'], FILTER_VALIDATE_BOOLEAN),
+            'is_default' => filter_var($validated['is_default'] ?? false, FILTER_VALIDATE_BOOLEAN),
         ];
     }
 
@@ -166,9 +172,11 @@ final class ServicePayloadValidationRules
      *     name: string,
      *     description: string|null,
      *     price: string|null,
+     *     tax_treatment: string,
      *     duration_minutes: int,
      *     is_active: bool,
-     *     use_web: bool
+     *     use_web: bool,
+     *     is_default: bool
      * }
      */
     public static function updatePayload(array $validated): array
@@ -178,9 +186,11 @@ final class ServicePayloadValidationRules
             'name' => (string) $validated['name'],
             'description' => $validated['description'] ?? null,
             'price' => self::normalizePrice($validated['price'] ?? null),
+            'tax_treatment' => 'exempt',
             'duration_minutes' => self::normalizeDuration($validated['duration_minutes']),
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
             'use_web' => filter_var($validated['use_web'], FILTER_VALIDATE_BOOLEAN),
+            'is_default' => filter_var($validated['is_default'] ?? false, FILTER_VALIDATE_BOOLEAN),
         ];
     }
 

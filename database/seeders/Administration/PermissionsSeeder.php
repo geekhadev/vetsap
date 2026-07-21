@@ -84,6 +84,23 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'customers',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Documentos de venta',
+                        'module_slug' => 'sale-documents',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Registros de caja',
+                        'module_slug' => 'cash-registers',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Pagos recibidos',
+                        'module_slug' => 'received-payments',
+                        'permissions' => [
+                            ['permission_name' => 'Listar', 'permission_slug' => 'list'],
+                        ],
+                    ],
                 ],
             ],
             [

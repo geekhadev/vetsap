@@ -4,6 +4,7 @@ export type ProductAutocompleteOption = {
     barcode: string | null;
     price: string;
     stock: number;
+    tax_treatment: 'taxable' | 'exempt';
 };
 
 export type ProductAutocompleteSelected = {

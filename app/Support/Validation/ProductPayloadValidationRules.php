@@ -2,6 +2,7 @@
 
 namespace App\Support\Validation;
 
+use App\Models\Store\ProductType;
 use App\Support\Store\StoreMasterRecordValidation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
@@ -52,10 +53,7 @@ final class ProductPayloadValidationRules
                 'store_product_categories',
                 $companyId,
             ),
-            'product_type_id' => StoreMasterRecordValidation::belongsToCompanyOrGlobalRules(
-                'store_product_types',
-                $companyId,
-            ),
+            'product_type_id' => self::productTypeIdRules($companyId),
             'name' => [
                 'required',
                 'string',
@@ -70,7 +68,33 @@ final class ProductPayloadValidationRules
             ],
             'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['nullable', 'numeric', 'min:0'],
+            'tax_treatment' => ['required', 'string', Rule::in(['taxable', 'exempt'])],
             'is_active' => ['required', 'boolean'],
+        ];
+    }
+
+    /**
+     * Tipos de producto de la empresa o globales activos, excluyendo el tipo
+     * global "Servicios" (los servicios se gestionan en Medicina).
+     *
+     * @return array<int, ValidationRule|string>
+     */
+    private static function productTypeIdRules(string $companyId): array
+    {
+        return [
+            'required',
+            'uuid',
+            Rule::exists('store_product_types', 'id')->where(function ($query) use ($companyId): void {
+                $query->where('is_active', true)
+                    ->where(function ($inner) use ($companyId): void {
+                        $inner->where('company_id', $companyId)
+                            ->orWhereNull('company_id');
+                    })
+                    ->where(function ($inner): void {
+                        $inner->whereNotNull('company_id')
+                            ->orWhere('name', '!=', ProductType::GLOBAL_SERVICES_NAME);
+                    });
+            }),
         ];
     }
 
@@ -100,6 +124,7 @@ final class ProductPayloadValidationRules
      *     barcode: string|null,
      *     description: string|null,
      *     price: string|null,
+     *     tax_treatment: string,
      *     is_active: bool
      * }
      */
@@ -116,6 +141,7 @@ final class ProductPayloadValidationRules
      *     barcode: string|null,
      *     description: string|null,
      *     price: string|null,
+     *     tax_treatment: string,
      *     is_active: bool
      * }
      */
@@ -136,6 +162,7 @@ final class ProductPayloadValidationRules
      *     barcode: string|null,
      *     description: string|null,
      *     price: string|null,
+     *     tax_treatment: string,
      *     is_active: bool
      * }
      */
@@ -151,6 +178,7 @@ final class ProductPayloadValidationRules
             'barcode' => $validated['barcode'] ?? null,
             'description' => $validated['description'] ?? null,
             'price' => $price === null ? null : (string) $price,
+            'tax_treatment' => (string) ($validated['tax_treatment'] ?? 'taxable'),
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
         ];
     }

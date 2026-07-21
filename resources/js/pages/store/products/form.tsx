@@ -8,7 +8,10 @@ import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
 import { useBarcodeAvailability } from '@/pages/store/products/hooks/use-barcode-availability';
 import { useProductForm } from '@/pages/store/products/hooks/use-form';
-import { formatMasterLabel } from '@/pages/store/products/types';
+import {
+    formatMasterLabel,
+    isGlobalServicesProductType,
+} from '@/pages/store/products/types';
 import type { MasterOption, Product } from '@/pages/store/products/types';
 
 type ProductFormProps = {
@@ -27,6 +30,7 @@ type ProductFormFields = Pick<
     | 'barcode'
     | 'description'
     | 'price'
+    | 'tax_treatment'
     | 'is_active'
 >;
 
@@ -66,7 +70,11 @@ function ProductFormFields({
     const typeOptions = useMemo(
         () =>
             productTypes
-                .filter((t) => t.is_active || t.id === entity?.product_type_id)
+                .filter(
+                    (t) =>
+                        !isGlobalServicesProductType(t) &&
+                        (t.is_active || t.id === entity?.product_type_id),
+                )
                 .map((t) => ({
                     id: t.id,
                     label: formatMasterLabel(t, entity?.product_type_id),
@@ -144,6 +152,22 @@ function ProductFormFields({
                     min: 0,
                     step: 1,
                     defaultValue: entity?.price ?? '',
+                }}
+            />
+
+            <FormSelect
+                label="Tratamiento tributario"
+                required
+                placeholder="Selecciona…"
+                options={[
+                    { id: 'taxable', label: 'Afecto (precio con IVA)' },
+                    { id: 'exempt', label: 'Exento' },
+                ]}
+                error={errors.tax_treatment}
+                selectProps={{
+                    id: 'product-tax_treatment',
+                    name: 'tax_treatment',
+                    defaultValue: entity?.tax_treatment ?? 'taxable',
                 }}
             />
 

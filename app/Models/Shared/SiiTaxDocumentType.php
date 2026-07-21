@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
     'abbreviation',
     'use_sale',
     'use_purchase',
+    'is_global',
 ])]
 class SiiTaxDocumentType extends Model
 {
@@ -40,7 +41,13 @@ class SiiTaxDocumentType extends Model
         return [
             'use_sale' => 'boolean',
             'use_purchase' => 'boolean',
+            'is_global' => 'boolean',
         ];
+    }
+
+    public function isGlobal(): bool
+    {
+        return (bool) $this->is_global;
     }
 
     /**

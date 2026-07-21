@@ -2,6 +2,7 @@
 
 namespace App\Actions\Medic\ClinicalAttentions;
 
+use App\Actions\Sale\SaleDocuments\EnsureDraftSaleDocumentForAttentionAction;
 use App\Enums\Medic\ClinicalAttentionStatus;
 use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\ClinicalTemplate;
@@ -10,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 final class UpsertPatientDraftAttentionAction
 {
+    public function __construct(
+        private EnsureDraftSaleDocumentForAttentionAction $ensureDraftSaleDocument,
+    ) {}
+
     /**
      * @param  array{
      *     template_id?: string|null,
@@ -92,12 +97,18 @@ final class UpsertPatientDraftAttentionAction
             $draft->requestedServices()->sync($requestedServiceIds);
             $draft->documentTemplates()->sync($documentTemplateIds);
 
-            return $draft->refresh()->load([
+            $draft = $draft->refresh()->load([
                 'values',
                 'template.fields',
                 'requestedServices:id,name',
                 'documentTemplates:id,title',
+                'patient.customer',
+                'appointment.service',
             ]);
+
+            $this->ensureDraftSaleDocument->execute($draft, $userId);
+
+            return $draft;
         });
     }
 }

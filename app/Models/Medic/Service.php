@@ -2,6 +2,7 @@
 
 namespace App\Models\Medic;
 
+use App\Enums\Sale\TaxTreatment;
 use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
@@ -18,9 +19,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'name',
     'description',
     'price',
+    'tax_treatment',
     'duration_minutes',
     'is_active',
     'use_web',
+    'is_default',
 ])]
 class Service extends Model
 {
@@ -37,6 +40,21 @@ class Service extends Model
         'use_web',
         'created_at',
     ];
+
+    /**
+     * Garantiza un solo servicio por defecto por empresa.
+     */
+    public static function clearOtherDefaults(string $companyId, ?string $exceptServiceId = null): void
+    {
+        static::query()
+            ->forCompany($companyId)
+            ->where('is_default', true)
+            ->when(
+                $exceptServiceId !== null,
+                fn (Builder $query) => $query->where('id', '!=', $exceptServiceId),
+            )
+            ->update(['is_default' => false]);
+    }
 
     /**
      * @return BelongsTo<Company, $this>
@@ -82,9 +100,18 @@ class Service extends Model
     {
         return [
             'price' => 'decimal:0',
+            'tax_treatment' => TaxTreatment::class,
             'duration_minutes' => 'integer',
             'is_active' => 'boolean',
             'use_web' => 'boolean',
+            'is_default' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Service $service): void {
+            $service->tax_treatment = TaxTreatment::Exempt;
+        });
     }
 }

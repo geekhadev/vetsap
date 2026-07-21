@@ -2,12 +2,17 @@
 
 namespace App\Actions\Medic\ClinicalAttentions;
 
+use App\Actions\Sale\SaleDocuments\EnsureDraftSaleDocumentForAttentionAction;
 use App\Enums\Medic\ClinicalAttentionStatus;
 use App\Models\Medic\ClinicalAttention;
 use Illuminate\Support\Facades\DB;
 
 final class ClosePatientDraftAttentionAction
 {
+    public function __construct(
+        private EnsureDraftSaleDocumentForAttentionAction $ensureDraftSaleDocument,
+    ) {}
+
     /**
      * @param  array{
      *     appointment_id?: string|null,
@@ -54,14 +59,28 @@ final class ClosePatientDraftAttentionAction
             $attention->requestedServices()->sync($requestedServiceIds);
             $attention->documentTemplates()->sync($documentTemplateIds);
 
-            return $attention->refresh()->load([
-                'patient:id,name,record_number',
+            $attention = $attention->refresh()->load([
+                'patient:id,name,record_number,customer_id',
+                'patient.customer',
                 'doctor:id,first_name,last_name',
                 'template:id,name',
                 'values',
-                'requestedServices:id,name',
+                'requestedServices:id,name,price,tax_treatment',
                 'documentTemplates:id,title',
+                'appointment.service:id,name,price,tax_treatment',
             ]);
+
+            // Actualiza la venta abierta con los servicios finales antes de salir.
+            try {
+                $this->ensureDraftSaleDocument->execute(
+                    $attention,
+                    $data['updated_by_user_id'] ?? null,
+                );
+            } catch (\Throwable) {
+                // Si no hay cliente/venta asociada, no bloquea el cierre clínico.
+            }
+
+            return $attention;
         });
     }
 }

@@ -68,7 +68,10 @@ import { index as expensesIndex } from '@/routes/purchase/expenses';
 import { index as purchaseOrderStatusesIndex } from '@/routes/purchase/purchase-order-statuses';
 import { index as purchaseOrdersIndex } from '@/routes/purchase/purchase-orders';
 import { index as suppliersIndex } from '@/routes/purchase/suppliers';
+import { index as cashRegistersIndex } from '@/routes/sale/cash-registers';
 import { index as customersIndex } from '@/routes/sale/customers';
+import { index as receivedPaymentsIndex } from '@/routes/sale/received-payments';
+import { index as saleDocumentsIndex } from '@/routes/sale/sale-documents';
 import { index as siiCafsIndex } from '@/routes/sale/sii-cafs';
 import { index as certificationSiiTicketsIndex } from '@/routes/sale/sii-certification-tickets';
 import { index as countriesIndex } from '@/routes/shared/countries';
@@ -175,9 +178,9 @@ export const mainNavItems: NavItem[] = [
         items: [
             {
                 title: 'Doc. venta',
-                href: '#',
+                href: saleDocumentsIndex(),
                 icon: FileText,
-                disabled: true,
+                permission: 'sale.sale-documents.list',
             },
             {
                 title: 'Ctas. por cobrar',
@@ -187,15 +190,14 @@ export const mainNavItems: NavItem[] = [
             },
             {
                 title: 'Pagos recibidos',
-                href: '#',
+                href: receivedPaymentsIndex(),
                 icon: Banknote,
-                disabled: true,
             },
             {
                 title: 'Registros de caja',
-                href: '#',
+                href: cashRegistersIndex(),
                 icon: Calculator,
-                disabled: true,
+                permission: 'sale.cash-registers.list',
             },
             {
                 title: 'Clientes',

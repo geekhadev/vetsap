@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'code'])]
+#[Fillable(['name', 'code', 'is_credit'])]
 class PaymentType extends Model
 {
     protected $table = 'shared_payment_types';
@@ -22,6 +22,21 @@ class PaymentType extends Model
         'code',
         'created_at',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_credit' => 'boolean',
+        ];
+    }
+
+    public function isCredit(): bool
+    {
+        return (bool) $this->is_credit;
+    }
 
     /**
      * @param  Builder<$this>  $query

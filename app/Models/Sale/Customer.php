@@ -63,6 +63,14 @@ class Customer extends Model
     }
 
     /**
+     * @return HasMany<SaleDocument, $this>
+     */
+    public function saleDocuments(): HasMany
+    {
+        return $this->hasMany(SaleDocument::class, 'customer_id');
+    }
+
+    /**
      * @param  Builder<$this>  $query
      * @return Builder<$this>
      */

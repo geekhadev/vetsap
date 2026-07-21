@@ -8,6 +8,7 @@ export type SiiTaxDocumentType = {
     abbreviation: string;
     use_sale: boolean;
     use_purchase: boolean;
+    is_global: boolean;
     created_at: string;
     updated_at: string;
 };

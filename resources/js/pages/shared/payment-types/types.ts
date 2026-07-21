@@ -5,6 +5,7 @@ export type PaymentType = {
     id: string;
     name: string;
     code: string;
+    is_credit: boolean;
     created_at: string;
     updated_at: string;
 };

@@ -185,8 +185,20 @@ class SiiTaxDocumentTypesSeeder extends Seeder
                     'abbreviation' => $row['abbreviation'],
                     'use_sale' => $row['use_sale'],
                     'use_purchase' => $row['use_purchase'],
+                    'is_global' => true,
                 ],
             );
         }
+
+        SiiTaxDocumentType::query()->updateOrCreate(
+            ['code' => '00'],
+            [
+                'name' => 'Comprobante de venta',
+                'abbreviation' => 'CVE',
+                'use_sale' => true,
+                'use_purchase' => false,
+                'is_global' => false,
+            ],
+        );
     }
 }

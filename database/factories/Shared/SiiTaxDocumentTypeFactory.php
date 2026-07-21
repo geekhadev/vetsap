@@ -26,7 +26,18 @@ class SiiTaxDocumentTypeFactory extends Factory
             'abbreviation' => strtoupper(fake()->lexify('???')),
             'use_sale' => fake()->boolean(),
             'use_purchase' => fake()->boolean(),
+            'is_global' => true,
         ];
+    }
+
+    /**
+     * @return $this
+     */
+    public function internal(): static
+    {
+        return $this->state(fn (): array => [
+            'is_global' => false,
+        ]);
     }
 
     /**

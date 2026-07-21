@@ -23,9 +23,11 @@ export type Service = {
     name: string;
     description: string | null;
     price: string | null;
+    tax_treatment: 'exempt';
     duration_minutes: number | null;
     is_active: boolean;
     use_web: boolean;
+    is_default: boolean;
     specialty?: ServiceSpecialtyRef;
     created_at: string;
     updated_at: string;

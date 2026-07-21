@@ -9,7 +9,7 @@ final class SearchProductsForCompanyAction
 {
     /**
      * @param  list<string>  $excludeIds
-     * @return Collection<int, array{id: string, name: string, barcode: string|null, price: string, stock: int}>
+     * @return Collection<int, array{id: string, name: string, barcode: string|null, price: string, stock: int, tax_treatment: string}>
      */
     public function execute(string $companyId, string $query, array $excludeIds = [], int $limit = 15): Collection
     {
@@ -23,13 +23,14 @@ final class SearchProductsForCompanyAction
             )
             ->orderBy('name')
             ->limit($limit)
-            ->get(['id', 'name', 'barcode', 'price', 'stock'])
+            ->get(['id', 'name', 'barcode', 'price', 'stock', 'tax_treatment'])
             ->map(static fn (Product $product): array => [
                 'id' => $product->id,
                 'name' => $product->name,
                 'barcode' => $product->barcode,
                 'price' => (string) $product->price,
                 'stock' => (int) $product->stock,
+                'tax_treatment' => $product->tax_treatment?->value ?? 'taxable',
             ])
             ->values();
     }

@@ -1,6 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { CirclePlus, PawPrint, PencilIcon, TrashIcon } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DocumentBadge } from '@/components/custom/document-badge';
 import {
     pickTabledataListShellConfig,
@@ -10,6 +10,7 @@ import type { TabledataColumn } from '@/components/custom/tabledata';
 import { buildTabledataConfiguredStatusColumn } from '@/components/custom/tabledata-crud-actions';
 import { Button } from '@/components/ui/button';
 import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
+import { setCustomerFormPosContext } from '@/lib/pos-route-customer';
 import {
     hasCustomerPatientsConfigured,
 } from '@/pages/medic/patients/types';
@@ -42,6 +43,28 @@ function CustomersIndex() {
 
         return customersPage.data.find((row) => row.id === patientsCustomerId) ?? null;
     }, [customersPage.data, patientsCustomerId]);
+
+    useEffect(() => {
+        if (formOpen && editingEntity) {
+            setCustomerFormPosContext(editingEntity.id);
+
+            return;
+        }
+
+        if (patientsFormOpen && patientsCustomer) {
+            setCustomerFormPosContext(patientsCustomer.id);
+
+            return;
+        }
+
+        setCustomerFormPosContext(null);
+    }, [editingEntity, formOpen, patientsCustomer, patientsFormOpen]);
+
+    useEffect(() => {
+        return () => {
+            setCustomerFormPosContext(null);
+        };
+    }, []);
 
     const openPatients = useCallback((row: Customer) => {
         setPatientsCustomerId(row.id);

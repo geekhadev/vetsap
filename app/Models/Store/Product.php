@@ -2,6 +2,7 @@
 
 namespace App\Models\Store;
 
+use App\Enums\Sale\TaxTreatment;
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'barcode',
     'description',
     'price',
+    'tax_treatment',
     'is_active',
 ])]
 class Product extends Model
@@ -120,6 +122,7 @@ class Product extends Model
     {
         return [
             'price' => 'decimal:0',
+            'tax_treatment' => TaxTreatment::class,
             'stock' => 'integer',
             'is_active' => 'boolean',
         ];
