@@ -40,7 +40,7 @@ class ServicesSeeder extends Seeder
                     continue;
                 }
 
-                foreach ($services as $row) {
+                foreach ($services as $index => $row) {
                     Service::query()->firstOrCreate(
                         [
                             'company_id' => $company->id,
@@ -53,6 +53,7 @@ class ServicesSeeder extends Seeder
                             'duration_minutes' => $row['duration_minutes'],
                             'is_active' => true,
                             'use_web' => false,
+                            'is_default' => $specialtyName === 'Medicina General' && $index === 0,
                         ],
                     );
                 }

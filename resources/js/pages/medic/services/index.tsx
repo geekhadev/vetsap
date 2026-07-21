@@ -12,6 +12,7 @@ import {
     buildTabledataIsActiveStatusColumn,
     buildTabledataWebVisibilityColumn,
 } from '@/components/custom/tabledata-crud-actions';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import { CONFIG_TABLEDATA } from '@/pages/medic/services/config';
@@ -25,11 +26,16 @@ import {
 import type { Service, ServiceListFilters, ServicesIndexFiltersDraftFull } from '@/pages/medic/services/types';
 
 function ServicesIndex() {
-    const { can, specialties, time_block_minutes: timeBlockMinutes } =
-        usePage<ServicesIndexPageProps>().props;
+    const {
+        can,
+        specialties,
+        time_block_minutes: timeBlockMinutes,
+        data,
+    } = usePage<ServicesIndexPageProps>().props;
     const { deleteRow, deleteConfirmDialog } = useServicesIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Service>();
+    const isFirstService = data.total === 0;
 
     const columns = useMemo<TabledataColumn<Service>[]>(
         () => [
@@ -38,6 +44,16 @@ function ServicesIndex() {
                 label: 'Nombre',
                 sortable: true,
                 hideable: false,
+                render: (row) => (
+                    <span className="flex items-center gap-2">
+                        {row.name}
+                        {row.is_default ? (
+                            <Badge variant="secondary" className="text-xs">
+                                Por defecto
+                            </Badge>
+                        ) : null}
+                    </span>
+                ),
             },
             {
                 key: 'specialty',
@@ -84,6 +100,7 @@ function ServicesIndex() {
                 entity={editingEntity}
                 specialties={specialties}
                 timeBlockMinutes={timeBlockMinutes}
+                isFirstService={isFirstService}
             />
 
             <TabledataProvider<Service, ServiceListFilters, ServicesIndexFiltersDraftFull>

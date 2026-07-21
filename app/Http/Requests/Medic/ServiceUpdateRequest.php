@@ -52,7 +52,9 @@ class ServiceUpdateRequest extends FormRequest
      *     description: string|null,
      *     price: string|null,
      *     duration_minutes: int,
-     *     is_active: bool
+     *     is_active: bool,
+     *     use_web: bool,
+     *     is_default: bool
      * }
      */
     public function servicePayload(): array

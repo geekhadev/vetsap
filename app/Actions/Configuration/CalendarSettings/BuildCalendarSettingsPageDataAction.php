@@ -57,7 +57,14 @@ final class BuildCalendarSettingsPageDataAction
             ->forCompany($company->id)
             ->where('is_active', true)
             ->orderBy('name')
-            ->get(['id', 'name'])
+            ->get(['id', 'name', 'is_default']);
+
+        $defaultServiceId = $services
+            ->first(static fn (Service $service): bool => $service->is_default)
+            ?->id
+            ?? $value(CalendarSettingKeys::DEFAULT_SERVICE_ID);
+
+        $serviceOptions = $services
             ->map(static fn (Service $service): array => [
                 'id' => $service->id,
                 'label' => $service->name,
@@ -70,7 +77,7 @@ final class BuildCalendarSettingsPageDataAction
                 'starts_at' => $value(CalendarSettingKeys::INIT_TIME),
                 'ends_at' => $value(CalendarSettingKeys::END_TIME),
                 'time_block_minutes' => $value(CalendarSettingKeys::TIME_BLOCK_MINUTES),
-                'default_service_id' => $value(CalendarSettingKeys::DEFAULT_SERVICE_ID),
+                'default_service_id' => (string) ($defaultServiceId ?? ''),
                 'doctor_notifications' => [
                     'on_create' => $bool(CalendarSettingKeys::DOCTOR_NOTIFY_ON_CREATE),
                     'on_confirm' => $bool(CalendarSettingKeys::DOCTOR_NOTIFY_ON_CONFIRM),
@@ -88,7 +95,7 @@ final class BuildCalendarSettingsPageDataAction
                     'on_prescription_after_visit' => $bool(CalendarSettingKeys::CLIENT_NOTIFY_ON_PRESCRIPTION_AFTER_VISIT),
                 ],
             ],
-            'services' => $services,
+            'services' => $serviceOptions,
         ];
     }
 }
