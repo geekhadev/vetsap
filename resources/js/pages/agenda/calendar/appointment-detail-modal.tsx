@@ -115,6 +115,7 @@ function AppointmentDetailContent({
     deleteError,
     startingAttention,
     holidays,
+    hideVaccinationHint = false,
     onStatusChange,
     onScheduleChange,
     onDelete,
@@ -135,6 +136,7 @@ function AppointmentDetailContent({
     startingAttention: boolean;
     holidays: CalendarHoliday[];
     scheduleFieldKey: number;
+    hideVaccinationHint?: boolean;
     onStatusChange: (statusId: string) => void;
     onScheduleChange: (schedule: AppointmentScheduleValue) => void;
     onDelete: () => void;
@@ -379,7 +381,7 @@ function AppointmentDetailContent({
                 </DetailSection>
             ) : null}
 
-            {isVaccinationAppointment ? (
+            {isVaccinationAppointment && !hideVaccinationHint ? (
                 <p className="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-100">
                     Cita de vacunación: registra la aplicación en el plan del
                     paciente. Al aplicar se cobran el producto y el servicio de
@@ -458,16 +460,30 @@ function AppointmentDetailSkeleton() {
     );
 }
 
-export function AppointmentDetailModal({
-    open,
-    onOpenChange,
+type AppointmentDetailPanelProps = {
+    appointmentId: string;
+    active: boolean;
+    appointmentStatuses: AppointmentStatusOption[];
+    holidays: CalendarHoliday[];
+    canUpdate: boolean;
+    canDelete: boolean;
+    canStartAttention?: boolean;
+    /** Oculta el aviso de vacunación (p. ej. cuando la dosis ya está a la derecha). */
+    hideVaccinationHint?: boolean;
+    onDeleted?: () => void;
+};
+
+export function AppointmentDetailPanel({
     appointmentId,
+    active,
     appointmentStatuses,
     holidays,
     canUpdate,
     canDelete,
     canStartAttention = false,
-}: AppointmentDetailModalProps) {
+    hideVaccinationHint = false,
+    onDeleted,
+}: AppointmentDetailPanelProps) {
     const { appointment, setAppointment, loading, error, fetchAppointment, reset } =
         useAppointmentDetail();
     const {
@@ -493,7 +509,7 @@ export function AppointmentDetailModal({
     } = useDeleteAppointment({
         onDeleted: () => {
             setConfirmDeleteOpen(false);
-            onOpenChange(false);
+            onDeleted?.();
         },
     });
 
@@ -512,7 +528,7 @@ export function AppointmentDetailModal({
 
     const handleStatusChange = useCallback(
         async (statusId: string) => {
-            if (appointment === null || appointmentId === null) {
+            if (appointment === null) {
                 return;
             }
 
@@ -527,7 +543,7 @@ export function AppointmentDetailModal({
 
     const handleScheduleChange = useCallback(
         async (schedule: AppointmentScheduleValue) => {
-            if (appointment === null || appointmentId === null) {
+            if (appointment === null) {
                 return;
             }
 
@@ -543,15 +559,11 @@ export function AppointmentDetailModal({
     );
 
     const handleDelete = useCallback(() => {
-        if (appointmentId === null) {
-            return;
-        }
-
         deleteAppointment(appointmentId);
     }, [appointmentId, deleteAppointment]);
 
     const handleStartAttention = useCallback(() => {
-        if (appointmentId === null || startingAttention) {
+        if (startingAttention) {
             return;
         }
 
@@ -568,19 +580,8 @@ export function AppointmentDetailModal({
         });
     }, [appointmentId, startingAttention]);
 
-    const handleOpenChange = useCallback(
-        (nextOpen: boolean) => {
-            if (!nextOpen) {
-                setStartingAttention(false);
-            }
-
-            onOpenChange(nextOpen);
-        },
-        [onOpenChange],
-    );
-
     useEffect(() => {
-        if (!open || appointmentId === null) {
+        if (!active) {
             return;
         }
 
@@ -589,7 +590,7 @@ export function AppointmentDetailModal({
         clearDeleteError();
         void fetchAppointment(appointmentId);
     }, [
-        open,
+        active,
         appointmentId,
         fetchAppointment,
         clearStatusChangeError,
@@ -598,54 +599,44 @@ export function AppointmentDetailModal({
     ]);
 
     useEffect(() => {
-        if (!open) {
+        if (!active) {
             reset();
         }
-    }, [open, reset]);
+    }, [active, reset]);
 
     return (
         <>
-            <Dialog open={open} onOpenChange={handleOpenChange}>
-                <DialogContent className="gap-0 overflow-y-auto sm:max-w-lg">
-                    <DialogHeader className="sr-only">
-                        <DialogTitle>Detalle de cita</DialogTitle>
-                        <DialogDescription>
-                            Información de la cita seleccionada en el calendario.
-                        </DialogDescription>
-                    </DialogHeader>
+            {loading ? <AppointmentDetailSkeleton /> : null}
 
-                    {loading ? <AppointmentDetailSkeleton /> : null}
+            {!loading && error ? (
+                <p className="text-destructive text-sm" role="alert">
+                    {error}
+                </p>
+            ) : null}
 
-                    {!loading && error ? (
-                        <p className="text-destructive text-sm" role="alert">
-                            {error}
-                        </p>
-                    ) : null}
-
-                    {!loading && appointment ? (
-                        <AppointmentDetailContent
-                            appointment={appointment}
-                            appointmentStatuses={appointmentStatuses}
-                            canUpdate={canUpdate}
-                            canDelete={canDelete}
-                            canStartAttention={canStartAttention}
-                            statusChanging={statusChanging}
-                            statusChangeError={statusChangeError}
-                            rescheduling={rescheduling}
-                            rescheduleError={rescheduleError}
-                            deleting={deleting}
-                            deleteError={deleteError}
-                            startingAttention={startingAttention}
-                            holidays={holidays}
-                            scheduleFieldKey={scheduleFieldKey}
-                            onStatusChange={handleStatusChange}
-                            onScheduleChange={handleScheduleChange}
-                            onDelete={() => setConfirmDeleteOpen(true)}
-                            onStartAttention={handleStartAttention}
-                        />
-                    ) : null}
-                </DialogContent>
-            </Dialog>
+            {!loading && appointment ? (
+                <AppointmentDetailContent
+                    appointment={appointment}
+                    appointmentStatuses={appointmentStatuses}
+                    canUpdate={canUpdate}
+                    canDelete={canDelete}
+                    canStartAttention={canStartAttention}
+                    statusChanging={statusChanging}
+                    statusChangeError={statusChangeError}
+                    rescheduling={rescheduling}
+                    rescheduleError={rescheduleError}
+                    deleting={deleting}
+                    deleteError={deleteError}
+                    startingAttention={startingAttention}
+                    holidays={holidays}
+                    scheduleFieldKey={scheduleFieldKey}
+                    hideVaccinationHint={hideVaccinationHint}
+                    onStatusChange={handleStatusChange}
+                    onScheduleChange={handleScheduleChange}
+                    onDelete={() => setConfirmDeleteOpen(true)}
+                    onStartAttention={handleStartAttention}
+                />
+            ) : null}
 
             <ConfirmDialog
                 open={confirmDeleteOpen}
@@ -658,5 +649,42 @@ export function AppointmentDetailModal({
                 onConfirm={handleDelete}
             />
         </>
+    );
+}
+
+export function AppointmentDetailModal({
+    open,
+    onOpenChange,
+    appointmentId,
+    appointmentStatuses,
+    holidays,
+    canUpdate,
+    canDelete,
+    canStartAttention = false,
+}: AppointmentDetailModalProps) {
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="gap-0 overflow-y-auto sm:max-w-lg">
+                <DialogHeader className="sr-only">
+                    <DialogTitle>Detalle de cita</DialogTitle>
+                    <DialogDescription>
+                        Información de la cita seleccionada en el calendario.
+                    </DialogDescription>
+                </DialogHeader>
+
+                {open && appointmentId !== null ? (
+                    <AppointmentDetailPanel
+                        appointmentId={appointmentId}
+                        active={open}
+                        appointmentStatuses={appointmentStatuses}
+                        holidays={holidays}
+                        canUpdate={canUpdate}
+                        canDelete={canDelete}
+                        canStartAttention={canStartAttention}
+                        onDeleted={() => onOpenChange(false)}
+                    />
+                ) : null}
+            </DialogContent>
+        </Dialog>
     );
 }

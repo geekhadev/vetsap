@@ -15,6 +15,7 @@ import { FormDatePickerField } from '@/components/custom/form-date-picker-field'
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormSelect } from '@/components/custom/form-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
+import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +33,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import { AppointmentDetailPanel } from '@/pages/agenda/calendar/appointment-detail-modal';
+import type { AppointmentStatusOption } from '@/pages/agenda/calendar/types';
 import type {
     PatientVaccinationDoseSummary,
     PatientVaccinationPlanSummary,
@@ -269,9 +273,12 @@ type DoseDetailDialogProps = {
     plan: PatientVaccinationPlanSummary | null;
     patientId: string;
     canScheduleAppointment?: boolean;
+    appointmentStatuses?: AppointmentStatusOption[];
+    appointmentHolidays?: CalendarHoliday[];
+    canUpdateAppointments?: boolean;
+    canDeleteAppointments?: boolean;
     onOpenChange: (open: boolean) => void;
     onScheduleAppointment?: (dose: PatientVaccinationDoseSummary) => void;
-    onViewAppointment?: (appointmentId: string) => void;
 };
 
 type DoseActionMode = 'view' | 'administer' | 'omit' | 'edit';
@@ -286,23 +293,73 @@ export function PatientVaccinationDoseDialog({
     plan,
     patientId,
     canScheduleAppointment = false,
+    appointmentStatuses = [],
+    appointmentHolidays = [],
+    canUpdateAppointments = false,
+    canDeleteAppointments = false,
     onOpenChange,
     onScheduleAppointment,
-    onViewAppointment,
 }: DoseDetailDialogProps) {
+    const hasLinkedAppointment =
+        dose !== null && dose.appointment_id !== null && dose.appointment_id !== '';
+
     return (
         <Dialog open={dose !== null} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg">
-                {dose ? (
+            <DialogContent
+                className={cn(
+                    'gap-0 overflow-y-auto',
+                    hasLinkedAppointment
+                        ? 'sm:max-w-5xl max-h-[90vh]'
+                        : 'sm:max-w-lg',
+                )}
+            >
+                {dose && hasLinkedAppointment && dose.appointment_id ? (
+                    <div className="grid gap-6 md:grid-cols-2 md:gap-0">
+                        <section className="min-w-0 space-y-4 md:border-r md:pr-6">
+                            <DialogHeader className="space-y-1 text-left">
+                                <DialogTitle className="text-base">Cita</DialogTitle>
+                                <DialogDescription>
+                                    Agenda vinculada a esta dosis de vacunación.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <AppointmentDetailPanel
+                                key={dose.appointment_id}
+                                appointmentId={dose.appointment_id}
+                                active={dose !== null}
+                                appointmentStatuses={appointmentStatuses}
+                                holidays={appointmentHolidays}
+                                canUpdate={canUpdateAppointments}
+                                canDelete={canDeleteAppointments}
+                                canStartAttention={false}
+                                hideVaccinationHint
+                                onDeleted={() => onOpenChange(false)}
+                            />
+                        </section>
+                        <section className="min-w-0 space-y-4 md:pl-6">
+                            <PatientVaccinationDoseDialogInner
+                                key={`dose-${dose.id}`}
+                                dose={dose}
+                                plan={plan}
+                                patientId={patientId}
+                                canScheduleAppointment={canScheduleAppointment}
+                                showLinkedAppointmentActions={false}
+                                onClose={() => onOpenChange(false)}
+                                onScheduleAppointment={onScheduleAppointment}
+                            />
+                        </section>
+                    </div>
+                ) : null}
+
+                {dose && !hasLinkedAppointment ? (
                     <PatientVaccinationDoseDialogInner
                         key={dose.id}
                         dose={dose}
                         plan={plan}
                         patientId={patientId}
                         canScheduleAppointment={canScheduleAppointment}
+                        showLinkedAppointmentActions
                         onClose={() => onOpenChange(false)}
                         onScheduleAppointment={onScheduleAppointment}
-                        onViewAppointment={onViewAppointment}
                     />
                 ) : null}
             </DialogContent>
@@ -315,17 +372,17 @@ function PatientVaccinationDoseDialogInner({
     plan,
     patientId,
     canScheduleAppointment,
+    showLinkedAppointmentActions,
     onClose,
     onScheduleAppointment,
-    onViewAppointment,
 }: {
     dose: PatientVaccinationDoseSummary;
     plan: PatientVaccinationPlanSummary | null;
     patientId: string;
     canScheduleAppointment: boolean;
+    showLinkedAppointmentActions: boolean;
     onClose: () => void;
     onScheduleAppointment?: (dose: PatientVaccinationDoseSummary) => void;
-    onViewAppointment?: (appointmentId: string) => void;
 }) {
     const isOpenDose =
         dose.status === 'scheduled' || dose.status === 'due' || dose.status === 'overdue';
@@ -438,7 +495,7 @@ function PatientVaccinationDoseDialogInner({
 
     return (
         <>
-            <DialogHeader>
+            <DialogHeader className="space-y-1 text-left">
                 <DialogTitle>{dose.product_name}</DialogTitle>
                 <DialogDescription>
                     {plan?.name ?? dose.plan_name}
@@ -488,7 +545,7 @@ function PatientVaccinationDoseDialogInner({
                                 </dd>
                             </div>
                         ) : null}
-                        {hasAppointment ? (
+                        {showLinkedAppointmentActions && hasAppointment ? (
                             <div className="flex justify-between gap-4">
                                 <dt className="text-muted-foreground">Cita</dt>
                                 <dd className="font-medium">
@@ -533,7 +590,9 @@ function PatientVaccinationDoseDialogInner({
                                 >
                                     Cargar desde cartilla u otra clínica
                                 </Button>
-                                {canScheduleAppointment && !hasAppointment ? (
+                                {canScheduleAppointment &&
+                                !hasAppointment &&
+                                showLinkedAppointmentActions ? (
                                     <Button
                                         type="button"
                                         className="w-full"
@@ -541,20 +600,6 @@ function PatientVaccinationDoseDialogInner({
                                         onClick={() => onScheduleAppointment?.(dose)}
                                     >
                                         Programar cita para esta dosis
-                                    </Button>
-                                ) : null}
-                                {hasAppointment ? (
-                                    <Button
-                                        type="button"
-                                        className="w-full"
-                                        variant="outline"
-                                        onClick={() => {
-                                            if (dose.appointment_id) {
-                                                onViewAppointment?.(dose.appointment_id);
-                                            }
-                                        }}
-                                    >
-                                        Ver cita vinculada
                                     </Button>
                                 ) : null}
                                 <DropdownMenu>
@@ -585,20 +630,6 @@ function PatientVaccinationDoseDialogInner({
 
                         {isAdministered ? (
                             <>
-                                {hasAppointment ? (
-                                    <Button
-                                        type="button"
-                                        className="w-full"
-                                        variant="outline"
-                                        onClick={() => {
-                                            if (dose.appointment_id) {
-                                                onViewAppointment?.(dose.appointment_id);
-                                            }
-                                        }}
-                                    >
-                                        Ver cita vinculada
-                                    </Button>
-                                ) : null}
                                 <Button
                                     type="button"
                                     className="w-full"

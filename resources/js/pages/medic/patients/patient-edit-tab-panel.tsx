@@ -258,18 +258,21 @@ export function PatientEditTabPanel({
         setAppointmentDetailOpen(true);
     }, []);
 
-    const openVaccinationAppointmentDetail = useCallback((appointmentId: string) => {
-        setSelectedVaccinationDose(null);
-        setAppointmentFormOpen(false);
-        setSelectedAppointmentId(appointmentId);
-        setAppointmentDetailOpen(true);
-    }, []);
-
     const handleAppointmentDetailOpenChange = useCallback((open: boolean) => {
         setAppointmentDetailOpen(open);
 
         if (!open) {
             setSelectedAppointmentId(null);
+            router.reload({
+                only: ['appointments', 'vaccinationDoses'],
+                preserveScroll: true,
+            });
+        }
+    }, []);
+
+    const handleVaccinationDoseOpenChange = useCallback((open: boolean) => {
+        if (!open) {
+            setSelectedVaccinationDose(null);
             router.reload({
                 only: ['appointments', 'vaccinationDoses'],
                 preserveScroll: true,
@@ -524,13 +527,12 @@ export function PatientEditTabPanel({
                 plan={vaccinationPlan}
                 patientId={patient.id}
                 canScheduleAppointment={can.appointments.create}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setSelectedVaccinationDose(null);
-                    }
-                }}
+                appointmentStatuses={appointmentStatuses}
+                appointmentHolidays={appointmentHolidays}
+                canUpdateAppointments={can.appointments.update}
+                canDeleteAppointments={can.appointments.delete}
+                onOpenChange={handleVaccinationDoseOpenChange}
                 onScheduleAppointment={openScheduleVaccinationAppointment}
-                onViewAppointment={openVaccinationAppointmentDetail}
             />
 
             <AssignVaccinationPlanDialog
