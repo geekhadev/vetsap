@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import { format, isAfter } from 'date-fns';
+import { format } from 'date-fns';
 import {
     ArrowRight,
     ChevronDown,
@@ -39,6 +39,7 @@ import { useClipboard } from '@/hooks/use-clipboard';
 import {
     appointmentStatusColorToDotClass,
 } from '@/lib/appointment-status-colors';
+import { isWithinStartAttentionWindow } from '@/lib/start-attention-window';
 import { cn } from '@/lib/utils';
 import { AppointmentScheduleAutosaveField } from '@/pages/agenda/calendar/appointment-schedule-field';
 import {
@@ -139,7 +140,7 @@ function AppointmentDetailContent({
     onDelete: () => void;
     onStartAttention: () => void;
 }) {
-    const { company_selected: companySelected } = usePage().props;
+    const { company_selected: companySelected, vetsap } = usePage().props;
     const companyName = companySelected?.name?.trim() || 'nuestra clínica';
     const [, copyToClipboard] = useClipboard();
     const birthDate = formatDateDisplay(
@@ -196,9 +197,13 @@ function AppointmentDetailContent({
         birthDate !== '' ? `Cumpleaños: ${birthDate}` : null,
     ]);
 
-    const startsAt = new Date(appointment.starts_at);
-    const isFutureAppointment =
-        !Number.isNaN(startsAt.getTime()) && isAfter(startsAt, new Date());
+    const canStartAttentionNow =
+        canStartAttention &&
+        isWithinStartAttentionWindow(
+            appointment.starts_at,
+            vetsap.clinical_attention.start_from_appointment_minutes_before,
+            vetsap.clinical_attention.start_from_appointment_minutes_after,
+        );
 
     return (
         <div className="space-y-4">
@@ -370,7 +375,7 @@ function AppointmentDetailContent({
                 </DetailSection>
             ) : null}
 
-            {canDelete || (canStartAttention && !isFutureAppointment) ? (
+            {canDelete || canStartAttentionNow ? (
                 <div className="flex flex-row items-start gap-2 border-t pt-4 sm:justify-between">
                     {canDelete ? (
                         <div className="min-w-0 flex-1 space-y-1 sm:flex-none">
@@ -399,7 +404,7 @@ function AppointmentDetailContent({
                     ) : (
                         <span aria-hidden className="flex-1 sm:flex-none" />
                     )}
-                    {canStartAttention && !isFutureAppointment ? (
+                    {canStartAttentionNow ? (
                         <Button
                             type="button"
                             className="min-w-0 flex-1 gap-2 sm:w-auto sm:flex-none"
