@@ -87,9 +87,9 @@ export function OpenCashRegister() {
                     <TooltipTrigger asChild>
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            className="border-sidebar-border/70 text-muted-foreground h-9 shrink-0 gap-1.5 px-2.5"
+                            className="text-muted-foreground h-9 shrink-0 gap-1.5 px-2.5"
                             onClick={openPosFromHeader}
                             aria-label="Caja"
                         >
