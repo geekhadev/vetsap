@@ -36,7 +36,10 @@ class VaccinationProtocolListRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->prepareNameSortedListDefaults();
+        $this->merge([
+            'sort' => $this->input('sort', 'version'),
+            'direction' => $this->input('direction', 'desc'),
+        ]);
         $this->prepareStandardListQuery();
         $this->prepareIsActiveListFilter();
     }

@@ -33,6 +33,8 @@ final class CreateVaccinationProtocolAction
             $items = $data['items'];
             unset($data['items']);
 
+            $data['version'] = 1;
+
             /** @var VaccinationProtocol $protocol */
             $protocol = VaccinationProtocol::query()->create($data);
 

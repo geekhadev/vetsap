@@ -52,16 +52,17 @@ function toPayloadItems(rows: ProtocolItemFormRow[]) {
 
 export function useVaccinationProtocolForm(entity: VaccinationProtocol | null) {
     const isEdit = entity !== null;
-    const headTitle = isEdit ? 'Editar protocolo' : 'Nuevo protocolo';
+    const currentVersion = entity?.version ?? 1;
+    const headTitle = isEdit ? 'Nueva versión del protocolo' : 'Nuevo protocolo';
     const description = isEdit
-        ? 'Modifica el protocolo y sus dosis programadas.'
+        ? `Se creará una nueva versión a partir de la v${currentVersion}. La versión actual quedará inactiva y los planes ya asignados no cambian.`
         : 'Define un protocolo por especie con productos tipo Vacunas.';
 
     const form = useForm<VaccinationProtocolFormData>({
         name: entity?.name ?? '',
         species_id: entity?.species_id ?? '',
         description: entity?.description ?? '',
-        version: entity?.version ?? 1,
+        version: currentVersion,
         is_active: entity?.is_active ?? true,
         items: toPayloadItems(itemsFromProtocol(entity?.items)),
     });
@@ -71,9 +72,9 @@ export function useVaccinationProtocolForm(entity: VaccinationProtocol | null) {
             name: form.data.name,
             species_id: form.data.species_id,
             description: form.data.description,
-            version: form.data.version,
             is_active: form.data.is_active,
             items: toPayloadItems(itemRows),
+            ...(isEdit ? {} : { version: 1 }),
         };
 
         form.transform(() => payload);
@@ -95,6 +96,7 @@ export function useVaccinationProtocolForm(entity: VaccinationProtocol | null) {
         isEdit,
         headTitle,
         description,
+        currentVersion,
         form,
         emptyProtocolItemRow,
         submit,

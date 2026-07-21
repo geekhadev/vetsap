@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\DB;
 final class UpdateVaccinationProtocolAction
 {
     /**
+     * Crea una nueva versión del protocolo (no muta la plantilla existente).
+     * Los planes de pacientes ya asignados siguen apuntando a la versión anterior.
+     *
      * @param  array{
      *     species_id: string,
      *     name: string,
      *     description: string|null,
-     *     version: int,
      *     is_active: bool,
      *     items: list<array{
      *         product_id: string,
@@ -32,14 +34,32 @@ final class UpdateVaccinationProtocolAction
             $items = $data['items'];
             unset($data['items']);
 
-            $protocol->update($data);
+            $nextVersion = (int) VaccinationProtocol::query()
+                ->where('company_id', $protocol->company_id)
+                ->where('name', $data['name'])
+                ->max('version');
 
-            $protocol->items()->delete();
-            foreach ($items as $item) {
-                $protocol->items()->create($item);
+            $data['company_id'] = $protocol->company_id;
+            $data['version'] = $nextVersion + 1;
+
+            $protocol->update(['is_active' => false]);
+
+            if ($data['is_active']) {
+                VaccinationProtocol::query()
+                    ->where('company_id', $protocol->company_id)
+                    ->where('name', $data['name'])
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
             }
 
-            return $protocol->refresh()->load(['species:id,name', 'items.product:id,name']);
+            /** @var VaccinationProtocol $newProtocol */
+            $newProtocol = VaccinationProtocol::query()->create($data);
+
+            foreach ($items as $item) {
+                $newProtocol->items()->create($item);
+            }
+
+            return $newProtocol->load(['species:id,name', 'items.product:id,name']);
         });
     }
 }

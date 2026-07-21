@@ -1,4 +1,4 @@
-import { CirclePlus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, CirclePlus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormSelect } from '@/components/custom/form-select';
@@ -14,6 +14,14 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { useVaccinationProtocolForm } from '@/pages/medic/vaccination-protocols/hooks/use-form';
 import type {
     ProtocolItemFormRow,
@@ -96,6 +104,32 @@ function VaccinationProtocolFormInner({
         );
     }
 
+    function moveItem(key: string, direction: -1 | 1) {
+        setItemRows((rows) => {
+            const index = rows.findIndex((row) => row.key === key);
+
+            if (index < 0) {
+                return rows;
+            }
+
+            const target = index + direction;
+
+            if (target < 0 || target >= rows.length) {
+                return rows;
+            }
+
+            const next = [...rows];
+            const [moved] = next.splice(index, 1);
+            next.splice(target, 0, moved);
+
+            return next;
+        });
+    }
+
+    function addItem() {
+        setItemRows((rows) => [...rows, emptyProtocolItemRow()]);
+    }
+
     function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
         submit(itemRows, onClose);
@@ -112,12 +146,11 @@ function VaccinationProtocolFormInner({
                 className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto py-2"
                 onSubmit={handleSubmit}
             >
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-[minmax(0,1fr)_14rem_auto]">
                     <FormTextInput
                         label="Nombre"
                         placeholder='Ej. "Plan Canino 1"'
                         required
-                        containerClassName="sm:col-span-2"
                         error={form.errors.name}
                         inputProps={{
                             id: 'vaccination-protocol-name',
@@ -141,25 +174,19 @@ function VaccinationProtocolFormInner({
                                 form.setData('species_id', event.target.value),
                         }}
                     />
-                </div>
 
-                <div className="flex flex-row flex-wrap items-center justify-between gap-3">
-                    <div className="grid min-w-0 gap-1">
+                    <div className="flex items-center gap-3 pb-2 sm:justify-end">
                         <Label htmlFor="vaccination-protocol-is_active">
                             Activo
                         </Label>
-                        <p className="text-muted-foreground text-sm">
-                            Si está inactivo no se podrá asignar a nuevos
-                            pacientes.
-                        </p>
+                        <Switch
+                            id="vaccination-protocol-is_active"
+                            checked={form.data.is_active}
+                            onCheckedChange={(value) =>
+                                form.setData('is_active', value)
+                            }
+                        />
                     </div>
-                    <Switch
-                        id="vaccination-protocol-is_active"
-                        checked={form.data.is_active}
-                        onCheckedChange={(value) =>
-                            form.setData('is_active', value)
-                        }
-                    />
                 </div>
                 <InputError message={form.errors.is_active} />
 
@@ -170,12 +197,7 @@ function VaccinationProtocolFormInner({
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                                setItemRows((rows) => [
-                                    ...rows,
-                                    emptyProtocolItemRow(),
-                                ])
-                            }
+                            onClick={addItem}
                         >
                             <CirclePlus className="size-4" />
                             Agregar dosis
@@ -190,26 +212,69 @@ function VaccinationProtocolFormInner({
                         </p>
                     ) : null}
 
-                    <div className="space-y-4">
-                        {itemRows.map((row, index) => (
-                            <ProtocolItemFields
-                                key={row.key}
-                                index={index}
-                                row={row}
-                                productOptions={productOptions}
-                                scheduleOptions={scheduleOptions}
-                                canRemove={itemRows.length > 1}
-                                errors={form.errors}
-                                onChange={(patch) => updateItem(row.key, patch)}
-                                onRemove={() =>
-                                    setItemRows((rows) =>
-                                        rows.filter(
-                                            (item) => item.key !== row.key,
-                                        ),
-                                    )
-                                }
-                            />
-                        ))}
+                    <div className="overflow-x-auto rounded-md border border-border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="hover:bg-transparent">
+                                    <TableHead className="w-20">Orden</TableHead>
+                                    <TableHead className="min-w-[12rem]">
+                                        Producto (*)
+                                    </TableHead>
+                                    <TableHead className="min-w-[11rem]">
+                                        Tipo (*)
+                                    </TableHead>
+                                    <TableHead className="min-w-[14rem]">
+                                        Edad (semanas/meses) (*)
+                                    </TableHead>
+                                    <TableHead className="min-w-[9rem]">
+                                        Serie (opcional)
+                                    </TableHead>
+                                    <TableHead className="w-16 text-right">
+                                        Acciones
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {itemRows.map((row, index) => (
+                                    <ProtocolItemRow
+                                        key={row.key}
+                                        index={index}
+                                        row={row}
+                                        productOptions={productOptions}
+                                        scheduleOptions={scheduleOptions}
+                                        canRemove={itemRows.length > 1}
+                                        canMoveUp={index > 0}
+                                        canMoveDown={index < itemRows.length - 1}
+                                        errors={form.errors}
+                                        onChange={(patch) =>
+                                            updateItem(row.key, patch)
+                                        }
+                                        onMoveUp={() => moveItem(row.key, -1)}
+                                        onMoveDown={() => moveItem(row.key, 1)}
+                                        onRemove={() =>
+                                            setItemRows((rows) =>
+                                                rows.filter(
+                                                    (item) =>
+                                                        item.key !== row.key,
+                                                ),
+                                            )
+                                        }
+                                    />
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    <div className="flex justify-end">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={addItem}
+                        >
+                            <CirclePlus className="size-4" />
+                            Agregar dosis
+                        </Button>
                     </div>
                 </div>
 
@@ -217,20 +282,25 @@ function VaccinationProtocolFormInner({
                     onCancel={onClose}
                     processing={form.processing}
                     isEdit={isEdit}
+                    submitLabel={isEdit ? 'Guardar nueva versión' : undefined}
                 />
             </form>
         </>
     );
 }
 
-function ProtocolItemFields({
+function ProtocolItemRow({
     index,
     row,
     productOptions,
     scheduleOptions,
     canRemove,
+    canMoveUp,
+    canMoveDown,
     errors,
     onChange,
+    onMoveUp,
+    onMoveDown,
     onRemove,
 }: {
     index: number;
@@ -238,47 +308,73 @@ function ProtocolItemFields({
     productOptions: Array<{ id: string; label: string }>;
     scheduleOptions: Array<{ id: string; label: string }>;
     canRemove: boolean;
+    canMoveUp: boolean;
+    canMoveDown: boolean;
     errors: Record<string, string>;
     onChange: (patch: Partial<ProtocolItemFormRow>) => void;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
     onRemove: () => void;
 }) {
-    return (
-        <div className="bg-muted/30 space-y-3 rounded-xl border p-3">
-            <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-medium">Dosis {index + 1}</p>
-                {canRemove ? (
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={onRemove}
-                        aria-label={`Eliminar dosis ${index + 1}`}
-                    >
-                        <Trash2 className="size-4" />
-                    </Button>
-                ) : null}
-            </div>
+    const seriesEnabled = row.schedule_type !== 'unique';
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+    return (
+        <TableRow className="align-top hover:bg-transparent">
+            <TableCell className="whitespace-normal">
+                <div className="flex items-center gap-1">
+                    <span className="text-muted-foreground w-5 text-center tabular-nums">
+                        {index + 1}
+                    </span>
+                    <div className="flex flex-col">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-6"
+                            disabled={!canMoveUp}
+                            onClick={onMoveUp}
+                            aria-label={`Subir dosis ${index + 1}`}
+                        >
+                            <ChevronUp className="size-3.5" />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-6"
+                            disabled={!canMoveDown}
+                            onClick={onMoveDown}
+                            aria-label={`Bajar dosis ${index + 1}`}
+                        >
+                            <ChevronDown className="size-3.5" />
+                        </Button>
+                    </div>
+                </div>
+            </TableCell>
+
+            <TableCell className="whitespace-normal">
                 <FormSelect
-                    label="Producto (Vacunas)"
                     placeholder="Selecciona un producto"
                     required
                     options={productOptions}
                     error={errors[`items.${index}.product_id`]}
+                    containerClassName="gap-1"
                     selectProps={{
                         id: `vaccination-protocol-item-${index}-product_id`,
                         value: row.product_id,
                         onChange: (event) =>
                             onChange({ product_id: event.target.value }),
+                        'aria-label': `Producto dosis ${index + 1}`,
                     }}
                 />
+            </TableCell>
 
+            <TableCell className="whitespace-normal">
                 <FormSelect
-                    label="Tipo de programación"
                     required
                     options={scheduleOptions}
                     error={errors[`items.${index}.schedule_type`]}
+                    containerClassName="gap-1"
                     selectProps={{
                         id: `vaccination-protocol-item-${index}-schedule_type`,
                         value: row.schedule_type,
@@ -291,14 +387,18 @@ function ProtocolItemFields({
                                         ? ''
                                         : row.series_key,
                             }),
+                        'aria-label': `Tipo de programación dosis ${index + 1}`,
                     }}
                 />
+            </TableCell>
 
+            <TableCell className="whitespace-normal">
                 {row.schedule_type === 'from_birth_weeks' ? (
                     <FormTextInput
-                        label="Semana desde nacimiento"
                         required
+                        placeholder="Semanas"
                         error={errors[`items.${index}.week_number`]}
+                        containerClassName="gap-1"
                         inputProps={{
                             id: `vaccination-protocol-item-${index}-week_number`,
                             type: 'number',
@@ -306,47 +406,56 @@ function ProtocolItemFields({
                             value: row.week_number,
                             onChange: (event) =>
                                 onChange({ week_number: event.target.value }),
+                            'aria-label': `Semanas desde nacimiento dosis ${index + 1}`,
                         }}
                     />
                 ) : null}
 
                 {row.schedule_type === 'unique' ? (
-                    <FormTextInput
-                        label="Edad mínima (semanas)"
-                        required
-                        error={errors[`items.${index}.min_age_weeks`]}
-                        inputProps={{
-                            id: `vaccination-protocol-item-${index}-min_age_weeks`,
-                            type: 'number',
-                            min: 0,
-                            value: row.min_age_weeks,
-                            onChange: (event) =>
-                                onChange({ min_age_weeks: event.target.value }),
-                        }}
-                    />
-                ) : null}
-
-                {row.schedule_type === 'unique' ? (
-                    <FormTextInput
-                        label="Edad máxima (semanas)"
-                        required
-                        error={errors[`items.${index}.max_age_weeks`]}
-                        inputProps={{
-                            id: `vaccination-protocol-item-${index}-max_age_weeks`,
-                            type: 'number',
-                            min: 0,
-                            value: row.max_age_weeks,
-                            onChange: (event) =>
-                                onChange({ max_age_weeks: event.target.value }),
-                        }}
-                    />
+                    <div className="grid grid-cols-2 gap-2">
+                        <FormTextInput
+                            required
+                            placeholder="Mín."
+                            error={errors[`items.${index}.min_age_weeks`]}
+                            containerClassName="gap-1"
+                            inputProps={{
+                                id: `vaccination-protocol-item-${index}-min_age_weeks`,
+                                type: 'number',
+                                min: 0,
+                                value: row.min_age_weeks,
+                                onChange: (event) =>
+                                    onChange({
+                                        min_age_weeks: event.target.value,
+                                    }),
+                                'aria-label': `Edad mínima dosis ${index + 1}`,
+                            }}
+                        />
+                        <FormTextInput
+                            required
+                            placeholder="Máx."
+                            error={errors[`items.${index}.max_age_weeks`]}
+                            containerClassName="gap-1"
+                            inputProps={{
+                                id: `vaccination-protocol-item-${index}-max_age_weeks`,
+                                type: 'number',
+                                min: 0,
+                                value: row.max_age_weeks,
+                                onChange: (event) =>
+                                    onChange({
+                                        max_age_weeks: event.target.value,
+                                    }),
+                                'aria-label': `Edad máxima dosis ${index + 1}`,
+                            }}
+                        />
+                    </div>
                 ) : null}
 
                 {row.schedule_type === 'periodic' ? (
                     <FormTextInput
-                        label="Intervalo (meses)"
                         required
+                        placeholder="Meses"
                         error={errors[`items.${index}.interval_months`]}
+                        containerClassName="gap-1"
                         inputProps={{
                             id: `vaccination-protocol-item-${index}-interval_months`,
                             type: 'number',
@@ -356,25 +465,47 @@ function ProtocolItemFields({
                                 onChange({
                                     interval_months: event.target.value,
                                 }),
+                            'aria-label': `Intervalo en meses dosis ${index + 1}`,
                         }}
                     />
                 ) : null}
+            </TableCell>
 
-                {row.schedule_type !== 'unique' ? (
-                    <FormTextInput
-                        label="Clave de serie (opcional)"
-                        placeholder='Ej. "sextuple"'
-                        error={errors[`items.${index}.series_key`]}
-                        inputProps={{
-                            id: `vaccination-protocol-item-${index}-series_key`,
-                            value: row.series_key,
-                            onChange: (event) =>
-                                onChange({ series_key: event.target.value }),
-                            maxLength: 64,
-                        }}
-                    />
+            <TableCell className="whitespace-normal">
+                <FormTextInput
+                    placeholder={seriesEnabled ? 'Ej. sextuple' : '—'}
+                    error={
+                        seriesEnabled
+                            ? errors[`items.${index}.series_key`]
+                            : undefined
+                    }
+                    containerClassName="gap-1"
+                    inputProps={{
+                        id: `vaccination-protocol-item-${index}-series_key`,
+                        value: seriesEnabled ? row.series_key : '',
+                        disabled: !seriesEnabled,
+                        onChange: (event) =>
+                            onChange({ series_key: event.target.value }),
+                        maxLength: 64,
+                        'aria-label': `Clave de serie dosis ${index + 1}`,
+                    }}
+                />
+            </TableCell>
+
+            <TableCell className="text-right whitespace-normal">
+                {canRemove ? (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-8"
+                        onClick={onRemove}
+                        aria-label={`Eliminar dosis ${index + 1}`}
+                    >
+                        <Trash2 className="size-3.5 text-destructive" />
+                    </Button>
                 ) : null}
-            </div>
-        </div>
+            </TableCell>
+        </TableRow>
     );
 }

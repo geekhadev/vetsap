@@ -16,6 +16,8 @@ final class ListVaccinationProtocolsForCompanyAction
         ['sort' => $sort, 'direction' => $direction, 'per_page' => $perPage] = ListFilterPagination::resolveFromFilters(
             $filters,
             VaccinationProtocol::SORTABLE_COLUMNS,
+            defaultSort: 'version',
+            defaultDirection: 'desc',
         );
 
         return VaccinationProtocol::query()

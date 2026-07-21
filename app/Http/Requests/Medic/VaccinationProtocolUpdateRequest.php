@@ -31,7 +31,7 @@ class VaccinationProtocolUpdateRequest extends FormRequest
             return ['name' => ['required']];
         }
 
-        return VaccinationProtocolPayloadValidationRules::updateRules($companyId, $protocol->id);
+        return VaccinationProtocolPayloadValidationRules::updateRules($companyId, $protocol);
     }
 
     public function withValidator(Validator $validator): void
@@ -44,7 +44,6 @@ class VaccinationProtocolUpdateRequest extends FormRequest
      *     species_id: string,
      *     name: string,
      *     description: string|null,
-     *     version: int,
      *     is_active: bool,
      *     items: list<array{
      *         product_id: string,

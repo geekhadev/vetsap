@@ -10,9 +10,9 @@ import type {
     VaccinationProtocolsIndexFiltersDraftFull,
 } from '@/pages/medic/vaccination-protocols/types';
 import { VACCINATION_PROTOCOLS_INDEX_MODULE_FILTER_KEYS } from '@/pages/medic/vaccination-protocols/types';
+import { index as vaccinationProtocolsIndex } from '@/routes/medic/vaccination-protocols';
 import type { BreadcrumbItem } from '@/types/navigation';
 import type { Paginated } from '@/types/pagination';
-import { index as vaccinationProtocolsIndex } from '@/routes/medic/vaccination-protocols';
 
 export type VaccinationProtocolsIndexPageProps = {
     data: Paginated<VaccinationProtocol>;
@@ -29,7 +29,7 @@ const PAGE = {
     searchPlaceholder: 'Buscar por nombre…',
 } as const;
 
-const ORDER = { sort: 'name', direction: 'asc' } as const;
+const ORDER = { sort: 'version', direction: 'desc' } as const;
 
 export const CONFIG_TABLEDATA = {
     storageKey: PAGE.storageKey,

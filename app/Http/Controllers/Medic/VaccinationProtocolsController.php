@@ -95,7 +95,7 @@ class VaccinationProtocolsController extends Controller
 
         $action->execute($vaccinationProtocol, $request->protocolPayload());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Protocolo actualizado correctamente.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Nueva versión del protocolo creada.']);
 
         return to_route('medic.vaccination-protocols.index');
     }

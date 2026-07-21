@@ -3,6 +3,7 @@
 namespace App\Support\Validation;
 
 use App\Enums\Medic\VaccinationScheduleType;
+use App\Models\Medic\VaccinationProtocol;
 use App\Models\Store\ProductType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
@@ -23,13 +24,14 @@ final class VaccinationProtocolPayloadValidationRules
                 'max:255',
                 ...self::uniqueNameRules($companyId),
             ],
+            'version' => ['required', 'integer', 'min:1', 'max:65535'],
         ];
     }
 
     /**
      * @return array<string, ValidationRule|array<int, mixed|string>|string>
      */
-    public static function updateRules(string $companyId, string $protocolId): array
+    public static function updateRules(string $companyId, VaccinationProtocol $protocol): array
     {
         return [
             ...self::baseRules($companyId),
@@ -37,7 +39,20 @@ final class VaccinationProtocolPayloadValidationRules
                 'required',
                 'string',
                 'max:255',
-                ...self::uniqueNameRules($companyId, $protocolId),
+                function (string $attribute, mixed $value, \Closure $fail) use ($companyId, $protocol): void {
+                    if (! is_string($value) || $value === $protocol->name) {
+                        return;
+                    }
+
+                    $exists = VaccinationProtocol::query()
+                        ->where('company_id', $companyId)
+                        ->where('name', $value)
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('Ya existe un protocolo con este nombre.');
+                    }
+                },
             ],
         ];
     }
@@ -62,7 +77,6 @@ final class VaccinationProtocolPayloadValidationRules
                 }),
             ],
             'description' => ['nullable', 'string', 'max:5000'],
-            'version' => ['required', 'integer', 'min:1', 'max:65535'],
             'is_active' => ['required', 'boolean'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => [
@@ -91,16 +105,12 @@ final class VaccinationProtocolPayloadValidationRules
     /**
      * @return list<ValidationRule>
      */
-    private static function uniqueNameRules(string $companyId, ?string $ignoreId = null): array
+    private static function uniqueNameRules(string $companyId): array
     {
-        $unique = Rule::unique('medic_vaccination_protocols', 'name')
-            ->where(fn ($query) => $query->where('company_id', $companyId));
-
-        if ($ignoreId !== null) {
-            $unique->ignore($ignoreId);
-        }
-
-        return [$unique];
+        return [
+            Rule::unique('medic_vaccination_protocols', 'name')
+                ->where(fn ($query) => $query->where('company_id', $companyId)),
+        ];
     }
 
     public static function afterValidation(Validator $validator): void
@@ -193,6 +203,7 @@ final class VaccinationProtocolPayloadValidationRules
     {
         return [
             'company_id' => $companyId,
+            'version' => 1,
             ...self::sharedPayload($validated),
         ];
     }
@@ -203,7 +214,6 @@ final class VaccinationProtocolPayloadValidationRules
      *     species_id: string,
      *     name: string,
      *     description: string|null,
-     *     version: int,
      *     is_active: bool,
      *     items: list<array{
      *         product_id: string,
@@ -228,7 +238,6 @@ final class VaccinationProtocolPayloadValidationRules
      *     species_id: string,
      *     name: string,
      *     description: string|null,
-     *     version: int,
      *     is_active: bool,
      *     items: list<array{
      *         product_id: string,
@@ -281,7 +290,6 @@ final class VaccinationProtocolPayloadValidationRules
             'description' => isset($validated['description']) && is_string($validated['description']) && $validated['description'] !== ''
                 ? $validated['description']
                 : null,
-            'version' => (int) $validated['version'],
             'is_active' => filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN),
             'items' => $items,
         ];
