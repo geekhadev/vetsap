@@ -79,6 +79,14 @@ class Patient extends Model
     }
 
     /**
+     * @return HasMany<ClinicalAttention, $this>
+     */
+    public function attentions(): HasMany
+    {
+        return $this->hasMany(ClinicalAttention::class, 'patient_id');
+    }
+
+    /**
      * @param  Builder<$this>  $query
      * @return Builder<$this>
      */

@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use App\Models\Company;
 use App\Models\User;
+use App\Support\Medic\StartAttentionFromAppointmentWindow;
+use App\Support\Sale\CashRegisterSharedProps;
 use App\Support\SelectedCompanySession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -92,6 +94,13 @@ class HandleInertiaRequests extends Middleware
             'selectable_companies' => $selectableCompanies,
             'show_company_switcher' => $showCompanySwitcher,
             'can_create_company' => $canCreateCompany,
+            'cash_register' => CashRegisterSharedProps::forRequest($request),
+            'vetsap' => [
+                'clinical_attention' => [
+                    'start_from_appointment_minutes_before' => StartAttentionFromAppointmentWindow::minutesBefore(),
+                    'start_from_appointment_minutes_after' => StartAttentionFromAppointmentWindow::minutesAfter(),
+                ],
+            ],
         ];
     }
 

@@ -1,7 +1,9 @@
 export type * from './active-record';
 export type * from './auth';
+export type * from './cash-register';
 export type * from './company-session';
 export type * from './list-filters';
+export type * from './vetsap';
 export {
     formatIsActive,
     isActiveFilterOptions,

@@ -1,5 +1,6 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { CompanySwitcher } from '@/components/custom/company-switcher';
+import { OpenCashRegister } from '@/components/custom/open-cash-register';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
@@ -16,7 +17,10 @@ export function AppSidebarHeader({
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
             </div>
-            <CompanySwitcher />
+            <div className="flex shrink-0 items-center gap-1">
+                <OpenCashRegister />
+                <CompanySwitcher />
+            </div>
         </header>
     );
 }
