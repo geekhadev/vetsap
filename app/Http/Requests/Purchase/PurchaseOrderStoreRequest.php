@@ -36,6 +36,7 @@ class PurchaseOrderStoreRequest extends FormRequest
      *     ordered_at: string,
      *     supplier_id: string,
      *     purchase_order_status_id: string,
+     *     user_id: string,
      *     details: list<array{product_id: string, quantity: int, unit_price: string, total: string}>,
      *     total: string
      * }
@@ -47,6 +48,7 @@ class PurchaseOrderStoreRequest extends FormRequest
 
         return PurchaseOrderPayloadValidationRules::storePayload(
             (string) $this->selectedCompanyId(),
+            (string) $this->user()?->id,
             $validated,
         );
     }

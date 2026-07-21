@@ -43,15 +43,22 @@ export type PurchaseOrderDetail = {
     product?: ProductRef;
 };
 
+export type PurchaseOrderUserRef = {
+    id: string;
+    name: string;
+};
+
 export type PurchaseOrder = {
     id: string;
     company_id: string;
     ordered_at: string;
     supplier_id: string;
     purchase_order_status_id: string;
+    user_id: string | null;
     total: string;
     supplier?: SupplierRef;
     purchase_order_status?: PurchaseOrderStatusRef;
+    user?: PurchaseOrderUserRef | null;
     details?: PurchaseOrderDetail[];
     created_at: string;
     updated_at: string;

@@ -75,6 +75,12 @@ function PurchaseOrdersIndex() {
                 render: (row) => <CurrencyDisplay value={row.total} />,
             },
             {
+                key: 'user',
+                label: 'Usuario',
+                sortable: false,
+                render: (row) => row.user?.name ?? '—',
+            },
+            {
                 key: 'actions',
                 label: '',
                 sortable: false,

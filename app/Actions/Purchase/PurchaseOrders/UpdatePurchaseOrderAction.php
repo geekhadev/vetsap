@@ -42,6 +42,7 @@ final class UpdatePurchaseOrderAction
             return $purchaseOrder->load([
                 'supplier:id,name,document_number',
                 'purchaseOrderStatus:id,name,color',
+                'user:id,name',
                 'details.product:id,name,barcode',
             ]);
         });

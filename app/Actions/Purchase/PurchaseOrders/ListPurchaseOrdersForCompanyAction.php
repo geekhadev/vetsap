@@ -25,6 +25,7 @@ final class ListPurchaseOrdersForCompanyAction
             ->with([
                 'supplier:id,name,document_number',
                 'purchaseOrderStatus:id,name,color',
+                'user:id,name',
                 'details.product:id,name,barcode',
             ])
             ->search($filters['search'] ?? null)

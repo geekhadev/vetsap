@@ -4,6 +4,7 @@ namespace App\Models\Purchase;
 
 use App\Models\Company;
 use App\Models\Medic\Concerns\InteractsWithCompanyMasterRecord;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'ordered_at',
     'supplier_id',
     'purchase_order_status_id',
+    'user_id',
     'total',
 ])]
 class PurchaseOrder extends Model
@@ -53,6 +55,14 @@ class PurchaseOrder extends Model
     public function purchaseOrderStatus(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrderStatus::class, 'purchase_order_status_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
@@ -107,6 +117,8 @@ class PurchaseOrder extends Model
                     ->orWhere('document_number', 'like', $term);
             })->orWhereHas('purchaseOrderStatus', function (Builder $statusQuery) use ($term): void {
                 $statusQuery->where('name', 'like', $term);
+            })->orWhereHas('user', function (Builder $userQuery) use ($term): void {
+                $userQuery->where('name', 'like', $term);
             });
         });
     }

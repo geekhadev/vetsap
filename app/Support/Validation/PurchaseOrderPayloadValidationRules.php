@@ -49,11 +49,12 @@ final class PurchaseOrderPayloadValidationRules
      *     ordered_at: string,
      *     supplier_id: string,
      *     purchase_order_status_id: string,
+     *     user_id: string,
      *     details: list<array{product_id: string, quantity: int, unit_price: string, total: string}>,
      *     total: string
      * }
      */
-    public static function storePayload(string $companyId, array $validated): array
+    public static function storePayload(string $companyId, string $userId, array $validated): array
     {
         $details = self::normalizeDetails($validated['details']);
 
@@ -62,6 +63,7 @@ final class PurchaseOrderPayloadValidationRules
             'ordered_at' => (string) $validated['ordered_at'],
             'supplier_id' => (string) $validated['supplier_id'],
             'purchase_order_status_id' => (string) $validated['purchase_order_status_id'],
+            'user_id' => $userId,
             'details' => $details,
             'total' => self::sumDetailsTotal($details),
         ];

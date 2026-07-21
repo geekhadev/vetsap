@@ -26,7 +26,7 @@ const PAGE = {
     storageKey: 'purchase-orders-index',
     title: 'Órdenes de compra',
     description: 'Registro de órdenes de compra de la empresa activa.',
-    searchPlaceholder: 'Proveedor o estado…',
+    searchPlaceholder: 'Proveedor, estado o usuario…',
 } as const;
 
 const ORDER = { sort: 'ordered_at', direction: 'desc' } as const;
