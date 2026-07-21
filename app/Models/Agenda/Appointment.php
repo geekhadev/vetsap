@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\CompanyOffice;
 use App\Models\Medic\Doctor;
 use App\Models\Medic\Patient;
+use App\Models\Medic\PatientVaccinationDose;
 use App\Models\Medic\Service;
 use App\Models\Sale\Customer;
 use App\Models\User;
@@ -138,6 +139,14 @@ class Appointment extends Model
         return $this->hasMany(AppointmentStatusLog::class, 'appointment_id')
             ->orderBy('occurred_at')
             ->orderBy('created_at');
+    }
+
+    /**
+     * @return HasMany<PatientVaccinationDose, $this>
+     */
+    public function vaccinationDoses(): HasMany
+    {
+        return $this->hasMany(PatientVaccinationDose::class, 'appointment_id');
     }
 
     /**

@@ -10,13 +10,14 @@ Pendientes acumulados para retomar después.
 ## Ventas / caja registradora
 
 - [ ] **Anulaciones y notas de crédito en caja**: definir cómo restan (o no) del resumen/cuadre de una sesión abierta o ya cerrada (p. ej. si una anulación posterior al cierre debe ajustar el histórico, generar movimiento en la caja actual, o solo quedar fuera del arqueo).
+- [ ] **Vacuna: clear aplicación vs venta**: tras implementar cobro automático al aplicar, reconciliar «Eliminar aplicación» con la línea de venta (hoy v1 no toca la venta). Definir: quitar del borrador si sigue draft; si ya cobrada, bloquear clear o exigir NC/anulación.
 
 ## Medicina / plan de vacunación (post-MVP)
 
 Spec clínico MVP: `docs/specs/medic-vaccination-plans.md`  
-Spec cobro + citas (propuesta): `docs/specs/medic-vaccination-billing-and-appointments.md`
+Spec cobro + citas (decisiones cerradas): `docs/specs/medic-vaccination-billing-and-appointments.md`
 
-- [ ] **Integraciones cobro/citas**: implementar según spec de billing/appointments (Fases A–C); stock/lote y recordatorios siguen aparte.
+- [ ] **Integraciones cobro/citas**: implementar según spec (Fase A cobro al aplicar, Fase B citas desde dosis); stock/lote y recordatorios siguen aparte.
 - [ ] **Integraciones**: recordatorios (email/WhatsApp), stock/lote al aplicar.
 - [ ] **Cambiar o migrar de plan** luego de asignado; política al publicar protocolo v2 (alerta vs migración de dosis futuras).
 - [ ] **Campos específicos de productos tipo Vacunas** (extender ficha de producto: p. ej. enfermedades cubiertas, especie sugerida, ficha técnica).

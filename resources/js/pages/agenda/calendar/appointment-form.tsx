@@ -44,6 +44,8 @@ export function AppointmentForm({
         buildInitialAppointmentFormState(formOptions, defaults),
     );
 
+    const vaccinationDoseId = defaults.vaccinationDoseId ?? '';
+
     const patientSubjectOptions = useMemo(
         () =>
             formOptions.patients.map((option) => ({
@@ -171,6 +173,13 @@ export function AppointmentForm({
                             type="hidden"
                             name="redirect_patient_id"
                             value={redirectPatientId}
+                        />
+                    ) : null}
+                    {vaccinationDoseId !== '' ? (
+                        <input
+                            type="hidden"
+                            name="vaccination_dose_id"
+                            value={vaccinationDoseId}
                         />
                     ) : null}
 

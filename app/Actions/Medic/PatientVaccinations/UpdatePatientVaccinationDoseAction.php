@@ -14,6 +14,7 @@ final class UpdatePatientVaccinationDoseAction
 {
     public function __construct(
         private ShiftSubsequentVaccinationSeriesDosesAction $shiftSubsequentSeriesDoses,
+        private SyncVaccinationDoseToDraftSaleAction $syncVaccinationDoseToDraftSale,
     ) {}
 
     public function execute(
@@ -82,11 +83,21 @@ final class UpdatePatientVaccinationDoseAction
 
             $dose->update($payload);
 
-            if ($seriesDeltaDays !== 0) {
-                $this->shiftSubsequentSeriesDoses->execute($dose->fresh(), $seriesDeltaDays);
+            $fresh = $dose->fresh();
+
+            if ($fresh instanceof PatientVaccinationDose && $seriesDeltaDays !== 0) {
+                $this->shiftSubsequentSeriesDoses->execute($fresh, $seriesDeltaDays);
             }
 
-            return $dose->refresh()->load('product:id,name');
+            if (
+                $fresh instanceof PatientVaccinationDose
+                && $fresh->status === VaccinationDoseStatus::Administered
+                && $fresh->administered_origin === VaccinationAdministeredOrigin::Clinic
+            ) {
+                $this->syncVaccinationDoseToDraftSale->execute($fresh, $recordedByUserId);
+            }
+
+            return $dose->refresh()->load(['product:id,name', 'appointment:id,starts_at']);
         });
     }
 }

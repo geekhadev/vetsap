@@ -6,6 +6,7 @@ use App\Enums\Sale\SaleDocumentDetailType;
 use App\Enums\Sale\SaleDocumentStatus;
 use App\Enums\Sale\TaxTreatment;
 use App\Models\Medic\ClinicalAttention;
+use App\Models\Medic\PatientVaccinationDose;
 use App\Models\Medic\Service;
 use App\Models\Sale\SaleDocument;
 use App\Models\Sale\SaleDocumentDetail;
@@ -51,8 +52,9 @@ final class SyncDraftSaleDocumentFromAttentionAction
 
             $primaryService = $this->resolvePrimaryService($attention);
             $primaryServiceId = $primaryService?->id;
+            $skipAppointmentService = $this->appointmentLinkedToVaccination($attention);
 
-            if ($primaryService instanceof Service) {
+            if ($primaryService instanceof Service && ! $skipAppointmentService) {
                 $price = $attention->appointment?->service_id === $primaryService->id
                     && $attention->appointment?->price !== null
                     ? (int) $attention->appointment->price
@@ -96,6 +98,9 @@ final class SyncDraftSaleDocumentFromAttentionAction
     /**
      * Servicio principal a facturar: el de la cita, o el servicio por defecto
      * de la empresa cuando la atención no tiene cita.
+     *
+     * Si la cita está ligada a dosis de vacunación, el servicio de agenda no se
+     * cobra aquí: la vacuna se factura como producto al aplicar la dosis.
      */
     private function resolvePrimaryService(ClinicalAttention $attention): ?Service
     {
@@ -113,6 +118,19 @@ final class SyncDraftSaleDocumentFromAttentionAction
             ->first();
 
         return $defaultService;
+    }
+
+    private function appointmentLinkedToVaccination(ClinicalAttention $attention): bool
+    {
+        $appointmentId = $attention->appointment_id;
+
+        if (! is_string($appointmentId) || $appointmentId === '') {
+            return false;
+        }
+
+        return PatientVaccinationDose::query()
+            ->where('appointment_id', $appointmentId)
+            ->exists();
     }
 
     /**

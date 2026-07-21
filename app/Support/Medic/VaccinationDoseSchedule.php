@@ -2,8 +2,10 @@
 
 namespace App\Support\Medic;
 
+use App\Enums\Medic\VaccinationAdministeredOrigin;
 use App\Enums\Medic\VaccinationDoseStatus;
 use App\Enums\Medic\VaccinationScheduleType;
+use App\Enums\Sale\SaleDocumentStatus;
 use App\Models\Medic\PatientVaccinationDose;
 use App\Models\Medic\VaccinationProtocolItem;
 use Carbon\CarbonImmutable;
@@ -139,7 +141,11 @@ final class VaccinationDoseSchedule
      *     series_label: string|null,
      *     scheduled_on: string,
      *     administered_on: string|null,
-     *     notes: string|null
+     *     notes: string|null,
+     *     billing_status: string,
+     *     appointment_id: string|null,
+     *     appointment_starts_at: string|null,
+     *     appointment_misaligned: bool
      * }
      */
     public static function toTimelineSummary(
@@ -153,6 +159,10 @@ final class VaccinationDoseSchedule
             $seriesLabel = 'Serie · dosis '.$dose->sequence;
         }
 
+        $appointmentStartsAt = $dose->appointment?->starts_at?->toIso8601String();
+        $appointmentDate = $dose->appointment?->starts_at?->toDateString();
+        $scheduledOn = $dose->scheduled_on->toDateString();
+
         return [
             'id' => $dose->id,
             'product_name' => $dose->product?->name ?? 'Vacuna',
@@ -161,9 +171,42 @@ final class VaccinationDoseSchedule
             'source' => $dose->source->value,
             'administered_origin' => $dose->administered_origin?->value,
             'series_label' => $seriesLabel,
-            'scheduled_on' => $dose->scheduled_on->toDateString(),
+            'scheduled_on' => $scheduledOn,
             'administered_on' => $dose->administered_on?->toIso8601String(),
             'notes' => $dose->notes,
+            'billing_status' => self::billingStatus($dose),
+            'appointment_id' => $dose->appointment_id,
+            'appointment_starts_at' => $appointmentStartsAt,
+            'appointment_misaligned' => is_string($appointmentDate)
+                && $appointmentDate !== $scheduledOn,
         ];
+    }
+
+    /**
+     * none | external | pending | charged
+     */
+    public static function billingStatus(PatientVaccinationDose $dose): string
+    {
+        if ($dose->status !== VaccinationDoseStatus::Administered) {
+            return 'none';
+        }
+
+        if ($dose->administered_origin === VaccinationAdministeredOrigin::External) {
+            return 'external';
+        }
+
+        $detail = $dose->saleDocumentDetail;
+
+        if ($detail === null) {
+            return 'none';
+        }
+
+        $documentStatus = $detail->saleDocument?->status;
+
+        return match ($documentStatus) {
+            SaleDocumentStatus::Draft => 'pending',
+            SaleDocumentStatus::Issued => 'charged',
+            default => 'none',
+        };
     }
 }

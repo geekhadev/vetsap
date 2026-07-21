@@ -197,8 +197,12 @@ function AppointmentDetailContent({
         birthDate !== '' ? `Cumpleaños: ${birthDate}` : null,
     ]);
 
+    const isVaccinationAppointment =
+        (appointment.linked_vaccination_dose_count ?? 0) > 0;
+
     const canStartAttentionNow =
         canStartAttention &&
+        !isVaccinationAppointment &&
         isWithinStartAttentionWindow(
             appointment.starts_at,
             vetsap.clinical_attention.start_from_appointment_minutes_before,
@@ -373,6 +377,14 @@ function AppointmentDetailContent({
                         {appointment.notes}
                     </DetailRow>
                 </DetailSection>
+            ) : null}
+
+            {isVaccinationAppointment ? (
+                <p className="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-100">
+                    Cita de vacunación: registra la aplicación en el plan del
+                    paciente. Al aplicar se cobran el producto y el servicio de
+                    esta cita; no hace falta iniciar una atención clínica.
+                </p>
             ) : null}
 
             {canDelete || canStartAttentionNow ? (

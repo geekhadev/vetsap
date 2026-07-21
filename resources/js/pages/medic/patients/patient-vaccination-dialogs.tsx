@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { format } from 'date-fns';
+import { ChevronDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
     administer,
@@ -14,6 +15,7 @@ import { FormDatePickerField } from '@/components/custom/form-date-picker-field'
 import { FormDialogFooter } from '@/components/custom/form-dialog-footer';
 import { FormSelect } from '@/components/custom/form-select';
 import { FormTextInput } from '@/components/custom/form-text-input';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -22,12 +24,19 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type {
     PatientVaccinationDoseSummary,
     PatientVaccinationPlanSummary,
     VaccinationAdministeredOrigin,
+    VaccinationBillingStatus,
     VaccinationProtocolOption,
     VaccineProductOption,
 } from '@/pages/medic/patients/types';
@@ -36,6 +45,13 @@ export const PATIENT_VACCINATION_INERTIA_ONLY = [
     'vaccinationPlan',
     'vaccinationDoses',
 ] as const;
+
+const BILLING_STATUS_LABEL: Record<VaccinationBillingStatus, string | null> = {
+    none: null,
+    external: 'Sin cobro (externa)',
+    pending: 'En cobro',
+    charged: 'Cobrada',
+};
 
 type AssignPlanDialogProps = {
     open: boolean;
@@ -252,7 +268,10 @@ type DoseDetailDialogProps = {
     dose: PatientVaccinationDoseSummary | null;
     plan: PatientVaccinationPlanSummary | null;
     patientId: string;
+    canScheduleAppointment?: boolean;
     onOpenChange: (open: boolean) => void;
+    onScheduleAppointment?: (dose: PatientVaccinationDoseSummary) => void;
+    onViewAppointment?: (appointmentId: string) => void;
 };
 
 type DoseActionMode = 'view' | 'administer' | 'omit' | 'edit';
@@ -266,7 +285,10 @@ export function PatientVaccinationDoseDialog({
     dose,
     plan,
     patientId,
+    canScheduleAppointment = false,
     onOpenChange,
+    onScheduleAppointment,
+    onViewAppointment,
 }: DoseDetailDialogProps) {
     return (
         <Dialog open={dose !== null} onOpenChange={onOpenChange}>
@@ -277,7 +299,10 @@ export function PatientVaccinationDoseDialog({
                         dose={dose}
                         plan={plan}
                         patientId={patientId}
+                        canScheduleAppointment={canScheduleAppointment}
                         onClose={() => onOpenChange(false)}
+                        onScheduleAppointment={onScheduleAppointment}
+                        onViewAppointment={onViewAppointment}
                     />
                 ) : null}
             </DialogContent>
@@ -289,17 +314,26 @@ function PatientVaccinationDoseDialogInner({
     dose,
     plan,
     patientId,
+    canScheduleAppointment,
     onClose,
+    onScheduleAppointment,
+    onViewAppointment,
 }: {
     dose: PatientVaccinationDoseSummary;
     plan: PatientVaccinationPlanSummary | null;
     patientId: string;
+    canScheduleAppointment: boolean;
     onClose: () => void;
+    onScheduleAppointment?: (dose: PatientVaccinationDoseSummary) => void;
+    onViewAppointment?: (appointmentId: string) => void;
 }) {
     const isOpenDose =
         dose.status === 'scheduled' || dose.status === 'due' || dose.status === 'overdue';
     const isAdministered = dose.status === 'administered';
     const canEdit = isOpenDose || isAdministered;
+    const billingLabel = BILLING_STATUS_LABEL[dose.billing_status];
+    const hasAppointment =
+        dose.appointment_id !== null && dose.appointment_id !== '';
 
     const [mode, setMode] = useState<DoseActionMode>('view');
     const [origin, setOrigin] = useState<VaccinationAdministeredOrigin>('clinic');
@@ -441,6 +475,27 @@ function PatientVaccinationDoseDialogInner({
                                 </dd>
                             </div>
                         ) : null}
+                        {billingLabel !== null ? (
+                            <div className="flex items-center justify-between gap-4">
+                                <dt className="text-muted-foreground">Cobro</dt>
+                                <dd>
+                                    <Badge
+                                        variant="outline"
+                                        className="rounded-full px-2 py-0.5 text-[11px] font-normal"
+                                    >
+                                        {billingLabel}
+                                    </Badge>
+                                </dd>
+                            </div>
+                        ) : null}
+                        {hasAppointment ? (
+                            <div className="flex justify-between gap-4">
+                                <dt className="text-muted-foreground">Cita</dt>
+                                <dd className="font-medium">
+                                    {dose.appointment_starts_at?.slice(0, 10) ?? 'Vinculada'}
+                                </dd>
+                            </div>
+                        ) : null}
                         {dose.notes ? (
                             <div className="grid gap-1">
                                 <dt className="text-muted-foreground">Notas</dt>
@@ -451,63 +506,147 @@ function PatientVaccinationDoseDialogInner({
                         ) : null}
                     </dl>
 
-                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    {dose.appointment_misaligned ? (
+                        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-100">
+                            La cita vinculada (
+                            {dose.appointment_starts_at?.slice(0, 10) ?? '—'}) no coincide
+                            con la fecha programada de la dosis ({dose.scheduled_on}). La
+                            cita no se mueve automáticamente.
+                        </p>
+                    ) : null}
+
+                    <div className="grid gap-2 border-t pt-4">
                         {isOpenDose ? (
                             <>
                                 <Button
                                     type="button"
-                                    size="sm"
+                                    className="w-full"
                                     onClick={() => startAdminister('clinic')}
                                 >
-                                    Registrar aplicación
+                                    Registrar aplicación en clínica
                                 </Button>
                                 <Button
                                     type="button"
-                                    size="sm"
+                                    className="w-full"
                                     variant="outline"
                                     onClick={() => startAdminister('external')}
                                 >
-                                    Cargar externa / cartilla
+                                    Cargar desde cartilla u otra clínica
+                                </Button>
+                                {canScheduleAppointment && !hasAppointment ? (
+                                    <Button
+                                        type="button"
+                                        className="w-full"
+                                        variant="outline"
+                                        onClick={() => onScheduleAppointment?.(dose)}
+                                    >
+                                        Programar cita para esta dosis
+                                    </Button>
+                                ) : null}
+                                {hasAppointment ? (
+                                    <Button
+                                        type="button"
+                                        className="w-full"
+                                        variant="outline"
+                                        onClick={() => {
+                                            if (dose.appointment_id) {
+                                                onViewAppointment?.(dose.appointment_id);
+                                            }
+                                        }}
+                                    >
+                                        Ver cita vinculada
+                                    </Button>
+                                ) : null}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            className="text-muted-foreground w-full justify-between"
+                                        >
+                                            Más opciones
+                                            <ChevronDown className="size-4" aria-hidden />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                        align="end"
+                                        className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-56"
+                                    >
+                                        <DropdownMenuItem onSelect={startEdit}>
+                                            Editar fecha programada
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => setMode('omit')}>
+                                            Omitir esta dosis del plan
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </>
+                        ) : null}
+
+                        {isAdministered ? (
+                            <>
+                                {hasAppointment ? (
+                                    <Button
+                                        type="button"
+                                        className="w-full"
+                                        variant="outline"
+                                        onClick={() => {
+                                            if (dose.appointment_id) {
+                                                onViewAppointment?.(dose.appointment_id);
+                                            }
+                                        }}
+                                    >
+                                        Ver cita vinculada
+                                    </Button>
+                                ) : null}
+                                <Button
+                                    type="button"
+                                    className="w-full"
+                                    variant="outline"
+                                    onClick={startEdit}
+                                >
+                                    Editar fechas
                                 </Button>
                                 <Button
                                     type="button"
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setMode('omit')}
+                                    className="w-full"
+                                    variant="destructive"
+                                    onClick={() => setClearConfirmOpen(true)}
                                 >
-                                    Omitir
+                                    Eliminar registro de aplicación
+                                </Button>
+                                <Button
+                                    type="button"
+                                    className="w-full"
+                                    variant="ghost"
+                                    onClick={onClose}
+                                >
+                                    Cerrar
                                 </Button>
                             </>
                         ) : null}
-                        {canEdit ? (
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant={isOpenDose ? 'ghost' : 'default'}
-                                onClick={startEdit}
-                            >
-                                Editar fechas
-                            </Button>
-                        ) : null}
-                        {isAdministered ? (
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => setClearConfirmOpen(true)}
-                            >
-                                Eliminar aplicación
-                            </Button>
-                        ) : null}
-                        {!isOpenDose ? (
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                onClick={onClose}
-                            >
-                                Cerrar
-                            </Button>
+
+                        {dose.status === 'omitted' ? (
+                            <>
+                                {canEdit ? (
+                                    <Button
+                                        type="button"
+                                        className="w-full"
+                                        variant="outline"
+                                        onClick={startEdit}
+                                    >
+                                        Editar fecha programada
+                                    </Button>
+                                ) : null}
+                                <Button
+                                    type="button"
+                                    className="w-full"
+                                    variant="ghost"
+                                    onClick={onClose}
+                                >
+                                    Cerrar
+                                </Button>
+                            </>
                         ) : null}
                     </div>
                 </div>
@@ -588,7 +727,7 @@ function PatientVaccinationDoseDialogInner({
                     <p className="text-muted-foreground text-sm">
                         {origin === 'external'
                             ? 'Registra una dosis aplicada fuera de la clínica (cartilla u otra clínica).'
-                            : 'Registra la aplicación de esta dosis en la clínica.'}
+                            : 'Registra la aplicación en clínica. Si hay cita vinculada, se cobran el producto y el servicio de la cita (sin abrir atención).'}
                     </p>
                     <FormDatePickerField
                         label="Fecha de aplicación"
@@ -629,8 +768,9 @@ function PatientVaccinationDoseDialogInner({
             {mode === 'omit' ? (
                 <form className="grid gap-4" onSubmit={handleOmit}>
                     <p className="text-muted-foreground text-sm">
-                        La dosis quedará omitida del plan y no aparecerá en el filtro
-                        «Todo».
+                        Marca esta dosis como omitida en el plan (por ejemplo, no
+                        corresponde o el tutor la rechaza). Dejará de mostrarse en el
+                        filtro «Todo».
                     </p>
                     <div className="grid gap-2">
                         <Label htmlFor={`omit-notes-${dose.id}`}>Motivo (opcional)</Label>
@@ -651,7 +791,7 @@ function PatientVaccinationDoseDialogInner({
                     <FormDialogFooter
                         onCancel={() => setMode('view')}
                         processing={omitForm.processing}
-                        submitLabel="Omitir dosis"
+                        submitLabel="Omitir esta dosis del plan"
                         submitLabelLoading="Omitiendo…"
                     />
                 </form>

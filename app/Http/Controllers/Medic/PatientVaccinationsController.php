@@ -82,15 +82,27 @@ class PatientVaccinationsController extends Controller
         $this->ensurePatientBelongsToSelectedCompany($request->selectedCompany(), $patient);
         $this->ensureDoseBelongsToPatient($patient, $dose);
 
+        $origin = VaccinationAdministeredOrigin::from((string) $request->validated('administered_origin'));
+
+        $hadAppointment = is_string($dose->appointment_id) && $dose->appointment_id !== '';
+
         $action->execute(
             $dose,
             CarbonImmutable::parse((string) $request->validated('administered_on'))->startOfDay(),
-            VaccinationAdministeredOrigin::from((string) $request->validated('administered_origin')),
+            $origin,
             $this->optionalNotes($request->validated('notes')),
             $request->user()?->id,
         );
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Dosis registrada.']);
+        if ($origin === VaccinationAdministeredOrigin::Clinic) {
+            $message = $hadAppointment
+                ? 'Dosis registrada. Producto y servicio de la cita agregados al cobro.'
+                : 'Dosis registrada. Agregada al cobro pendiente del cliente.';
+        } else {
+            $message = 'Dosis registrada.';
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $message]);
 
         return back();
     }

@@ -139,6 +139,8 @@ export type VaccinationDoseSource = 'protocol' | 'manual';
 /** Dónde se aplicó la dosis (solo relevante si status = administered). */
 export type VaccinationAdministeredOrigin = 'clinic' | 'external';
 
+export type VaccinationBillingStatus = 'none' | 'external' | 'pending' | 'charged';
+
 export type PatientVaccinationDoseSummary = {
     id: string;
     product_name: string;
@@ -150,6 +152,10 @@ export type PatientVaccinationDoseSummary = {
     scheduled_on: string;
     administered_on: string | null;
     notes: string | null;
+    billing_status: VaccinationBillingStatus;
+    appointment_id: string | null;
+    appointment_starts_at: string | null;
+    appointment_misaligned: boolean;
 };
 
 export type PatientVaccinationPlanSummary = {

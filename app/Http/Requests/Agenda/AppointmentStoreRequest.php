@@ -37,7 +37,7 @@ class AppointmentStoreRequest extends FormRequest
     {
         /** @var array<string, mixed> $validated */
         $validated = $this->validated();
-        unset($validated['redirect_patient_id']);
+        unset($validated['redirect_patient_id'], $validated['vaccination_dose_id']);
 
         return $validated;
     }
@@ -47,5 +47,12 @@ class AppointmentStoreRequest extends FormRequest
         $patientId = $this->validated('redirect_patient_id');
 
         return is_string($patientId) && $patientId !== '' ? $patientId : null;
+    }
+
+    public function vaccinationDoseId(): ?string
+    {
+        $doseId = $this->validated('vaccination_dose_id');
+
+        return is_string($doseId) && $doseId !== '' ? $doseId : null;
     }
 }

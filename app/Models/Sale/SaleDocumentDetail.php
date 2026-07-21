@@ -4,7 +4,9 @@ namespace App\Models\Sale;
 
 use App\Enums\Sale\SaleDocumentDetailType;
 use App\Enums\Sale\TaxTreatment;
+use App\Models\Agenda\Appointment;
 use App\Models\Medic\ClinicalAttention;
+use App\Models\Medic\PatientVaccinationDose;
 use App\Models\Medic\Service;
 use App\Models\Store\Product;
 use Database\Factories\Sale\SaleDocumentDetailFactory;
@@ -20,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'service_id',
     'product_id',
     'clinical_attention_id',
+    'patient_vaccination_dose_id',
+    'appointment_id',
     'description',
     'notes',
     'quantity',
@@ -74,6 +78,22 @@ class SaleDocumentDetail extends Model
     public function clinicalAttention(): BelongsTo
     {
         return $this->belongsTo(ClinicalAttention::class, 'clinical_attention_id');
+    }
+
+    /**
+     * @return BelongsTo<PatientVaccinationDose, $this>
+     */
+    public function patientVaccinationDose(): BelongsTo
+    {
+        return $this->belongsTo(PatientVaccinationDose::class, 'patient_vaccination_dose_id');
+    }
+
+    /**
+     * @return BelongsTo<Appointment, $this>
+     */
+    public function appointment(): BelongsTo
+    {
+        return $this->belongsTo(Appointment::class, 'appointment_id');
     }
 
     /**

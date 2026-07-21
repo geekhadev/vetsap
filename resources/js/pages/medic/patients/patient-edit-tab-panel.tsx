@@ -132,12 +132,35 @@ export function PatientEditTabPanel({
         useState<PatientVaccinationDoseSummary | null>(null);
     const [assignPlanOpen, setAssignPlanOpen] = useState(false);
     const [addDoseOpen, setAddDoseOpen] = useState(false);
+    const [appointmentDefaults, setAppointmentDefaults] = useState(() => ({
+        ...buildDefaultAppointmentFormDefaults(),
+        patientId: patient.id,
+        customerId: patient.customer_id,
+    }));
 
     const hasBirthDate = patient.birth_date != null && patient.birth_date !== '';
+
+    const linkedAppointmentIds = useMemo(() => {
+        const ids = new Set<string>();
+
+        for (const dose of vaccinationDoses) {
+            if (dose.appointment_id) {
+                ids.add(dose.appointment_id);
+            }
+        }
+
+        return ids;
+    }, [vaccinationDoses]);
 
     const visibleVaccinationCount = useMemo(() => {
         if (timelineFilter === 'vaccination') {
             return vaccinationDoses.length;
+        }
+
+        if (timelineFilter === 'appointments') {
+            return vaccinationDoses.filter(
+                (dose) => dose.appointment_id != null && dose.status !== 'omitted',
+            ).length;
         }
 
         return vaccinationDoses.filter((dose) => dose.status !== 'omitted').length;
@@ -198,25 +221,47 @@ export function PatientEditTabPanel({
         [dismissDraftModal, openDraftModal],
     );
 
-    const appointmentDefaults = useMemo(
-        () => ({
-            ...buildDefaultAppointmentFormDefaults(),
-            patientId: patient.id,
-            customerId: patient.customer_id,
-        }),
-        [patient.customer_id, patient.id],
-    );
-
     const openScheduleAppointment = useCallback(() => {
         setAppointmentDetailOpen(false);
         setSelectedAppointmentId(null);
+        setAppointmentDefaults({
+            ...buildDefaultAppointmentFormDefaults(),
+            patientId: patient.id,
+            customerId: patient.customer_id,
+        });
         setAppointmentFormSessionId((current) => current + 1);
         setAppointmentFormOpen(true);
-    }, []);
+    }, [patient.customer_id, patient.id]);
+
+    const openScheduleVaccinationAppointment = useCallback(
+        (dose: PatientVaccinationDoseSummary) => {
+            setSelectedVaccinationDose(null);
+            setAppointmentDetailOpen(false);
+            setSelectedAppointmentId(null);
+            setAppointmentDefaults({
+                ...buildDefaultAppointmentFormDefaults(),
+                appointmentDate: dose.scheduled_on,
+                startsAtTime: '09:00',
+                patientId: patient.id,
+                customerId: patient.customer_id,
+                vaccinationDoseId: dose.id,
+            });
+            setAppointmentFormSessionId((current) => current + 1);
+            setAppointmentFormOpen(true);
+        },
+        [patient.customer_id, patient.id],
+    );
 
     const openAppointmentDetail = useCallback((appointment: PatientAppointmentSummary) => {
         setAppointmentFormOpen(false);
         setSelectedAppointmentId(appointment.id);
+        setAppointmentDetailOpen(true);
+    }, []);
+
+    const openVaccinationAppointmentDetail = useCallback((appointmentId: string) => {
+        setSelectedVaccinationDose(null);
+        setAppointmentFormOpen(false);
+        setSelectedAppointmentId(appointmentId);
         setAppointmentDetailOpen(true);
     }, []);
 
@@ -226,7 +271,7 @@ export function PatientEditTabPanel({
         if (!open) {
             setSelectedAppointmentId(null);
             router.reload({
-                only: ['appointments'],
+                only: ['appointments', 'vaccinationDoses'],
                 preserveScroll: true,
             });
         }
@@ -237,19 +282,27 @@ export function PatientEditTabPanel({
             timelineFilter === 'all' || timelineFilter === 'attentions'
                 ? attentions.length
                 : 0;
-        const appointmentsCount =
+
+        // Citas sin dosis vinculada (las vinculadas se cuentan como vacuna).
+        const standaloneAppointmentsCount =
             timelineFilter === 'all' || timelineFilter === 'appointments'
-                ? appointments.length
+                ? appointments.filter(
+                      (appointment) => !linkedAppointmentIds.has(appointment.id),
+                  ).length
                 : 0;
+
         const vaccinationsCount =
-            timelineFilter === 'all' || timelineFilter === 'vaccination'
+            timelineFilter === 'all' ||
+            timelineFilter === 'vaccination' ||
+            timelineFilter === 'appointments'
                 ? visibleVaccinationCount
                 : 0;
 
-        return attentionsCount + appointmentsCount + vaccinationsCount;
+        return attentionsCount + standaloneAppointmentsCount + vaccinationsCount;
     }, [
-        appointments.length,
+        appointments,
         attentions.length,
+        linkedAppointmentIds,
         timelineFilter,
         visibleVaccinationCount,
     ]);
@@ -470,11 +523,14 @@ export function PatientEditTabPanel({
                 dose={selectedVaccinationDose}
                 plan={vaccinationPlan}
                 patientId={patient.id}
+                canScheduleAppointment={can.appointments.create}
                 onOpenChange={(open) => {
                     if (!open) {
                         setSelectedVaccinationDose(null);
                     }
                 }}
+                onScheduleAppointment={openScheduleVaccinationAppointment}
+                onViewAppointment={openVaccinationAppointmentDetail}
             />
 
             <AssignVaccinationPlanDialog

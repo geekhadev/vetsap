@@ -8,6 +8,7 @@ use App\Models\Agenda\Appointment;
 use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\ClinicalTemplate;
 use App\Models\Medic\Patient;
+use App\Models\Medic\PatientVaccinationDose;
 use App\Support\Medic\StartAttentionFromAppointmentWindow;
 use Illuminate\Support\Facades\DB;
 
@@ -33,6 +34,12 @@ final class StartAttentionFromAppointmentAction
 
         if (! $patient instanceof Patient) {
             throw new \RuntimeException('La cita no tiene un paciente asociado.');
+        }
+
+        if (PatientVaccinationDose::query()->where('appointment_id', $appointment->id)->exists()) {
+            throw new \RuntimeException(
+                'Esta cita está ligada a vacunación. Registra la aplicación en el plan del paciente; no se inicia atención clínica.',
+            );
         }
 
         if (! StartAttentionFromAppointmentWindow::contains($appointment->starts_at)) {

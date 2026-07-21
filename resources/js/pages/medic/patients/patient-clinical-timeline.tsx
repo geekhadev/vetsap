@@ -100,7 +100,30 @@ function vaccinationTimelineMoment(dose: PatientVaccinationDoseSummary): string 
         return dose.administered_on;
     }
 
+    if (dose.appointment_starts_at) {
+        return dose.appointment_starts_at;
+    }
+
     return dose.scheduled_on;
+}
+
+function doseHasLinkedAppointment(dose: PatientVaccinationDoseSummary): boolean {
+    return dose.appointment_id != null && dose.appointment_id !== '';
+}
+
+/** Citas ya representadas por una dosis vinculada (no se muestran como tarjeta aparte). */
+function linkedAppointmentIdSet(
+    doses: PatientVaccinationDoseSummary[],
+): Set<string> {
+    const ids = new Set<string>();
+
+    for (const dose of doses) {
+        if (doseHasLinkedAppointment(dose) && dose.appointment_id) {
+            ids.add(dose.appointment_id);
+        }
+    }
+
+    return ids;
 }
 
 function toSortableMs(value: string): number {
@@ -195,7 +218,11 @@ export function PatientClinicalTimeline({
     const entries = useMemo<TimelineEntry[]>(() => {
         const includeAttentions = filter === 'all' || filter === 'attentions';
         const includeAppointments = filter === 'all' || filter === 'appointments';
-        const includeVaccinations = filter === 'all' || filter === 'vaccination';
+        // Dosis con cita también aparecen en el filtro «Citas» (reemplazan la tarjeta de cita).
+        const includeVaccinations =
+            filter === 'all' || filter === 'vaccination' || filter === 'appointments';
+
+        const linkedAppointmentIds = linkedAppointmentIdSet(vaccinationDoses);
 
         const attentionEntries: TimelineEntryBase[] = includeAttentions
             ? attentions.map((attention) => ({
@@ -206,16 +233,24 @@ export function PatientClinicalTimeline({
             : [];
 
         const appointmentEntries: TimelineEntryBase[] = includeAppointments
-            ? appointments.map((appointment) => ({
-                  kind: 'appointment',
-                  sortAt: appointment.starts_at,
-                  appointment,
-              }))
+            ? appointments
+                  .filter((appointment) => !linkedAppointmentIds.has(appointment.id))
+                  .map((appointment) => ({
+                      kind: 'appointment' as const,
+                      sortAt: appointment.starts_at,
+                      appointment,
+                  }))
             : [];
 
         const vaccinationEntries: TimelineEntryBase[] = includeVaccinations
             ? vaccinationDoses
                   .filter((dose) => {
+                      if (filter === 'appointments') {
+                          return (
+                              doseHasLinkedAppointment(dose) && dose.status !== 'omitted'
+                          );
+                      }
+
                       if (filter === 'vaccination') {
                           return true;
                       }
@@ -652,6 +687,38 @@ function VaccinationTimelineItem({
                                     )}
                                 >
                                     Externo
+                                </Badge>
+                            ) : null}
+                            {dose.billing_status === 'pending' ? (
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full px-2 py-0.5 text-[11px] font-normal"
+                                >
+                                    En cobro
+                                </Badge>
+                            ) : null}
+                            {dose.billing_status === 'charged' ? (
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full border-emerald-200 px-2 py-0.5 text-[11px] font-normal text-emerald-800 dark:border-emerald-900 dark:text-emerald-200"
+                                >
+                                    Cobrada
+                                </Badge>
+                            ) : null}
+                            {dose.appointment_misaligned ? (
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full border-amber-200 px-2 py-0.5 text-[11px] font-normal text-amber-800 dark:border-amber-900 dark:text-amber-200"
+                                >
+                                    Cita desfasada
+                                </Badge>
+                            ) : null}
+                            {dose.appointment_id && !dose.appointment_misaligned ? (
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full px-2 py-0.5 text-[11px] font-normal"
+                                >
+                                    Con cita
                                 </Badge>
                             ) : null}
                         </div>

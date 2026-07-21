@@ -26,7 +26,11 @@ final class BuildPatientVaccinationEditPropsAction
      *         series_label: string|null,
      *         scheduled_on: string,
      *         administered_on: string|null,
-     *         notes: string|null
+     *         notes: string|null,
+     *         billing_status: string,
+     *         appointment_id: string|null,
+     *         appointment_starts_at: string|null,
+     *         appointment_misaligned: bool
      *     }>,
      *     vaccinationProtocols: list<array{id: string, name: string}>,
      *     vaccineProducts: list<array{id: string, name: string}>
@@ -36,7 +40,12 @@ final class BuildPatientVaccinationEditPropsAction
     {
         $plan = PatientVaccinationPlan::query()
             ->where('patient_id', $patient->id)
-            ->with(['doses.product:id,name'])
+            ->with([
+                'doses.product:id,name',
+                'doses.appointment:id,starts_at',
+                'doses.saleDocumentDetail:id,patient_vaccination_dose_id,sale_document_id',
+                'doses.saleDocumentDetail.saleDocument:id,status',
+            ])
             ->first();
 
         $planName = is_array($plan?->protocol_snapshot)

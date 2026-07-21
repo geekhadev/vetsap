@@ -4,6 +4,7 @@ namespace App\Actions\Agenda\Appointments;
 
 use App\Enums\Medic\DoctorScheduleDayOfWeek;
 use App\Models\Agenda\Appointment;
+use App\Models\Medic\PatientVaccinationDose;
 use App\Models\Web\ClinicWebSetting;
 use App\Support\Web\ClinicWebSettingKeys;
 use Carbon\CarbonInterface;
@@ -98,6 +99,9 @@ final class ShowAppointmentAction
             'office' => $office !== null
                 ? ['id' => $office->id, 'name' => $office->name]
                 : null,
+            'linked_vaccination_dose_count' => PatientVaccinationDose::query()
+                ->where('appointment_id', $appointment->id)
+                ->count(),
         ];
     }
 

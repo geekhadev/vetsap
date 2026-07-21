@@ -57,6 +57,11 @@ final class AppointmentPayloadValidationRules
                 'uuid',
                 Rule::exists('medic_patients', 'id')->where('company_id', $companyId),
             ],
+            'vaccination_dose_id' => [
+                'nullable',
+                'uuid',
+                Rule::exists('medic_patient_vaccination_doses', 'id'),
+            ],
         ];
     }
 
@@ -345,6 +350,24 @@ final class AppointmentPayloadValidationRules
 
         if (! $status instanceof AppointmentStatus) {
             throw new \RuntimeException('No se encontró el estado global «Pendiente».');
+        }
+
+        return $status->id;
+    }
+
+    public static function defaultAttendedStatusId(): string
+    {
+        /** @var AppointmentStatus|null $status */
+        $status = AppointmentStatus::query()
+            ->where('name', 'Atendido')
+            ->where('is_active', true)
+            ->where(function ($query): void {
+                $query->where('is_global', true)->whereNull('company_id');
+            })
+            ->first();
+
+        if (! $status instanceof AppointmentStatus) {
+            throw new \RuntimeException('No se encontró el estado global «Atendido».');
         }
 
         return $status->id;

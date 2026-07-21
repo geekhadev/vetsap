@@ -1,6 +1,6 @@
 # Spec: Vacunación — cobro (con/sin atención) y citas
 
-Estado: propuesta (post-MVP) — pendiente de decisiones de producto  
+Estado: Fases A–B implementadas (cobro al aplicar en clínica + citas desde dosis)  
 Última actualización: 2026-07-21  
 Relacionado: [`medic-vaccination-plans.md`](./medic-vaccination-plans.md) (MVP clínico cerrado, fases 1–7)
 
@@ -51,17 +51,18 @@ Por eso “aplicar vacuna” no genera cobro, aunque el producto ya exista y sea
 
 | # | Escenario | Qué debe pasar en cobro | Qué debe pasar en agenda |
 |---|-----------|-------------------------|--------------------------|
-| **1** | Cita → atención **y** ese día se aplica vacuna | Atención aporta línea(s) `service`; la vacuna aporta línea `product` en el **mismo borrador** del cliente, trazable a la dosis | Cita ya existe; opcional vincular dosis↔cita si la cita era “para vacunar” |
-| **2** | Atención **sin** cita **y** vacuna ese día | Igual que 1: servicios de la atención + producto vacuna en el mismo borrador | — |
-| **3** | Vacuna **sin** atención ni cita ese día | Crear/usar borrador del cliente y agregar solo el producto vacuna (cobro independiente) | — |
-| **4** | Cita cuyo servicio es “vacuna / vacunación” **y** también se registra la dosis del plan | Evitar **doble cobro** conceptual (honorario de visita vs producto vacuna). Ver §5.3 | La cita puede estar ligada a una o más dosis programadas |
-| **5** | Dosis `scheduled` / `due` / `overdue` a futuro | — | Poder **programar cita** desde la dosis (o en bloque desde el plan) |
+| **1** | Cita de consulta → atención **y** ese día se aplica vacuna | Atención aporta línea(s) `service`; la vacuna aporta línea `product` en el **mismo borrador** (sin depender de la atención) | Cita de consulta; dosis puede tener otra cita de refuerzo aparte |
+| **2** | Atención **sin** cita **y** vacuna ese día | Igual: servicios de la atención + producto vacuna | — |
+| **3** | Vacuna **sin** atención ni cita ese día | Solo producto vacuna en borrador del cliente | — |
+| **4** | Cita ligada a dosis del plan (vacunación) | Línea `product` + línea `service` de la cita al aplicar; **sin** formulario de atención | Al completar dosis → cita Atendido |
+| **5** | Dosis `scheduled` / `due` / `overdue` a futuro | — | Poder **programar cita** desde la dosis (manual; no auto al asignar plan) |
 
 Casos colaterales:
 
 - Aplicación **externa** → nunca genera línea de venta.
-- **Eliminar aplicación** (clear) → quitar la línea del borrador si aún no se cobró; si ya se cobró → no borrar silenciosamente (ver §5.4).
+- **Eliminar aplicación** (clear) → en v1 **no modifica la venta** (ni borrador ni cobrada). Conciliación venta↔acto clínico: ver TODO (post-v1).
 - Varias vacunas el mismo día (con o sin atención) → N líneas de producto, una por dosis.
+- Todo paciente tiene `customer_id` (invariant del dominio); el cobro siempre tiene cliente.
 
 ---
 
@@ -77,79 +78,64 @@ Casos colaterales:
 
 ---
 
-## 5. Decisiones propuestas (a cerrar)
+## 5. Decisiones cerradas (2026-07-21)
 
-### 5.1 Momento de encolar el cobro — **propuesta: al aplicar en clínica**
+### 5.1 Momento de encolar el cobro — **al aplicar en clínica**
 
 Al confirmar `Administer` con `administered_origin = clinic`:
 
-1. Resolver cliente del paciente (`patient.customer_id`; si falta → error claro, no se aplica o se aplica sin cobro según política §5.5).
-2. Asegurar borrador abierto del cliente (extender patrón `EnsureDraftSaleDocumentForAttention` a un ensure-by-customer reutilizable).
+1. Resolver cliente del paciente (`patient.customer_id` — siempre existe; ver §5.5).
+2. Asegurar borrador abierto del cliente (extender patrón `EnsureDraftSaleDocumentForAttention` a ensure-by-customer).
 3. Upsert línea `detail_type = product` con:
    - `product_id` = dosis.product_id  
    - `quantity` = 1  
-   - precio = precio vigente del producto (lista Store)  
-   - `patient_vaccination_dose_id` = dosis.id (**único** en detalles no anulados)  
-   - `clinical_attention_id` = atención draft/cerrada del paciente **del mismo día calendario** si existe; si no, `null` (caso 3)
+   - precio = precio vigente del producto Store (**0 si no tiene precio**)  
+   - `patient_vaccination_dose_id` = dosis.id (**único**)  
+   - `clinical_attention_id` = según §5.2  
 
-Al **cerrar** o **sincronizar** atención: el sync actual de servicios **no debe borrar** líneas `product` (hoy ya las respeta). Opcionalmente, al sync, **adjuntar** `clinical_attention_id` a líneas de vacuna del mismo paciente/día que aún no lo tengan (mejora de trazabilidad casos 1–2).
+Al sincronizar atención: el sync de servicios **no borra** líneas `product` de vacunas.
 
-**Alternativa descartada para v1:** solo encolar al cerrar la atención — deja fuera el caso 3 y retrasa el cobro walk-in.
+### 5.2 Vínculo atención ↔ dosis — **sin dependencia**
 
-### 5.2 Vínculo atención ↔ dosis
+La vacuna **no depende** de una atención clínica:
 
-| Enfoque | Pros | Contras |
-|---------|------|---------|
-| **A. Soft same-day** (propuesto v1) | Cero UI extra; cubre 1 y 2 | Ambiguo si hay 2 atenciones el mismo día |
-| **B. Explicit** al aplicar (“vincular a atención abierta”) | Preciso | Más fricción |
-| **C. FK `clinical_attention_id` en la dosis** | Auditoría fuerte | Hay que mantenerla al clear |
+1. Al aplicar en clínica, la línea de producto se encola en el borrador del cliente **sin** `clinical_attention_id`.
+2. No se abre ni se exige el formulario de atención para vacunar.
+3. Si la dosis tiene cita vinculada: al completar las dosis abiertas de esa cita se marca **Atendido** automáticamente (sin crear atención ni líneas `service` de agenda).
 
-**Propuesta v1:** A + opcional C al aplicar si hay exactamente una atención draft del paciente ese día; si hay varias, pedir selección (mini-dialogo) o dejar `null` y cobrar igual.
+Si el mismo día hay una atención de consulta (walk-in o cita no de vacunación), sus servicios se cobran aparte; la vacuna sigue siendo solo el producto.
 
-### 5.3 Caso 4 — cita de “servicio vacuna” + producto vacuna (doble cobro)
+### 5.3 Caso 4 — cita de vacunación + producto
 
-Hoy agenda cobra **servicio médico**; el plan cobra **producto**. Pueden coexistir legítimamente:
+Para citas **ligadas a dosis del plan**:
 
-- Servicio = acto / consulta / aplicación  
-- Producto = fármaco / dosis
+1. Al aplicar en clínica se cobran **ambas** cosas en el borrador: línea `product` (vacuna) + línea `service` (servicio de la cita), sin abrir atención.
+2. Idempotencia: una línea de producto por dosis; una línea de servicio por cita (`appointment_id` único en detalle).
+3. «Iniciar atención» no aplica a esas citas; el sync de atención **no** vuelve a encolar el servicio de agenda (evita duplicar).
 
-**Propuesta:**
+Si se necesita consulta + vacuna el mismo día: atención de consulta (otros servicios) **y** aplicar dosis (producto + servicio de la cita de vacuna si está ligada).
 
-1. Siempre cobrar el **producto** al aplicar la dosis en clínica (regla única).
-2. El **servicio de la cita/atención** se cobra como hoy (sync).
-3. Documentar en UI del POS: nombres claros (“Vacuna X” vs “Consulta / aplicación”).
-4. **No** auto-omitir el servicio aunque se llame “Vacunación” (demasiado frágil por nombre).
+### 5.4 Eliminar aplicación / venta — **v1 no toca la venta**
 
-**Decisión abierta (producto):** ¿algunas clínicas quieren “pack” (solo servicio o solo producto)? Diferir a configuración posterior (`bill_vaccine_product`, `bill_application_service`).
+Al `ClearPatientVaccinationDoseAdministration`:
 
-### 5.4 Eliminar aplicación / anular cobro
+- Se revierte el acto clínico (estado abierto, series, etc.) como hoy.
+- **No** se elimina ni modifica ninguna línea de `sale_document_details`, esté en borrador o ya cobrada.
 
-| Estado del documento | Al clear administration |
-|----------------------|-------------------------|
-| Línea en **borrador** | Eliminar detalle con ese `patient_vaccination_dose_id` y recalcular totales |
-| Documento **ya cobrado / emitido** | No borrar la línea. Bloquear clear **o** exigir nota de crédito / anulación de venta (fuera de v1; mensaje: “Ya fue cobrada; gestiona en Ventas”) |
+**Post-v1 (TODO):** reconciliar clear ↔ borrador/cobrado (quitar de borrador; bloquear o NC si ya cobrado).
 
-### 5.5 Paciente sin cliente / sin precio
+### 5.5 Cliente y precio
 
-- Sin `customer_id`: permitir aplicar clínicamente pero **no** encolar cobro + toast de advertencia (o bloquear cobro automático — preferencia: **aplicar + advertir**).
-- Producto sin precio / precio 0: encolar igual (el cajero ajusta en POS) **o** exigir precio > 0 — preferencia: encolar y permitir editar en POS.
+- **Paciente sin cliente:** no es un caso válido del dominio (“no puede existir un paciente sin cliente”). El cobro asume `customer_id` presente.
+- **Producto sin precio / precio 0:** se agrega igual a la venta con **monto 0**; el cajero puede ajustar en POS.
 
 ### 5.6 Citas para dosis programadas
 
-**Propuesta v1:**
-
-1. Desde la dosis (o menú Vacunación): **Programar cita**.
-2. Abre `AppointmentForm` con:
-   - `patient_id` / `customer_id` fijos  
-   - `starts_at` sugerido = `scheduled_on` (hora por default de la clínica o primer slot libre — reutilizar defaults del calendario)  
-   - `service_id` = servicio configurable “Vacunación” de la clínica **o** el que el usuario elija (obligatorio como hoy)
-3. Persistir `appointment_id` en la(s) dosis vinculadas (`medic_patient_vaccination_doses.appointment_id`).
-4. Una cita puede agrupar **varias dosis del mismo día** (mismo `appointment_id`).
-5. Al **iniciar atención** desde esa cita: flujo actual; las vacunas del día se aplican desde el timeline y encolan producto (§5.1).
-
-**No en v1:** generar citas automáticamente al asignar el plan; recordatorios.
-
-**Decisión abierta:** al recalcular fechas de serie, ¿reprogramar citas futuras ligadas? Propuesta: **no mover citas automáticamente**; marcar desalineación en UI (“Cita el 10; dosis recalculada al 17”) y CTA “Actualizar cita”.
+1. Desde la dosis: CTA **Programar cita** (manual).
+2. Prefill `AppointmentForm`: paciente/cliente, `starts_at` ≈ `scheduled_on`, servicio a elección (como hoy).
+3. Persistir `appointment_id` en la(s) dosis; una cita puede agrupar varias dosis del mismo día.
+4. **No** generar citas automáticamente al asignar el plan.
+5. Al **recalcular serie:** **no** mover citas; avisar desfase en UI + CTA “Actualizar cita”.
 
 ---
 
@@ -192,7 +178,7 @@ SaleDocumentDetail (product)
 1. Usuario inicia atención desde cita → draft attention + sync service lines
 2. En timeline, aplica dosis (clinic)
 3. Ensure draft sale (ya existe) + upsert product line
-   clinical_attention_id = atención abierta del día
+   clinical_attention_id = draft del paciente o última atención
 4. Cajero cobra en POS: servicios + vacuna(s)
 ```
 
@@ -233,12 +219,12 @@ Igual que 1 sin appointment_id en la atención.
 
 | Superficie | Cambio |
 |------------|--------|
-| Diálogo de dosis (aplicar clinic) | Toast: “Agregada al cobro pendiente del cliente” / advertencia sin cliente |
+| Diálogo de dosis (aplicar clinic) | Toast: “Agregada al cobro pendiente del cliente” |
 | Diálogo de dosis (aplicada) | Badge “En cobro” / “Cobrada” / “Sin cobro (externa)” según detalle y estado doc |
-| Diálogo clear | Si cobrada → bloquear; si en borrador → confirma quitar del cobro |
-| Filtro Vacunación / Acciones | “Programar cita” en dosis abiertas; “Ver cita” si `appointment_id` |
-| POS | Líneas de vacuna identificables (nombre producto + paciente si el borrador mezcla); no requiere UI nueva si el sync es automático |
-| Calendario | Citas con dosis ligadas: chip o subtítulo “Vacunación (N dosis)” (nice-to-have) |
+| Diálogo clear | Revierte solo el acto clínico; **no** menciona quitar de la venta (v1) |
+| Filtro Vacunación / Acciones | “Programar cita” en dosis abiertas; “Ver cita” si `appointment_id`; aviso si cita desfasada tras recálculo |
+| POS | Líneas de vacuna (precio puede ser 0); servicios + productos conviven |
+| Calendario | Citas con dosis ligadas: chip “Vacunación (N dosis)” (nice-to-have) |
 
 ---
 
@@ -247,11 +233,12 @@ Igual que 1 sin appointment_id en la atención.
 1. Solo `administered` + `origin = clinic` genera/actualiza línea de venta.
 2. Una dosis ↔ a lo sumo una línea activa de detalle (unique `patient_vaccination_dose_id`).
 3. Sync de servicios de atención **no elimina** líneas de producto de vacunas.
-4. Clear administration solo si la línea está en documento `draft` (o no existe línea).
+4. Clear administration **no modifica** la venta en v1 (acto clínico sí se revierte).
 5. Cita vinculada es opcional; cobro no depende de cita.
-6. Atención vinculada es opcional; cobro no depende de atención.
-7. Fechas de cita sugeridas usan `scheduled_on` post-recálculo de serie.
-8. Productos deben seguir siendo tipo Vacunas; precio desde Store.
+6. Atención vinculada es automática si hay draft o última atención; cobro no exige atención.
+7. Fechas de cita sugeridas usan `scheduled_on` post-recálculo de serie; citas existentes no se mueven solas.
+8. Productos tipo Vacunas; precio Store o **0** si falta.
+9. Paciente siempre tiene cliente.
 
 ---
 
@@ -259,41 +246,40 @@ Igual que 1 sin appointment_id en la atención.
 
 ### Fase A — Cobro automático al aplicar (casos 1–3)
 
-1. Migración `patient_vaccination_dose_id` en `sale_document_details`.
-2. Action `EnsureDraftSaleDocumentForCustomer` (extraer/reutilizar ensure actual).
-3. Action `SyncVaccinationDoseToDraftSaleAction` (upsert/delete línea).
-4. Enganchar en Administer / Clear (y Update si cambia origin clinic↔external).
-5. Soft-link `clinical_attention_id` same-day.
+1. Migración `patient_vaccination_dose_id` en `sale_document_details` (+ FKs opcionales en dosis).
+2. Action `EnsureDraftSaleDocumentForCustomer`.
+3. Action `SyncVaccinationDoseToDraftSaleAction` (**solo upsert** al aplicar clinic / cambiar a clinic; **sin delete** en clear v1).
+4. Enganchar en Administer (y Update si origin pasa a/desde clinic).
+5. Resolver `clinical_attention_id`: draft del paciente → si no, última atención.
 6. UI toasts + estados de cobro en diálogo de dosis.
 
 ### Fase B — Citas desde dosis (caso 5 + refuerzo de 4)
 
 1. `appointment_id` en dosis.
 2. CTA Programar cita + prefill AppointmentForm.
-3. Indicadores de desalineación cita vs `scheduled_on` tras recálculo.
+3. Indicadores de desalineación cita vs `scheduled_on` tras recálculo (sin auto-mover).
 4. (Opcional) agrupar varias dosis del mismo día en una cita.
 
-### Fase C — Pulido comercial
+### Fase C — Pulido / deuda
 
-1. Config clínica: ¿forzar cliente para aplicar? ¿bloquear clear si cobrado?
-2. Pack servicio+producto / precios especiales.
-3. Stock/lote al cobrar o al aplicar (spec aparte).
-4. Reportes: vacunas aplicadas vs cobradas.
+1. **Reconciliar clear ↔ venta** (ver TODO): quitar de borrador; política si ya cobrado.
+2. Stock/lote al cobrar o al aplicar (spec aparte).
+3. Reportes: vacunas aplicadas vs cobradas.
+4. Recordatorios de citas de vacuna.
 
 ---
 
-## 11. Decisiones abiertas (necesitan respuesta de producto)
+## 11. Decisiones cerradas (resumen)
 
-| # | Pregunta | Opciones | Impacto |
-|---|----------|----------|---------|
-| D1 | ¿Aplicar vacuna sin cliente? | (a) Sí + advertencia (b) Bloquear | Caso 3 walk-in mal cargado |
-| D2 | ¿Doble cobro servicio+producto en cita “Vacunación”? | (a) Ambos siempre (b) Config (c) Solo producto | Caso 4 |
-| D3 | ¿Vínculo atención? | (a) Soft same-day (b) Explícito (c) FK en dosis | Trazabilidad POS |
-| D4 | ¿Clear si ya cobrado? | (a) Bloquear (b) Exigir NC | Contabilidad |
-| D5 | ¿Auto-citas al asignar plan? | (a) No v1 (b) Sí opt-in | Alcance agenda |
-| D6 | ¿Mover citas al recalcular serie? | (a) No + warning (b) Sí auto | UX agenda |
-
-**Recomendación de arranque:** D1=a, D2=a, D3=a, D4=a, D5=a, D6=a → Fase A luego B.
+| # | Decisión |
+|---|----------|
+| D1 | Paciente **siempre** tiene cliente; no hay flujo “sin cliente”. |
+| D2 | Cita de vacunación (ligada a dosis): cobrar **producto + servicio de la cita** al aplicar; sin atención obligatoria. |
+| D3 | Vacuna **independiente** de atención: sin auto-vínculo `clinical_attention_id` al aplicar. |
+| D4 | Clear aplicación v1: **no tocar la venta**; conciliación en TODO post-v1. |
+| D5 | Citas **manuales** desde dosis; no auto al asignar plan. |
+| D6 | Recálculo de serie: **no** mover citas; avisar desfase. |
+| D7 | Precio faltante / 0 → línea con **monto 0**. |
 
 ---
 
@@ -304,7 +290,9 @@ Igual que 1 sin appointment_id en la atención.
 - [ ] Caso 3: solo vacuna → borrador con product, sin exigir atención.
 - [ ] Caso 4: cita de vacunación + dosis → service + product visibles; sin duplicar la misma dosis.
 - [ ] Externa: no crea línea de venta.
-- [ ] Clear en borrador: quita línea; clear con doc cobrado: bloqueado con mensaje.
+- [ ] Clear aplicación: revierte el acto clínico y **no** modifica la venta (v1).
+- [ ] Producto sin precio → línea con monto 0.
+- [ ] Vínculo atención: draft del paciente si existe; si no, última atención; si no hay, null.
 - [ ] Programar cita desde dosis: crea appointment y deja `appointment_id`; `starts_at` anclado a `scheduled_on`.
 - [ ] Recálculo de serie no mueve citas solas; UI avisa desfase.
 

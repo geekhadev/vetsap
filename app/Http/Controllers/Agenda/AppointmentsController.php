@@ -8,6 +8,7 @@ use App\Actions\Agenda\Appointments\DeleteAppointmentAction;
 use App\Actions\Agenda\Appointments\RescheduleAppointmentAction;
 use App\Actions\Agenda\Appointments\ShowAppointmentAction;
 use App\Actions\Medic\ClinicalAttentions\StartAttentionFromAppointmentAction;
+use App\Actions\Medic\PatientVaccinations\LinkVaccinationDoseToAppointmentAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Agenda\AppointmentRescheduleRequest;
 use App\Http\Requests\Agenda\AppointmentStatusChangeRequest;
@@ -16,6 +17,7 @@ use App\Models\Agenda\Appointment;
 use App\Models\Company;
 use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\Patient;
+use App\Models\Medic\PatientVaccinationDose;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -80,6 +82,7 @@ class AppointmentsController extends Controller
     public function store(
         AppointmentStoreRequest $request,
         CreateAppointmentAction $action,
+        LinkVaccinationDoseToAppointmentAction $linkVaccinationDose,
     ): RedirectResponse {
         $this->authorize('create', Appointment::class);
 
@@ -93,7 +96,31 @@ class AppointmentsController extends Controller
             abort(403);
         }
 
-        $action->execute($request->appointmentPayload(), $company->id, $user);
+        $vaccinationDoseId = $request->vaccinationDoseId();
+        $vaccinationDose = null;
+
+        if ($vaccinationDoseId !== null) {
+            $vaccinationDose = PatientVaccinationDose::query()
+                ->with('plan:id,patient_id,company_id')
+                ->findOrFail($vaccinationDoseId);
+
+            $payloadPatientId = $request->appointmentPayload()['patient_id'] ?? null;
+
+            if (
+                ! is_string($payloadPatientId)
+                || $vaccinationDose->plan?->patient_id !== $payloadPatientId
+            ) {
+                return back()->withErrors([
+                    'vaccination_dose_id' => 'La dosis no corresponde al paciente de la cita.',
+                ]);
+            }
+        }
+
+        $appointment = $action->execute($request->appointmentPayload(), $company->id, $user);
+
+        if ($vaccinationDose instanceof PatientVaccinationDose) {
+            $linkVaccinationDose->execute($vaccinationDose, $appointment);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Cita creada correctamente.']);
 

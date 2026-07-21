@@ -118,6 +118,8 @@ export type AppointmentDetail = {
     doctor: AppointmentDetailDoctor;
     service: { id: string; name: string };
     office: { id: string; name: string } | null;
+    /** Dosis del plan ligadas a esta cita (cobro por producto, sin atención). */
+    linked_vaccination_dose_count: number;
 };
 
 export type CalendarIndexPageProps = {
@@ -135,6 +137,7 @@ export type AppointmentFormDefaults = {
     startsAtTime: string;
     patientId?: string;
     customerId?: string;
+    vaccinationDoseId?: string;
 };
 
 export type AppointmentFormFields = {
