@@ -5,18 +5,18 @@ import { downloadClinicalHistory, whatsappClinicalHistory } from '@/actions/App/
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { Button } from '@/components/ui/button';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { AppointmentDetailModal } from '@/pages/agenda/calendar/appointment-detail-modal';
 import { AppointmentForm } from '@/pages/agenda/calendar/appointment-form';
@@ -27,6 +27,7 @@ import type {
 } from '@/pages/agenda/calendar/types';
 import { buildDefaultAppointmentFormDefaults } from '@/pages/agenda/calendar/types';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
+import { attentionModalContentClassName } from '@/pages/medic/patients/attention-content-tabs';
 import { PatientAttentionViewDialog } from '@/pages/medic/patients/patient-attention-view-dialog';
 import {
     PATIENT_DRAFT_ATTENTION_ACTION,
@@ -115,26 +116,33 @@ export function PatientEditTabPanel({
         onTabChange('historial');
     }, [onTabChange]);
 
-    const draftActionLabel = getDraftAttentionActionLabel(hasDraftAttention);
-    const DraftActionIcon = PATIENT_DRAFT_ATTENTION_ACTION.icon;
-    const isDraftSheetOpen = activeTab === PATIENT_DRAFT_ATTENTION_ACTION.id;
-
-    const openDraftSheet = useCallback(() => {
-        onTabChange(PATIENT_DRAFT_ATTENTION_ACTION.id);
-    }, [onTabChange]);
-
-    const dismissDraftSheet = useCallback(() => {
+    const handleDraftDeleted = useCallback(() => {
+        setHasDraftAttention(false);
+        setDraftFormKey((key) => key + 1);
         onTabChange('historial');
     }, [onTabChange]);
 
-    const handleDraftSheetOpenChange = useCallback(
+    const draftActionLabel = getDraftAttentionActionLabel(hasDraftAttention);
+    const DraftActionIcon = PATIENT_DRAFT_ATTENTION_ACTION.icon;
+    const isDraftModalOpen = activeTab === PATIENT_DRAFT_ATTENTION_ACTION.id;
+
+    const openDraftModal = useCallback(() => {
+        onTabChange(PATIENT_DRAFT_ATTENTION_ACTION.id);
+    }, [onTabChange]);
+
+    const dismissDraftModal = useCallback(() => {
+        onTabChange('historial');
+    }, [onTabChange]);
+
+    const handleDraftModalOpenChange = useCallback(
         (open: boolean) => {
-            // Solo permitir abrir por el Sheet; el cierre es exclusivo del botón X.
             if (open) {
-                openDraftSheet();
+                openDraftModal();
+            } else {
+                dismissDraftModal();
             }
         },
-        [openDraftSheet],
+        [dismissDraftModal, openDraftModal],
     );
 
     const appointmentDefaults = useMemo(
@@ -251,25 +259,25 @@ export function PatientEditTabPanel({
                             type="button"
                             size="sm"
                             variant={
-                                isDraftSheetOpen || hasDraftAttention ? 'default' : 'outline'
+                                isDraftModalOpen || hasDraftAttention ? 'default' : 'outline'
                             }
                             className={cn(
                                 'relative min-w-0 flex-1 shrink-0 sm:w-auto sm:flex-none',
                                 hasDraftAttention &&
-                                    !isDraftSheetOpen &&
+                                    !isDraftModalOpen &&
                                     'shadow-md ring-2 ring-primary/35 ring-offset-2 ring-offset-background',
                             )}
-                            aria-pressed={isDraftSheetOpen}
+                            aria-pressed={isDraftModalOpen}
                             title={
-                                hasDraftAttention && !isDraftSheetOpen
+                                hasDraftAttention && !isDraftModalOpen
                                     ? 'Hay una atención en borrador. Haz clic para continuar.'
                                     : undefined
                             }
                             onClick={() =>
-                                isDraftSheetOpen ? dismissDraftSheet() : openDraftSheet()
+                                isDraftModalOpen ? dismissDraftModal() : openDraftModal()
                             }
                         >
-                            {hasDraftAttention && !isDraftSheetOpen ? (
+                            {hasDraftAttention && !isDraftModalOpen ? (
                                 <span className="relative flex size-2.5 shrink-0" aria-hidden>
                                     <span className="bg-background/80 absolute inline-flex size-full animate-ping rounded-full opacity-75" />
                                     <span className="bg-background relative inline-flex size-2.5 rounded-full" />
@@ -288,7 +296,7 @@ export function PatientEditTabPanel({
                     attentions={attentions}
                     appointments={appointments}
                     onAttentionSelect={setViewAttention}
-                    onDraftSelect={openDraftSheet}
+                    onDraftSelect={openDraftModal}
                     onAppointmentSelect={openAppointmentDetail}
                 />
             </div>
@@ -339,24 +347,15 @@ export function PatientEditTabPanel({
             ) : null}
 
             {can.attentions.create ? (
-                <Sheet
-                    open={isDraftSheetOpen}
-                    onOpenChange={handleDraftSheetOpenChange}
-                    modal={false}
-                >
-                    <SheetContent
-                        side="left"
-                        showOverlay={false}
-                        showCloseButton={false}
-                        className="w-full gap-0 overflow-y-auto p-0 sm:max-w-xl md:max-w-2xl"
-                        onInteractOutside={(event) => event.preventDefault()}
-                        onPointerDownOutside={(event) => event.preventDefault()}
-                        onEscapeKeyDown={(event) => event.preventDefault()}
-                    >
-                        <SheetHeader className="sr-only">
-                            <SheetTitle>{draftActionLabel}</SheetTitle>
-                            <SheetDescription>Completa los datos de la atención</SheetDescription>
-                        </SheetHeader>
+                <Dialog open={isDraftModalOpen} onOpenChange={handleDraftModalOpenChange}>
+                    <DialogContent
+                        className={cn(attentionModalContentClassName, '[&>button]:hidden')}
+                    >                        <DialogHeader className="sr-only">
+                            <DialogTitle>{draftActionLabel}</DialogTitle>
+                            <DialogDescription>
+                                Completa los datos de la atención
+                            </DialogDescription>
+                        </DialogHeader>
                         <PatientDraftAttentionForm
                             key={`${patient.id}-${draftFormKey}-${draftAttention?.id ?? 'new'}-${draftAttention?.appointment_id ?? ''}`}
                             patientId={patient.id}
@@ -365,14 +364,17 @@ export function PatientEditTabPanel({
                             doctors={doctors}
                             examServices={examServices}
                             documentTemplates={documentTemplates}
+                            canUpdateExams={can.attentions.update}
+                            canDelete={can.attentions.delete}
                             title={draftActionLabel}
                             description="Completa los datos de la atención"
                             onDraftSaved={handleDraftSaved}
                             onDraftCompleted={handleDraftCompleted}
-                            onDismiss={dismissDraftSheet}
+                            onDraftDeleted={handleDraftDeleted}
+                            onDismiss={dismissDraftModal}
                         />
-                    </SheetContent>
-                </Sheet>
+                    </DialogContent>
+                </Dialog>
             ) : null}
         </div>
     );

@@ -23,8 +23,11 @@ final class DeleteClinicalAttentionExamResultAction
      */
     public function execute(ClinicalAttention $attention, Service $service): array
     {
-        if ($attention->status !== ClinicalAttentionStatus::Closed) {
-            throw new RuntimeException('Solo se pueden eliminar resultados de atenciones completadas.');
+        if (
+            $attention->status !== ClinicalAttentionStatus::Draft
+            && $attention->status !== ClinicalAttentionStatus::Closed
+        ) {
+            throw new RuntimeException('No se pueden eliminar resultados de esta atención.');
         }
 
         $relation = $attention->requestedServices()

@@ -203,7 +203,9 @@ class PatientsController extends Controller
             'patient' => $patient,
             'redirectTo' => $request->query('redirect_to') === 'customers' ? 'customers' : 'patients',
             'activeTab' => $activeTab,
-            'draftAttention' => $draftAttention,
+            'draftAttention' => $draftAttention instanceof ClinicalAttention
+                ? $this->mapDraftAttention($draftAttention)
+                : null,
             'species' => $company instanceof Company
                 ? Species::query()
                     ->forCompanyOrGlobal($company->id)
@@ -313,6 +315,62 @@ class PatientsController extends Controller
     /**
      * @return array{
      *     id: string,
+     *     company_id: string,
+     *     appointment_id: string|null,
+     *     template_id: string,
+     *     patient_id: string,
+     *     doctor_id: string|null,
+     *     status: string,
+     *     values: mixed,
+     *     requested_services: list<array{
+     *         id: string,
+     *         name: string,
+     *         is_uploaded: bool,
+     *         file_url: string|null,
+     *         file_name: string|null,
+     *         mime_type: string|null
+     *     }>,
+     *     document_templates: list<array{id: string, title: string}>,
+     *     started_at: mixed,
+     *     closed_at: mixed,
+     *     created_at: mixed,
+     *     updated_at: mixed
+     * }
+     */
+    protected function mapDraftAttention(ClinicalAttention $draft): array
+    {
+        return [
+            'id' => $draft->id,
+            'company_id' => $draft->company_id,
+            'appointment_id' => $draft->appointment_id,
+            'template_id' => $draft->template_id,
+            'patient_id' => $draft->patient_id,
+            'doctor_id' => $draft->doctor_id,
+            'status' => $draft->status instanceof ClinicalAttentionStatus
+                ? $draft->status->value
+                : (string) $draft->status,
+            'values' => $draft->values,
+            'requested_services' => $draft->requestedServices
+                ->map(fn (Service $service): array => $this->mapRequestedExam($service))
+                ->values()
+                ->all(),
+            'document_templates' => $draft->documentTemplates
+                ->map(static fn (DocumentTemplate $template): array => [
+                    'id' => $template->id,
+                    'title' => $template->title,
+                ])
+                ->values()
+                ->all(),
+            'started_at' => $draft->started_at,
+            'closed_at' => $draft->closed_at,
+            'created_at' => $draft->created_at,
+            'updated_at' => $draft->updated_at,
+        ];
+    }
+
+    /**
+     * @return array{
+     *     id: string,
      *     name: string,
      *     is_uploaded: bool,
      *     file_url: string|null,
@@ -391,7 +449,7 @@ class PatientsController extends Controller
             abort(422, $exception->getMessage());
         }
 
-        return response()->json($draft);
+        return response()->json($this->mapDraftAttention($draft));
     }
 
     public function closeDraftAttention(

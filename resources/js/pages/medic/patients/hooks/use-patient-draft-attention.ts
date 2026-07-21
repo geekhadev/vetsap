@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import PatientsController from '@/actions/App/Http/Controllers/Medic/PatientsController';
 import type { ClinicalAttention } from '@/pages/medic/clinical-attentions/types';
 import type { ClinicalFieldKey } from '@/pages/medic/clinical-templates/types';
+import type { AttentionRequestedExam } from '@/pages/medic/patients/types';
 
 const AUTOSAVE_DELAY_MS = 700;
 
@@ -36,6 +37,25 @@ function requestedServiceIdsFromAttention(attention: ClinicalAttention | null): 
 
 function documentTemplateIdsFromAttention(attention: ClinicalAttention | null): string[] {
     return (attention?.document_templates ?? []).map((template) => template.id);
+}
+
+function examResultsFromAttention(
+    attention: ClinicalAttention | null,
+): Record<string, AttentionRequestedExam> {
+    const map: Record<string, AttentionRequestedExam> = {};
+
+    for (const service of attention?.requested_services ?? []) {
+        map[service.id] = {
+            id: service.id,
+            name: service.name,
+            is_uploaded: service.is_uploaded ?? false,
+            file_url: service.file_url ?? null,
+            file_name: service.file_name ?? null,
+            mime_type: service.mime_type ?? null,
+        };
+    }
+
+    return map;
 }
 
 function buildInitialState(
@@ -101,8 +121,12 @@ export function usePatientDraftAttention({
 
     const [formState, setFormState] = useState<DraftAttentionFormState>(initialState);
     const [draftId, setDraftId] = useState<string | null>(draftAttention?.id ?? null);
+    const [examResults, setExamResults] = useState<Record<string, AttentionRequestedExam>>(() =>
+        examResultsFromAttention(draftAttention),
+    );
     const [closeErrors, setCloseErrors] = useState<Record<string, string>>({});
     const [closing, setClosing] = useState(false);
+    const [syncingExtras, setSyncingExtras] = useState(false);
 
     const formStateRef = useRef(formState);
     const isDirtyRef = useRef(false);
@@ -131,44 +155,70 @@ export function usePatientDraftAttention({
         onDraftCompletedRef.current = onDraftCompleted;
     }, [onDraftCompleted]);
 
-    const persistDraft = useCallback(async (): Promise<boolean> => {
-        const current = formStateRef.current;
-
-        if (!hasMeaningfulDraftData(current)) {
-            return true;
-        }
-
-        try {
-            autosaveHttp.transform(() => ({
-                template_id: current.template_id || null,
-                doctor_id: current.doctor_id || null,
-                appointment_id: current.appointment_id,
-                values: current.values,
-                requested_service_ids: current.requested_service_ids,
-                document_template_ids: current.document_template_ids,
-            }));
-
-            const saved = (await autosaveHttp.put(
-                PatientsController.upsertDraftAttention.url(patientId),
-            )) as ClinicalAttention;
-
-            const isFirstSave = draftId === null;
-            setDraftId(saved.id);
-            lastPersistedSnapshotRef.current = serializeDraftState(formStateRef.current);
-            isDirtyRef.current = false;
-            toast.success('Borrador guardado correctamente.');
-
-            if (isFirstSave) {
+    const applySavedDraft = useCallback((saved: ClinicalAttention, persistedState: DraftAttentionFormState) => {
+        setDraftId((currentId) => {
+            if (currentId === null) {
                 onDraftSavedRef.current?.();
             }
 
-            return true;
-        } catch {
-            toast.error('No se pudo guardar el borrador.');
+            return saved.id;
+        });
+        setExamResults((prev) => {
+            const next = examResultsFromAttention(saved);
+            const merged: Record<string, AttentionRequestedExam> = { ...next };
 
-            return false;
-        }
-    }, [autosaveHttp, patientId, draftId]);
+            for (const [id, exam] of Object.entries(prev)) {
+                if (merged[id] && !merged[id].is_uploaded && exam.is_uploaded) {
+                    merged[id] = exam;
+                }
+            }
+
+            return merged;
+        });
+        lastPersistedSnapshotRef.current = serializeDraftState(persistedState);
+        isDirtyRef.current = false;
+    }, []);
+
+    const persistDraft = useCallback(
+        async (
+            stateOverride?: DraftAttentionFormState,
+            options?: { silent?: boolean },
+        ): Promise<ClinicalAttention | null> => {
+            const current = stateOverride ?? formStateRef.current;
+
+            if (!hasMeaningfulDraftData(current)) {
+                return null;
+            }
+
+            try {
+                autosaveHttp.transform(() => ({
+                    template_id: current.template_id || null,
+                    doctor_id: current.doctor_id || null,
+                    appointment_id: current.appointment_id,
+                    values: current.values,
+                    requested_service_ids: current.requested_service_ids,
+                    document_template_ids: current.document_template_ids,
+                }));
+
+                const saved = (await autosaveHttp.put(
+                    PatientsController.upsertDraftAttention.url(patientId),
+                )) as ClinicalAttention;
+
+                applySavedDraft(saved, current);
+
+                if (!options?.silent) {
+                    toast.success('Borrador guardado correctamente.');
+                }
+
+                return saved;
+            } catch {
+                toast.error('No se pudo guardar el borrador.');
+
+                return null;
+            }
+        },
+        [applySavedDraft, autosaveHttp, patientId],
+    );
 
     const persistDraftRef = useRef(persistDraft);
 
@@ -188,6 +238,16 @@ export function usePatientDraftAttention({
         }
 
         const timeout = window.setTimeout(() => {
+            if (!isDirtyRef.current) {
+                return;
+            }
+
+            const currentSnapshot = serializeDraftState(formStateRef.current);
+
+            if (currentSnapshot === lastPersistedSnapshotRef.current) {
+                return;
+            }
+
             void persistDraftRef.current();
         }, AUTOSAVE_DELAY_MS);
 
@@ -196,8 +256,26 @@ export function usePatientDraftAttention({
 
     const markDirty = useCallback((updater: (prev: DraftAttentionFormState) => DraftAttentionFormState) => {
         isDirtyRef.current = true;
-        setFormState(updater);
+        setFormState((prev) => {
+            const next = updater(prev);
+            formStateRef.current = next;
+
+            return next;
+        });
     }, []);
+
+    const persistExtras = useCallback(
+        async (nextState: DraftAttentionFormState) => {
+            setSyncingExtras(true);
+
+            try {
+                await persistDraftRef.current(nextState, { silent: true });
+            } finally {
+                setSyncingExtras(false);
+            }
+        },
+        [],
+    );
 
     const setTemplateId = useCallback(
         (templateId: string) => {
@@ -225,23 +303,49 @@ export function usePatientDraftAttention({
 
     const setRequestedServiceIds = useCallback(
         (requestedServiceIds: string[]) => {
-            markDirty((prev) => ({
-                ...prev,
+            const next = {
+                ...formStateRef.current,
                 requested_service_ids: requestedServiceIds,
-            }));
+            };
+            formStateRef.current = next;
+            isDirtyRef.current = true;
+            setFormState(next);
+            setExamResults((prev) => {
+                const mapped: Record<string, AttentionRequestedExam> = {};
+
+                for (const id of requestedServiceIds) {
+                    if (prev[id]) {
+                        mapped[id] = prev[id];
+                    }
+                }
+
+                return mapped;
+            });
+            void persistExtras(next);
         },
-        [markDirty],
+        [persistExtras],
     );
 
     const setDocumentTemplateIds = useCallback(
         (documentTemplateIds: string[]) => {
-            markDirty((prev) => ({
-                ...prev,
+            const next = {
+                ...formStateRef.current,
                 document_template_ids: documentTemplateIds,
-            }));
+            };
+            formStateRef.current = next;
+            isDirtyRef.current = true;
+            setFormState(next);
+            void persistExtras(next);
         },
-        [markDirty],
+        [persistExtras],
     );
+
+    const upsertExamResult = useCallback((exam: AttentionRequestedExam) => {
+        setExamResults((prev) => ({
+            ...prev,
+            [exam.id]: exam,
+        }));
+    }, []);
 
     const closeAttention = useCallback(async () => {
         setClosing(true);
@@ -286,13 +390,16 @@ export function usePatientDraftAttention({
     return {
         formState,
         draftId,
+        examResults,
         closeErrors,
         closing,
+        syncingExtras,
         setTemplateId,
         setDoctorId,
         setFieldValue,
         setRequestedServiceIds,
         setDocumentTemplateIds,
+        upsertExamResult,
         closeAttention,
     };
 }

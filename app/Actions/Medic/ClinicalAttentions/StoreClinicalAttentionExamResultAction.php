@@ -29,8 +29,11 @@ final class StoreClinicalAttentionExamResultAction
         Service $service,
         UploadedFile $file,
     ): array {
-        if ($attention->status !== ClinicalAttentionStatus::Closed) {
-            throw new RuntimeException('Solo se pueden cargar resultados en atenciones completadas.');
+        if (
+            $attention->status !== ClinicalAttentionStatus::Draft
+            && $attention->status !== ClinicalAttentionStatus::Closed
+        ) {
+            throw new RuntimeException('No se pueden cargar resultados en esta atención.');
         }
 
         $relation = $attention->requestedServices()
