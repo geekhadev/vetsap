@@ -7,6 +7,10 @@ import {
 import type { SaleDocumentPreview } from '@/components/custom/sale-document-preview/types';
 import { cn } from '@/lib/utils';
 
+/** Hoja carta (US Letter): 8.5 × 11 in */
+const LETTER_PAGE_CLASS =
+    'mx-auto box-border flex w-[min(100%,8.5in)] min-h-[11in] flex-col bg-white text-black shadow-md';
+
 type SaleDocumentDtePaperProps = {
     document: SaleDocumentPreview;
     className?: string;
@@ -29,12 +33,12 @@ export function SaleDocumentDtePaper({
     return (
         <article
             className={cn(
-                'mx-auto w-full max-w-[52rem] bg-white text-black shadow-md',
+                LETTER_PAGE_CLASS,
                 'border border-neutral-800 font-sans text-[11px] leading-snug',
                 className,
             )}
         >
-            <div className="grid gap-4 border-b border-neutral-800 p-4 sm:grid-cols-[1fr_13.5rem] sm:gap-6">
+            <div className="grid gap-4 border-b border-neutral-800 px-[0.5in] py-4 sm:grid-cols-[1fr_13.5rem] sm:gap-6">
                 <div className="space-y-1">
                     <p className="text-sm font-bold tracking-wide uppercase">
                         {document.emisor.name || 'Emisor'}
@@ -88,7 +92,7 @@ export function SaleDocumentDtePaper({
                 </div>
             </div>
 
-            <div className="space-y-1 border-b border-neutral-800 px-4 py-3">
+            <div className="space-y-1 border-b border-neutral-800 px-[0.5in] py-3">
                 <p className="text-center text-[10px] font-semibold tracking-wide uppercase">
                     S.I.I. — {city}
                 </p>
@@ -110,7 +114,7 @@ export function SaleDocumentDtePaper({
                 </p>
             </div>
 
-            <div className="space-y-1 border-b border-neutral-800 px-4 py-3">
+            <div className="space-y-1 border-b border-neutral-800 px-[0.5in] py-3">
                 <p>
                     <span className="font-semibold">Señor(es):</span>{' '}
                     {document.receptor.name}
@@ -135,21 +139,23 @@ export function SaleDocumentDtePaper({
                 ) : null}
             </div>
 
-            <div className="overflow-x-auto border-b border-neutral-800">
-                <table className="w-full min-w-[36rem] border-collapse text-left">
+            <div className="flex-1 border-b border-neutral-800">
+                <table className="w-full border-collapse text-left">
                     <thead>
                         <tr className="border-b border-neutral-800 bg-neutral-100">
-                            <th className="w-14 px-3 py-2 font-semibold">Cant.</th>
-                            <th className="px-3 py-2 font-semibold">
+                            <th className="w-14 py-2 pr-2 pl-[0.5in] font-semibold">
+                                Cant.
+                            </th>
+                            <th className="px-2 py-2 font-semibold">
                                 Descripción
                             </th>
-                            <th className="w-16 px-3 py-2 font-semibold">
+                            <th className="w-16 px-2 py-2 font-semibold">
                                 Afecto
                             </th>
-                            <th className="w-24 px-3 py-2 text-right font-semibold">
+                            <th className="w-24 px-2 py-2 text-right font-semibold">
                                 P. unit.
                             </th>
-                            <th className="w-24 px-3 py-2 text-right font-semibold">
+                            <th className="w-24 py-2 pr-[0.5in] pl-2 text-right font-semibold">
                                 Total
                             </th>
                         </tr>
@@ -159,7 +165,7 @@ export function SaleDocumentDtePaper({
                             <tr>
                                 <td
                                     colSpan={5}
-                                    className="px-3 py-6 text-center text-neutral-500"
+                                    className="px-[0.5in] py-6 text-center text-neutral-500"
                                 >
                                     Sin detalles
                                 </td>
@@ -170,10 +176,10 @@ export function SaleDocumentDtePaper({
                                     key={`${detail.description}-${index}`}
                                     className="border-b border-neutral-200 align-top"
                                 >
-                                    <td className="px-3 py-1.5 tabular-nums">
+                                    <td className="py-1.5 pr-2 pl-[0.5in] tabular-nums">
                                         {detail.quantity}
                                     </td>
-                                    <td className="px-3 py-1.5">
+                                    <td className="px-2 py-1.5">
                                         {detail.description}
                                         {detail.discount_percent > 0 ? (
                                             <span className="mt-0.5 block text-[10px] text-neutral-500">
@@ -181,15 +187,15 @@ export function SaleDocumentDtePaper({
                                             </span>
                                         ) : null}
                                     </td>
-                                    <td className="px-3 py-1.5">
+                                    <td className="px-2 py-1.5">
                                         {detail.tax_treatment === 'taxable'
                                             ? 'Sí'
                                             : 'No'}
                                     </td>
-                                    <td className="px-3 py-1.5 text-right tabular-nums">
+                                    <td className="px-2 py-1.5 text-right tabular-nums">
                                         {formatClpAmount(detail.unit_price)}
                                     </td>
-                                    <td className="px-3 py-1.5 text-right tabular-nums">
+                                    <td className="py-1.5 pr-[0.5in] pl-2 text-right tabular-nums">
                                         {formatClpAmount(detail.detail_total)}
                                     </td>
                                 </tr>
@@ -199,7 +205,7 @@ export function SaleDocumentDtePaper({
                 </table>
             </div>
 
-            <div className="grid gap-4 border-b border-neutral-800 p-4 sm:grid-cols-[1fr_14rem]">
+            <div className="grid gap-4 border-b border-neutral-800 px-[0.5in] py-4 sm:grid-cols-[1fr_14rem]">
                 <div className="space-y-2 text-[10px] text-neutral-600">
                     {document.payments.length > 0 ? (
                         <div>
@@ -260,7 +266,7 @@ export function SaleDocumentDtePaper({
                 </div>
             </div>
 
-            <div className="flex flex-col items-center gap-2 px-4 py-5 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mt-auto flex flex-col items-center gap-2 px-[0.5in] py-5 sm:flex-row sm:items-end sm:justify-between">
                 <div className="w-full max-w-[14rem] border-2 border-dashed border-neutral-400 bg-neutral-50 px-3 py-4 text-center">
                     <div
                         aria-hidden

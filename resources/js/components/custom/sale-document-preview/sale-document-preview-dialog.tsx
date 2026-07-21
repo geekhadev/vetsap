@@ -110,19 +110,19 @@ export function SaleDocumentPreviewDialog({
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="flex h-[min(92vh,56rem)] max-h-[min(92vh,56rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl">
+                <DialogContent className="flex h-[min(92vh,56rem)] max-h-[min(92vh,56rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[calc(8.5in+3rem)]">
                     <DialogHeader className="shrink-0 border-b px-6 py-4">
                         <DialogTitle className="flex items-center gap-2">
                             <FileText className="size-5" />
                             Vista previa del documento
                         </DialogTitle>
                         <DialogDescription>
-                            Representación impresa aproximada al documento
+                            Representación impresa en hoja carta del documento
                             tributario electrónico del SII.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="min-h-0 flex-1 overflow-y-auto bg-neutral-200/80 p-4 dark:bg-neutral-900">
+                    <div className="min-h-0 flex-1 overflow-y-auto bg-neutral-300 p-6 dark:bg-neutral-700">
                         {loading ? (
                             <div className="flex h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
                                 <LoaderCircle className="size-4 animate-spin" />
