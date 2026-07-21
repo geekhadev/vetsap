@@ -22,6 +22,11 @@ class ProductType extends Model
 
     protected $table = 'store_product_types';
 
+    /**
+     * Tipo global reservado: los servicios se gestionan en Medicina, no como productos.
+     */
+    public const GLOBAL_SERVICES_NAME = 'Servicios';
+
     public const SORTABLE_COLUMNS = [
         'name',
         'is_active',

@@ -33,6 +33,7 @@ export type Product = {
     barcode: string | null;
     description: string | null;
     price: string | null;
+    tax_treatment: 'taxable' | 'exempt';
     stock: number;
     is_active: boolean;
     product_category?: ProductCategoryRef;
@@ -71,6 +72,13 @@ export const IS_ACTIVE_FILTER_OPTIONS = isActiveFilterOptions('m');
 
 export function formatIsActive(value: boolean): string {
     return formatIsActiveBase(value, 'm');
+}
+
+/** Tipo global reservado: los servicios se gestionan en Medicina, no como productos. */
+export const GLOBAL_SERVICES_PRODUCT_TYPE_NAME = 'Servicios';
+
+export function isGlobalServicesProductType(option: MasterOption): boolean {
+    return option.is_global && option.name === GLOBAL_SERVICES_PRODUCT_TYPE_NAME;
 }
 
 export function formatMasterLabel(option: MasterOption, selectedId?: string): string {
