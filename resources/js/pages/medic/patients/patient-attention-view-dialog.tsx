@@ -215,11 +215,31 @@ export function PatientAttentionViewDialog({
                 <DialogContent
                     className={cn(
                         attentionModalContentClassName,
-                        '[&>button]:top-4 [&>button]:right-4 [&>button]:flex [&>button]:size-8 [&>button]:items-center [&>button]:justify-center',
+                        '[&>button]:top-5 [&>button]:right-4 [&>button]:flex [&>button]:size-8 [&>button]:items-center [&>button]:justify-center',
                     )}
-                >                    <DialogHeader className="shrink-0 gap-2 border-b px-6 py-4 pr-14 text-left">
+                >
+                    <DialogHeader className="shrink-0 gap-0 border-b px-6 py-4 pr-14 text-left">
                         <div className="flex items-center justify-between gap-3">
-                            <DialogTitle className="min-w-0 truncate">{title}</DialogTitle>
+                            <div className="flex min-w-0 flex-col gap-0.5">
+                                <DialogTitle className="truncate">{title}</DialogTitle>
+                                <DialogDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <span>{doctorLabel}</span>
+                                    <span className="text-muted-foreground/40" aria-hidden>
+                                        ·
+                                    </span>
+                                    <DateDisplay
+                                        value={moment}
+                                        mode="datetime"
+                                        className="tabular-nums"
+                                    />
+                                    <span className="text-muted-foreground/40" aria-hidden>
+                                        ·
+                                    </span>
+                                    <span className="tabular-nums">
+                                        Duración: {durationLabel}
+                                    </span>
+                                </DialogDescription>
+                            </div>
 
                             <div className="flex shrink-0 items-center gap-2">
                                 <DropdownMenu>
@@ -285,22 +305,6 @@ export function PatientAttentionViewDialog({
                                 ) : null}
                             </div>
                         </div>
-
-                        <DialogDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                            <span>{doctorLabel}</span>
-                            <span className="text-muted-foreground/40" aria-hidden>
-                                ·
-                            </span>
-                            <DateDisplay
-                                value={moment}
-                                mode="datetime"
-                                className="tabular-nums"
-                            />
-                            <span className="text-muted-foreground/40" aria-hidden>
-                                ·
-                            </span>
-                            <span className="tabular-nums">Duración: {durationLabel}</span>
-                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="min-h-0 flex-1 overflow-y-auto p-6">
