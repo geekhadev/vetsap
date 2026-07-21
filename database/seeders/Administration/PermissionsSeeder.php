@@ -202,6 +202,11 @@ class PermissionsSeeder extends Seeder
                         'module_slug' => 'document-templates',
                         'permissions' => $permissions_crud,
                     ],
+                    [
+                        'module_name' => 'Planes de vacunación',
+                        'module_slug' => 'vaccination-protocols',
+                        'permissions' => $permissions_crud,
+                    ],
                 ],
             ],
             [

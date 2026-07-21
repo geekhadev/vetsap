@@ -27,6 +27,11 @@ class ProductType extends Model
      */
     public const GLOBAL_SERVICES_NAME = 'Servicios';
 
+    /**
+     * Tipo global para productos vacuna (planes de vacunación / inventario).
+     */
+    public const GLOBAL_VACCINES_NAME = 'Vacunas';
+
     public const SORTABLE_COLUMNS = [
         'name',
         'is_active',

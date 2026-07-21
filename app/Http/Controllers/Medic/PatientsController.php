@@ -14,6 +14,7 @@ use App\Actions\Medic\Patients\DeletePatientAction;
 use App\Actions\Medic\Patients\ListPatientsForCompanyAction;
 use App\Actions\Medic\Patients\StorePatientPhotoAction;
 use App\Actions\Medic\Patients\UpdatePatientAction;
+use App\Actions\Medic\PatientVaccinations\BuildPatientVaccinationEditPropsAction;
 use App\Enums\Medic\ClinicalAttentionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Medic\PatientDraftAttentionCloseRequest;
@@ -116,6 +117,7 @@ class PatientsController extends Controller
         BuildAppointmentFormOptionsAction $buildAppointmentFormOptions,
         ListActiveHolidaysForCalendarAction $listActiveHolidays,
         ListActiveAppointmentStatusesForCalendarAction $listAppointmentStatuses,
+        BuildPatientVaccinationEditPropsAction $buildVaccinationEditProps,
     ): Response {
         $this->authorize('update', $patient);
 
@@ -198,6 +200,11 @@ class PatientsController extends Controller
             ->filter(static fn (array $option): bool => $option['id'] === $patient->id)
             ->values()
             ->all();
+
+        $vaccinationProps = $buildVaccinationEditProps->execute(
+            $patient,
+            $company instanceof Company ? $company : null,
+        );
 
         return Inertia::render('medic/patients/edit', [
             'patient' => $patient,
@@ -297,6 +304,7 @@ class PatientsController extends Controller
             'appointmentStatuses' => $company instanceof Company
                 ? $listAppointmentStatuses->execute($company->id)
                 : [],
+            ...$vaccinationProps,
             'can' => [
                 'attentions' => [
                     'create' => $user?->can('create', ClinicalAttention::class) ?? false,

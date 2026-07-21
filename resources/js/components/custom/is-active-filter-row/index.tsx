@@ -1,10 +1,7 @@
 import { FilterRowWithClear } from '@/components/custom/filter-row-with-clear';
 import { FormSelect } from '@/components/custom/form-select';
-import {
-    isActiveFilterOptions
-    
-} from '@/types/active-record';
-import type {ActiveRecordGender} from '@/types/active-record';
+import { isActiveFilterOptions } from '@/types/active-record';
+import type { ActiveRecordGender } from '@/types/active-record';
 
 export type IsActiveFilterRowProps = {
     value: string;
@@ -25,10 +22,11 @@ export function IsActiveFilterRow({
         id: opt.id,
         label: opt.label,
     }));
+    const resolvedValue = value ?? '';
 
     return (
         <FilterRowWithClear
-            canClear={value.trim() !== ''}
+            canClear={resolvedValue.trim() !== ''}
             onClear={onClear}
             clearLabel="Limpiar filtro de estado"
         >
@@ -39,7 +37,7 @@ export function IsActiveFilterRow({
                 selectProps={{
                     id: filterId,
                     name: 'is_active',
-                    value,
+                    value: resolvedValue,
                     onChange: (e) => onChange(e.target.value),
                 }}
             />

@@ -10,7 +10,7 @@ class ProductTypesSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['Medicamentos', 'Servicios'] as $name) {
+        foreach (['Medicamentos', 'Servicios', 'Vacunas'] as $name) {
             ProductType::query()->firstOrCreate(
                 [
                     'company_id' => null,

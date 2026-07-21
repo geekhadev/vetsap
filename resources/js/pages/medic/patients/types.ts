@@ -125,6 +125,66 @@ export type PatientAppointmentSummary = {
     status_name: string | null;
 };
 
+/** Fase 1 UI — estados de dosis en el timeline de vacunación. */
+export type VaccinationDoseStatus =
+    | 'scheduled'
+    | 'due'
+    | 'overdue'
+    | 'administered'
+    | 'omitted';
+
+/** Cómo entró el ítem al plan (plantilla vs agregado a mano). */
+export type VaccinationDoseSource = 'protocol' | 'manual';
+
+/** Dónde se aplicó la dosis (solo relevante si status = administered). */
+export type VaccinationAdministeredOrigin = 'clinic' | 'external';
+
+export type PatientVaccinationDoseSummary = {
+    id: string;
+    product_name: string;
+    plan_name: string;
+    status: VaccinationDoseStatus;
+    source: VaccinationDoseSource;
+    administered_origin: VaccinationAdministeredOrigin | null;
+    series_label: string | null;
+    scheduled_on: string;
+    administered_on: string | null;
+    notes: string | null;
+};
+
+export type PatientVaccinationPlanSummary = {
+    id: string;
+    protocol_id: string;
+    name: string;
+    assigned_at: string;
+};
+
+export type VaccinationProtocolOption = {
+    id: string;
+    name: string;
+};
+
+export type VaccineProductOption = {
+    id: string;
+    name: string;
+};
+
+export type PatientTimelineFilter =
+    | 'all'
+    | 'attentions'
+    | 'appointments'
+    | 'vaccination';
+
+export const PATIENT_TIMELINE_FILTER_OPTIONS = [
+    { id: 'all', label: 'Todo' },
+    { id: 'attentions', label: 'Atenciones' },
+    { id: 'appointments', label: 'Citas' },
+    { id: 'vaccination', label: 'Vacunación' },
+] as const satisfies ReadonlyArray<{
+    id: PatientTimelineFilter;
+    label: string;
+}>;
+
 export type ExamServiceOption = {
     id: string;
     name: string;
@@ -164,6 +224,10 @@ export type PatientsEditPageProps = {
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];
     appointmentStatuses: AppointmentStatusOption[];
+    vaccinationPlan: PatientVaccinationPlanSummary | null;
+    vaccinationDoses: PatientVaccinationDoseSummary[];
+    vaccinationProtocols: VaccinationProtocolOption[];
+    vaccineProducts: VaccineProductOption[];
     can: PatientsEditCan;
 };
 

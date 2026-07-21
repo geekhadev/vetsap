@@ -33,6 +33,7 @@ import {
     ShoppingBag,
     ShoppingCart,
     Stethoscope,
+    Syringe,
     Tag,
     Tags,
     Truck,
@@ -63,6 +64,7 @@ import { index as patientsIndex } from '@/routes/medic/patients';
 import { index as servicesIndex } from '@/routes/medic/services';
 import { index as specialtiesIndex } from '@/routes/medic/specialties';
 import { index as speciesIndex } from '@/routes/medic/species';
+import { index as vaccinationProtocolsIndex } from '@/routes/medic/vaccination-protocols';
 import { index as expenseTypesIndex } from '@/routes/purchase/expense-types';
 import { index as expensesIndex } from '@/routes/purchase/expenses';
 import { index as purchaseOrderStatusesIndex } from '@/routes/purchase/purchase-order-statuses';
@@ -151,6 +153,12 @@ export const mainNavItems: NavItem[] = [
                 href: clinicalTemplatesIndex(),
                 icon: LayoutTemplate,
                 permission: 'medic.clinical-templates.list',
+            },
+            {
+                title: 'Planes de vacunación',
+                href: vaccinationProtocolsIndex(),
+                icon: Syringe,
+                permission: 'medic.vaccination-protocols.list',
             },
             {
                 title: 'Plantillas y formatos',

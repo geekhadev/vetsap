@@ -20,6 +20,10 @@ function PatientsEdit() {
         appointmentFormOptions,
         appointmentHolidays,
         appointmentStatuses,
+        vaccinationPlan,
+        vaccinationDoses,
+        vaccinationProtocols,
+        vaccineProducts,
         can,
     } = usePage<PatientsEditPageProps>().props;
 
@@ -43,6 +47,10 @@ function PatientsEdit() {
                 appointmentFormOptions={appointmentFormOptions}
                 appointmentHolidays={appointmentHolidays}
                 appointmentStatuses={appointmentStatuses}
+                vaccinationPlan={vaccinationPlan}
+                vaccinationDoses={vaccinationDoses}
+                vaccinationProtocols={vaccinationProtocols}
+                vaccineProducts={vaccineProducts}
                 can={can}
             />
         </>

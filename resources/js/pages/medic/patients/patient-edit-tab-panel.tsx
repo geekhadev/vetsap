@@ -1,7 +1,17 @@
 import { router } from '@inertiajs/react';
-import { CalendarPlus, ChevronDown, FileDown, Mail, MessageCircle } from 'lucide-react';
+import {
+    CalendarPlus,
+    ChevronDown,
+    FileDown,
+    Mail,
+    MessageCircle,
+    Syringe,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { downloadClinicalHistory, whatsappClinicalHistory } from '@/actions/App/Http/Controllers/Medic/PatientsController';
+import {
+    downloadClinicalHistory,
+    whatsappClinicalHistory,
+} from '@/actions/App/Http/Controllers/Medic/PatientsController';
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +27,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { AppointmentDetailModal } from '@/pages/agenda/calendar/appointment-detail-modal';
 import { AppointmentForm } from '@/pages/agenda/calendar/appointment-form';
@@ -35,6 +46,11 @@ import {
 } from '@/pages/medic/patients/patient-clinical-tabs-config';
 import { PatientClinicalTimeline } from '@/pages/medic/patients/patient-clinical-timeline';
 import { PatientDraftAttentionForm } from '@/pages/medic/patients/patient-draft-attention-form';
+import {
+    AddManualVaccinationDoseDialog,
+    AssignVaccinationPlanDialog,
+    PatientVaccinationDoseDialog,
+} from '@/pages/medic/patients/patient-vaccination-dialogs';
 import type {
     AttentionRequestedExam,
     AttentionSummary,
@@ -45,8 +61,14 @@ import type {
     PatientDoctorOption,
     PatientEditTabId,
     PatientTemplateOption,
+    PatientTimelineFilter,
+    PatientVaccinationDoseSummary,
+    PatientVaccinationPlanSummary,
     PatientsEditCan,
+    VaccinationProtocolOption,
+    VaccineProductOption,
 } from '@/pages/medic/patients/types';
+import { PATIENT_TIMELINE_FILTER_OPTIONS } from '@/pages/medic/patients/types';
 
 type PatientEditTabPanelProps = {
     patient: Patient;
@@ -62,6 +84,10 @@ type PatientEditTabPanelProps = {
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];
     appointmentStatuses: AppointmentStatusOption[];
+    vaccinationPlan: PatientVaccinationPlanSummary | null;
+    vaccinationDoses: PatientVaccinationDoseSummary[];
+    vaccinationProtocols: VaccinationProtocolOption[];
+    vaccineProducts: VaccineProductOption[];
     can: PatientsEditCan;
 };
 
@@ -79,6 +105,10 @@ export function PatientEditTabPanel({
     appointmentFormOptions,
     appointmentHolidays,
     appointmentStatuses,
+    vaccinationPlan,
+    vaccinationDoses,
+    vaccinationProtocols,
+    vaccineProducts,
     can,
 }: PatientEditTabPanelProps) {
     const closedAttentionsCount = useMemo(
@@ -97,10 +127,33 @@ export function PatientEditTabPanel({
     const [appointmentFormSessionId, setAppointmentFormSessionId] = useState(0);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
     const [appointmentDetailOpen, setAppointmentDetailOpen] = useState(false);
+    const [timelineFilter, setTimelineFilter] = useState<PatientTimelineFilter>('all');
+    const [selectedVaccinationDose, setSelectedVaccinationDose] =
+        useState<PatientVaccinationDoseSummary | null>(null);
+    const [assignPlanOpen, setAssignPlanOpen] = useState(false);
+    const [addDoseOpen, setAddDoseOpen] = useState(false);
+
+    const hasBirthDate = patient.birth_date != null && patient.birth_date !== '';
+
+    const visibleVaccinationCount = useMemo(() => {
+        if (timelineFilter === 'vaccination') {
+            return vaccinationDoses.length;
+        }
+
+        return vaccinationDoses.filter((dose) => dose.status !== 'omitted').length;
+    }, [timelineFilter, vaccinationDoses]);
 
     useEffect(() => {
         setHasDraftAttention(draftAttention !== null);
     }, [draftAttention]);
+
+    const handleTimelineFilterChange = useCallback((value: string) => {
+        if (!value) {
+            return;
+        }
+
+        setTimelineFilter(value as PatientTimelineFilter);
+    }, []);
 
     const handleDraftSaved = useCallback(() => {
         setHasDraftAttention(true);
@@ -179,29 +232,92 @@ export function PatientEditTabPanel({
         }
     }, []);
 
-    const timelineCount = attentions.length + appointments.length;
+    const timelineCount = useMemo(() => {
+        const attentionsCount =
+            timelineFilter === 'all' || timelineFilter === 'attentions'
+                ? attentions.length
+                : 0;
+        const appointmentsCount =
+            timelineFilter === 'all' || timelineFilter === 'appointments'
+                ? appointments.length
+                : 0;
+        const vaccinationsCount =
+            timelineFilter === 'all' || timelineFilter === 'vaccination'
+                ? visibleVaccinationCount
+                : 0;
+
+        return attentionsCount + appointmentsCount + vaccinationsCount;
+    }, [
+        appointments.length,
+        attentions.length,
+        timelineFilter,
+        visibleVaccinationCount,
+    ]);
+
+    const historyTitle =
+        timelineFilter === 'vaccination' ? 'Plan de vacunación' : 'Historial clínico';
+
+    const historyDescription = (() => {
+        if (timelineFilter === 'vaccination') {
+            if (!hasBirthDate) {
+                return 'Se requiere fecha de nacimiento para usar el plan de vacunación.';
+            }
+
+            if (vaccinationPlan === null) {
+                return 'Este paciente no tiene plan de vacunación.';
+            }
+
+            return `${vaccinationPlan.name} · ${timelineCount} dosis en el timeline.`;
+        }
+
+        if (timelineCount === 0) {
+            return 'Atenciones, citas y vacunación del paciente.';
+        }
+
+        return `${timelineCount} ${timelineCount === 1 ? 'registro' : 'registros'} en el timeline.`;
+    })();
+
+    const showVaccinationBirthDateEmpty =
+        timelineFilter === 'vaccination' && !hasBirthDate;
+
+    const showVaccinationNoPlanEmpty =
+        timelineFilter === 'vaccination' &&
+        hasBirthDate &&
+        vaccinationPlan === null;
 
     return (
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
             <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                    <h2 className="text-base font-medium">Historial clínico</h2>
-                    <p className="text-muted-foreground text-sm">
-                        {timelineCount === 0
-                            ? 'Atenciones y citas del paciente.'
-                            : `${timelineCount} ${timelineCount === 1 ? 'registro' : 'registros'} en el timeline.`}
-                    </p>
+                    <h2 className="text-base font-medium">{historyTitle}</h2>
+                    <p className="text-muted-foreground text-sm">{historyDescription}</p>
                 </div>
 
-                <div className="flex w-full flex-row items-center gap-2 sm:w-auto">
+                <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+                    <ToggleGroup
+                        type="single"
+                        variant="default"
+                        size="sm"
+                        value={timelineFilter}
+                        onValueChange={handleTimelineFilterChange}
+                        className="min-w-0 flex-1 rounded-md bg-muted p-0.5 sm:flex-none"
+                        aria-label="Filtrar historial"
+                    >
+                        {PATIENT_TIMELINE_FILTER_OPTIONS.map((option) => (
+                            <ToggleGroupItem
+                                key={option.id}
+                                value={option.id}
+                                aria-label={option.label}
+                                className="flex-1 border-0 px-2.5 shadow-none data-[state=on]:bg-background data-[state=on]:text-foreground sm:flex-none sm:px-3"
+                            >
+                                {option.label}
+                            </ToggleGroupItem>
+                        ))}
+                    </ToggleGroup>
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                className="min-w-0 flex-1 shrink-0 sm:w-auto sm:flex-none"
-                            >
+                            <Button type="button" variant="outline" className="shrink-0">
                                 Acciones
                                 <ChevronDown className="size-4 opacity-60" aria-hidden />
                             </Button>
@@ -251,18 +367,29 @@ export function PatientEditTabPanel({
                                 <Mail className="size-4" aria-hidden />
                                 Enviar historial por email
                             </DropdownMenuItem>
+                            {hasBirthDate && vaccinationPlan === null ? (
+                                <DropdownMenuItem onSelect={() => setAssignPlanOpen(true)}>
+                                    <Syringe className="size-4" aria-hidden />
+                                    Asignar plan de vacunación
+                                </DropdownMenuItem>
+                            ) : null}
+                            {vaccinationPlan !== null ? (
+                                <DropdownMenuItem onSelect={() => setAddDoseOpen(true)}>
+                                    <Syringe className="size-4" aria-hidden />
+                                    Agregar vacuna al plan
+                                </DropdownMenuItem>
+                            ) : null}
                         </DropdownMenuContent>
                     </DropdownMenu>
 
                     {can.attentions.create ? (
                         <Button
                             type="button"
-                            size="sm"
                             variant={
                                 isDraftModalOpen || hasDraftAttention ? 'default' : 'outline'
                             }
                             className={cn(
-                                'relative min-w-0 flex-1 shrink-0 sm:w-auto sm:flex-none',
+                                'relative shrink-0',
                                 hasDraftAttention &&
                                     !isDraftModalOpen &&
                                     'shadow-md ring-2 ring-primary/35 ring-offset-2 ring-offset-background',
@@ -292,14 +419,77 @@ export function PatientEditTabPanel({
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-                <PatientClinicalTimeline
-                    attentions={attentions}
-                    appointments={appointments}
-                    onAttentionSelect={setViewAttention}
-                    onDraftSelect={openDraftModal}
-                    onAppointmentSelect={openAppointmentDetail}
-                />
+                {showVaccinationBirthDateEmpty ? (
+                    <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-3 py-10 text-center">
+                        <div className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
+                            <Syringe className="size-5" aria-hidden />
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium">
+                                Falta la fecha de nacimiento
+                            </p>
+                            <p className="text-muted-foreground text-sm">
+                                Completa la fecha de nacimiento en la ficha del paciente para
+                                asignar y ver el plan de vacunación.
+                            </p>
+                        </div>
+                    </div>
+                ) : showVaccinationNoPlanEmpty ? (
+                    <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-3 py-10 text-center">
+                        <div className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
+                            <Syringe className="size-5" aria-hidden />
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium">
+                                Este paciente no tiene plan de vacunación
+                            </p>
+                            <p className="text-muted-foreground text-sm">
+                                Asigna un protocolo de la especie para generar la cronología de
+                                dosis.
+                            </p>
+                        </div>
+                        <Button type="button" size="sm" onClick={() => setAssignPlanOpen(true)}>
+                            Asignar plan
+                        </Button>
+                    </div>
+                ) : (
+                    <PatientClinicalTimeline
+                        attentions={attentions}
+                        appointments={appointments}
+                        vaccinationDoses={vaccinationDoses}
+                        filter={timelineFilter}
+                        onAttentionSelect={setViewAttention}
+                        onDraftSelect={openDraftModal}
+                        onAppointmentSelect={openAppointmentDetail}
+                        onVaccinationSelect={setSelectedVaccinationDose}
+                    />
+                )}
             </div>
+
+            <PatientVaccinationDoseDialog
+                dose={selectedVaccinationDose}
+                plan={vaccinationPlan}
+                patientId={patient.id}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setSelectedVaccinationDose(null);
+                    }
+                }}
+            />
+
+            <AssignVaccinationPlanDialog
+                open={assignPlanOpen}
+                onOpenChange={setAssignPlanOpen}
+                patientId={patient.id}
+                protocols={vaccinationProtocols}
+            />
+
+            <AddManualVaccinationDoseDialog
+                open={addDoseOpen}
+                onOpenChange={setAddDoseOpen}
+                patientId={patient.id}
+                products={vaccineProducts}
+            />
 
             <PatientAttentionViewDialog
                 attention={viewAttention}
@@ -350,7 +540,8 @@ export function PatientEditTabPanel({
                 <Dialog open={isDraftModalOpen} onOpenChange={handleDraftModalOpenChange}>
                     <DialogContent
                         className={cn(attentionModalContentClassName, '[&>button]:hidden')}
-                    >                        <DialogHeader className="sr-only">
+                    >
+                        <DialogHeader className="sr-only">
                             <DialogTitle>{draftActionLabel}</DialogTitle>
                             <DialogDescription>
                                 Completa los datos de la atención

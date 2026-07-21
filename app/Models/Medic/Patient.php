@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'company_id',
@@ -84,6 +85,14 @@ class Patient extends Model
     public function attentions(): HasMany
     {
         return $this->hasMany(ClinicalAttention::class, 'patient_id');
+    }
+
+    /**
+     * @return HasOne<PatientVaccinationPlan, $this>
+     */
+    public function vaccinationPlan(): HasOne
+    {
+        return $this->hasOne(PatientVaccinationPlan::class, 'patient_id');
     }
 
     /**

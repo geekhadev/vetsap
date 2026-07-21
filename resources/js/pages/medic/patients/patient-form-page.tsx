@@ -23,8 +23,12 @@ import type {
     PatientDoctorOption,
     PatientEditTabId,
     PatientTemplateOption,
+    PatientVaccinationDoseSummary,
+    PatientVaccinationPlanSummary,
     PatientsEditCan,
     SpeciesOption,
+    VaccinationProtocolOption,
+    VaccineProductOption,
 } from '@/pages/medic/patients/types';
 
 type PatientFormPageProps = {
@@ -43,6 +47,10 @@ type PatientFormPageProps = {
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];
     appointmentStatuses: AppointmentStatusOption[];
+    vaccinationPlan: PatientVaccinationPlanSummary | null;
+    vaccinationDoses: PatientVaccinationDoseSummary[];
+    vaccinationProtocols: VaccinationProtocolOption[];
+    vaccineProducts: VaccineProductOption[];
     can: PatientsEditCan;
 };
 
@@ -62,6 +70,10 @@ export function PatientFormPage({
     appointmentFormOptions,
     appointmentHolidays,
     appointmentStatuses,
+    vaccinationPlan,
+    vaccinationDoses,
+    vaccinationProtocols,
+    vaccineProducts,
     can,
 }: PatientFormPageProps) {
     const [formOpen, setFormOpen] = useState(false);
@@ -108,6 +120,10 @@ export function PatientFormPage({
                         appointmentFormOptions={appointmentFormOptions}
                         appointmentHolidays={appointmentHolidays}
                         appointmentStatuses={appointmentStatuses}
+                        vaccinationPlan={vaccinationPlan}
+                        vaccinationDoses={vaccinationDoses}
+                        vaccinationProtocols={vaccinationProtocols}
+                        vaccineProducts={vaccineProducts}
                         can={can}
                     />
                 </SplitSettingsPanel>

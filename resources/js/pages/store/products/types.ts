@@ -76,6 +76,7 @@ export function formatIsActive(value: boolean): string {
 
 /** Tipo global reservado: los servicios se gestionan en Medicina, no como productos. */
 export const GLOBAL_SERVICES_PRODUCT_TYPE_NAME = 'Servicios';
+export const GLOBAL_VACCINES_PRODUCT_TYPE_NAME = 'Vacunas';
 
 export function isGlobalServicesProductType(option: MasterOption): boolean {
     return option.is_global && option.name === GLOBAL_SERVICES_PRODUCT_TYPE_NAME;
