@@ -73,4 +73,11 @@ class UserFactory extends Factory
             'type' => UserType::Owner,
         ]);
     }
+
+    public function customer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => UserType::Customer,
+        ]);
+    }
 }

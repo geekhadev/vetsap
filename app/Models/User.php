@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserType;
 use App\Models\Configuration\Role;
+use App\Models\Sale\Customer;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -79,6 +80,14 @@ class User extends Authenticatable
     public function companyRoles(): HasMany
     {
         return $this->hasMany(UserCompanyRole::class);
+    }
+
+    /**
+     * @return HasMany<Customer, $this>
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'user_id');
     }
 
     /**

@@ -21,6 +21,7 @@ final class ListCustomersForCompanyAction
         return Customer::query()
             ->forCompany($companyId)
             ->with([
+                'user:id,name,email',
                 'patients' => fn ($query) => $query
                     ->select(
                         'id',

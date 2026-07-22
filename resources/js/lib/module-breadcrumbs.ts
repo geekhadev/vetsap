@@ -6,11 +6,6 @@ import type { BreadcrumbItem } from '@/types/navigation';
 
 type ModuleHref = NonNullable<InertiaLinkProps['href']>;
 
-const APP_ROOT_BREADCRUMB: BreadcrumbItem = {
-    title: 'Vetsap',
-    href: dashboard(),
-};
-
 function normalizeHref(href: ModuleHref): string {
     const url = typeof href === 'string' ? href : href.url;
     const [path] = url.split('?');
@@ -40,8 +35,15 @@ function buildScopeByModuleHrefLookup(): Map<string, string> {
 
 const scopeByModuleHref = buildScopeByModuleHrefLookup();
 
-export function buildAppRootBreadcrumbs(): BreadcrumbItem[] {
-    return [APP_ROOT_BREADCRUMB];
+export function buildAppRootBreadcrumbs(
+    homeHref: ModuleHref = dashboard(),
+): BreadcrumbItem[] {
+    return [
+        {
+            title: 'Vetsap',
+            href: homeHref,
+        },
+    ];
 }
 
 export function buildModuleBreadcrumbs(
@@ -50,7 +52,7 @@ export function buildModuleBreadcrumbs(
     ...trail: BreadcrumbItem[]
 ): BreadcrumbItem[] {
     const scopeTitle = scopeByModuleHref.get(normalizeHref(moduleIndexHref));
-    const items: BreadcrumbItem[] = [APP_ROOT_BREADCRUMB];
+    const items: BreadcrumbItem[] = [...buildAppRootBreadcrumbs()];
 
     if (scopeTitle !== undefined) {
         items.push({ title: scopeTitle });

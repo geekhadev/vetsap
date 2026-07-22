@@ -55,6 +55,8 @@ import { index as integrationSettingsIndex } from '@/routes/configuration/integr
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { index as websiteSettingsIndex } from '@/routes/configuration/website-settings';
+import { index as documentsIndex } from '@/routes/customer/documents';
+import { index as petsIndex } from '@/routes/customer/pets';
 import { index as clinicalAttentionsIndex } from '@/routes/medic/clinical-attentions';
 import { index as clinicalTemplatesIndex } from '@/routes/medic/clinical-templates';
 import { index as doctorsIndex } from '@/routes/medic/doctors';
@@ -86,6 +88,19 @@ import { index as productCategoriesIndex } from '@/routes/store/product-categori
 import { index as productMovementsIndex } from '@/routes/store/product-movements';
 import { index as productsIndex } from '@/routes/store/products';
 import type { NavItem } from '@/types';
+
+export const customerNavItems: NavItem[] = [
+    {
+        title: 'Mis mascotas',
+        href: petsIndex(),
+        icon: PawPrint,
+    },
+    {
+        title: 'Mis documentos',
+        href: documentsIndex(),
+        icon: Files,
+    },
+];
 
 export const mainNavItems: NavItem[] = [
     {

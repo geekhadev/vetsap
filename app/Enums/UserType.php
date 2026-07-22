@@ -7,4 +7,5 @@ enum UserType: string
     case Root = 'root';
     case Owner = 'owner';
     case User = 'user';
+    case Customer = 'customer';
 }

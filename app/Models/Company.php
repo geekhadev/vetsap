@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CompanyDocumentType;
 use App\Models\Configuration\Role;
 use App\Models\Sale\CertificationSiiTicket;
+use App\Models\Sale\Customer;
 use App\Models\Sale\SiiCaf;
 use App\Models\Web\ClinicWebSetting;
 use Database\Factories\CompanyFactory;
@@ -62,6 +63,14 @@ class Company extends Model
     public function userRoles(): HasMany
     {
         return $this->hasMany(UserCompanyRole::class, 'company_id');
+    }
+
+    /**
+     * @return HasMany<Customer, $this>
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'company_id');
     }
 
     /**

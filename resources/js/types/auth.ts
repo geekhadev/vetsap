@@ -1,4 +1,4 @@
-export type UserType = 'root' | 'owner' | 'user';
+export type UserType = 'root' | 'owner' | 'user' | 'customer';
 
 export type User = {
     id: string;

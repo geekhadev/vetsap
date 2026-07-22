@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\Configuration\Companies\ListSelectableCompaniesForUserAction;
 use App\Actions\Configuration\Companies\SetSelectedCompanyAction;
+use App\Enums\UserType;
 use App\Http\Requests\CompanySelectionStoreRequest;
 use App\Models\Company;
+use App\Models\User;
+use App\Support\AuthenticatedHome;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,8 +26,12 @@ class CompanySelectionController extends Controller
 
         $companies = $listAction->execute($user);
 
+        if ($companies->isEmpty() && $user instanceof User && $user->type === UserType::Customer) {
+            return redirect()->route(AuthenticatedHome::routeName($user));
+        }
+
         if ($companies->count() === 1) {
-            return redirect()->route('dashboard');
+            return redirect()->route(AuthenticatedHome::routeName($user));
         }
 
         return Inertia::render('company-selection', [
@@ -68,6 +75,6 @@ class CompanySelectionController extends Controller
             'message' => 'Empresa cambiada correctamente.',
         ]);
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route(AuthenticatedHome::routeName($user)));
     }
 }

@@ -3,9 +3,12 @@
 namespace Database\Seeders\Sale;
 
 use App\Enums\Sale\CustomerDocumentType;
+use App\Enums\UserType;
 use App\Models\Company;
 use App\Models\Sale\Customer;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class CustomersSeeder extends Seeder
 {
@@ -18,9 +21,19 @@ class CustomersSeeder extends Seeder
             ['name' => 'Ana María González Pinto', 'document_number' => '76133456-7', 'email' => 'ana.gonzalez@gmail.com'],
         ];
 
-        Company::query()->each(function (Company $company) use ($rutCustomers): void {
-            foreach ($rutCustomers as $row) {
-                Customer::query()->firstOrCreate(
+        $portalUser = User::query()->firstOrCreate(
+            ['email' => 'juan.marcano@gmail.com'],
+            [
+                'name' => 'Juan Marcano Pinto',
+                'type' => UserType::Customer,
+                'password' => Hash::make('qwerty123'),
+                'email_verified_at' => now(),
+            ],
+        );
+
+        Company::query()->each(function (Company $company) use ($rutCustomers, $portalUser): void {
+            foreach ($rutCustomers as $index => $row) {
+                Customer::query()->updateOrCreate(
                     [
                         'company_id' => $company->id,
                         'document_type' => CustomerDocumentType::Rut,
@@ -31,6 +44,7 @@ class CustomersSeeder extends Seeder
                         'email' => $row['email'],
                         'phone' => '+56912345678',
                         'address' => 'Av. Principal 100, Santiago',
+                        'user_id' => $index === 0 ? $portalUser->id : null,
                     ],
                 );
             }

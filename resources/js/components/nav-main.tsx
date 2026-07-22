@@ -33,7 +33,13 @@ import type { NavItem, NavParentItem } from '@/types';
 
 type ManualOpenSection = { parentTitle: string; pathname: string };
 
-export function NavMain({ items = [] }: { items: NavItem[] }) {
+export function NavMain({
+    items = [],
+    label = 'ERP - Veterinario',
+}: {
+    items?: NavItem[];
+    label?: string;
+}) {
     const { currentUrl, isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
 
     const [manualOpen, setManualOpen] = useState<ManualOpenSection | null>(
@@ -92,7 +98,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
 
     return (
         <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>ERP - Veterinario</SidebarGroupLabel>
+            <SidebarGroupLabel>{label}</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) =>
                     isNavParent(item) ? (
@@ -110,6 +116,17 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 handleParentOpenChange(item, open)
                             }
                         />
+                    ) : item.disabled ? (
+                        <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton
+                                tooltip={{ children: item.title }}
+                                aria-disabled="true"
+                                className="pointer-events-none opacity-50"
+                            >
+                                {item.icon && <item.icon />}
+                                <span>{item.title}</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                     ) : (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton

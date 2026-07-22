@@ -14,8 +14,9 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { filterNavByUser } from '@/lib/filter-nav';
-import { mainNavItems } from '@/nav';
+import { customerNavItems, mainNavItems } from '@/nav';
 import { dashboard } from '@/routes';
+import { index as petsIndex } from '@/routes/customer/pets';
 import type { NavLeafItem } from '@/types';
 
 const footerNavItems: NavLeafItem[] = [
@@ -28,7 +29,14 @@ const footerNavItems: NavLeafItem[] = [
 
 export function AppSidebar() {
     const { auth } = usePage().props;
-    const visibleNavItems = filterNavByUser(mainNavItems, auth.user, auth.permissions ?? []);
+    const isCustomer = auth.user.type === 'customer';
+    const visibleNavItems = filterNavByUser(
+        mainNavItems,
+        auth.user,
+        auth.permissions ?? [],
+        customerNavItems,
+    );
+    const homeHref = isCustomer ? petsIndex() : dashboard();
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -36,7 +44,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={homeHref} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -45,11 +53,16 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={visibleNavItems} />
+                <NavMain
+                    items={visibleNavItems}
+                    label={isCustomer ? 'Portal del cliente' : 'ERP - Veterinario'}
+                />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {!isCustomer ? (
+                    <NavFooter items={footerNavItems} className="mt-auto" />
+                ) : null}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

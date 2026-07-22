@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Collection;
 class ListSelectableCompaniesForUserAction
 {
     /**
-     * Empresas que el usuario puede elegir como contexto activo (root: todas; resto: con al menos un rol en el pivot).
+     * Empresas que el usuario puede elegir como contexto activo
+     * (root: todas; customer: vía sale_customers; resto: con al menos un rol en el pivot).
      *
      * @return Collection<int, Company>
      */
@@ -18,6 +19,13 @@ class ListSelectableCompaniesForUserAction
     {
         if ($user->type === UserType::Root) {
             return Company::query()->orderBy('name')->get();
+        }
+
+        if ($user->type === UserType::Customer) {
+            return Company::query()
+                ->whereHas('customers', fn ($q) => $q->where('user_id', $user->id))
+                ->orderBy('name')
+                ->get();
         }
 
         return Company::query()

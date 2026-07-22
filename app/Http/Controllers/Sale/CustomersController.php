@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Sale;
 
 use App\Actions\Sale\Customers\CreateCustomerAction;
 use App\Actions\Sale\Customers\DeleteCustomerAction;
+use App\Actions\Sale\Customers\DetachCustomerPortalUserAction;
 use App\Actions\Sale\Customers\ListCustomersForCompanyAction;
 use App\Actions\Sale\Customers\UpdateCustomerAction;
+use App\Actions\Sale\Customers\UpsertCustomerPortalUserAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sale\CustomerListRequest;
+use App\Http\Requests\Sale\CustomerPortalUserUpsertRequest;
 use App\Http\Requests\Sale\CustomerStoreRequest;
 use App\Http\Requests\Sale\CustomerUpdateRequest;
 use App\Models\Company;
@@ -114,6 +117,41 @@ class CustomersController extends Controller
         $action->execute($customer);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Cliente eliminado.']);
+
+        return to_route('sale.customers.index');
+    }
+
+    public function upsertPortalUser(
+        CustomerPortalUserUpsertRequest $request,
+        Customer $customer,
+        UpsertCustomerPortalUserAction $action,
+    ): RedirectResponse {
+        $wasLinked = $customer->user_id !== null;
+
+        $action->execute($customer, $request->portalUserPayload());
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $wasLinked
+                ? 'Usuario del portal actualizado correctamente.'
+                : 'Usuario del portal creado correctamente.',
+        ]);
+
+        return to_route('sale.customers.index');
+    }
+
+    public function destroyPortalUser(
+        Customer $customer,
+        DetachCustomerPortalUserAction $action,
+    ): RedirectResponse {
+        $this->authorize('update', $customer);
+
+        $action->execute($customer);
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => 'Usuario del portal desvinculado.',
+        ]);
 
         return to_route('sale.customers.index');
     }

@@ -1,5 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
-import { CirclePlus, PawPrint, PencilIcon, TrashIcon } from 'lucide-react';
+import { CirclePlus, PawPrint, PencilIcon, TrashIcon, UserRound } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DocumentBadge } from '@/components/custom/document-badge';
 import {
@@ -11,17 +11,17 @@ import { buildTabledataConfiguredStatusColumn } from '@/components/custom/tabled
 import { Button } from '@/components/ui/button';
 import { useEntityFormDialogState } from '@/hooks/use-entity-form-dialog-state';
 import { setCustomerFormPosContext } from '@/lib/pos-route-customer';
-import {
-    hasCustomerPatientsConfigured,
-} from '@/pages/medic/patients/types';
-import {
-    CONFIG_TABLEDATA,
-} from '@/pages/sale/customers/config';
+import { hasCustomerPatientsConfigured } from '@/pages/medic/patients/types';
+import { CONFIG_TABLEDATA } from '@/pages/sale/customers/config';
 import type { CustomersIndexPageProps } from '@/pages/sale/customers/config';
 import { CustomerPatientsForm } from '@/pages/sale/customers/customer-patients-form';
+import { CustomerPortalUserForm } from '@/pages/sale/customers/customer-portal-user-form';
 import { CustomersIndexFilters } from '@/pages/sale/customers/filters';
 import { CustomerForm } from '@/pages/sale/customers/form';
 import { useCustomersIndex } from '@/pages/sale/customers/hooks/use-index';
+import {
+    hasCustomerPortalUserConfigured,
+} from '@/pages/sale/customers/types';
 import type {
     Customer,
     CustomerListFilters,
@@ -29,20 +29,41 @@ import type {
 } from '@/pages/sale/customers/types';
 
 function CustomersIndex() {
-    const { can, species, data: customersPage } = usePage<CustomersIndexPageProps>().props;
+    const { can, species, data: customersPage } =
+        usePage<CustomersIndexPageProps>().props;
     const { deleteRow, deleteConfirmDialog } = useCustomersIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Customer>();
-    const [patientsCustomerId, setPatientsCustomerId] = useState<string | null>(null);
+    const [patientsCustomerId, setPatientsCustomerId] = useState<string | null>(
+        null,
+    );
     const [patientsFormOpen, setPatientsFormOpen] = useState(false);
+    const [portalUserCustomerId, setPortalUserCustomerId] = useState<
+        string | null
+    >(null);
+    const [portalUserFormOpen, setPortalUserFormOpen] = useState(false);
 
     const patientsCustomer = useMemo(() => {
         if (patientsCustomerId === null) {
             return null;
         }
 
-        return customersPage.data.find((row) => row.id === patientsCustomerId) ?? null;
+        return (
+            customersPage.data.find((row) => row.id === patientsCustomerId) ??
+            null
+        );
     }, [customersPage.data, patientsCustomerId]);
+
+    const portalUserCustomer = useMemo(() => {
+        if (portalUserCustomerId === null) {
+            return null;
+        }
+
+        return (
+            customersPage.data.find((row) => row.id === portalUserCustomerId) ??
+            null
+        );
+    }, [customersPage.data, portalUserCustomerId]);
 
     useEffect(() => {
         if (formOpen && editingEntity) {
@@ -76,6 +97,19 @@ function CustomersIndex() {
 
         if (!open) {
             setPatientsCustomerId(null);
+        }
+    }, []);
+
+    const openPortalUser = useCallback((row: Customer) => {
+        setPortalUserCustomerId(row.id);
+        setPortalUserFormOpen(true);
+    }, []);
+
+    const handlePortalUserFormOpenChange = useCallback((open: boolean) => {
+        setPortalUserFormOpen(open);
+
+        if (!open) {
+            setPortalUserCustomerId(null);
         }
     }, []);
 
@@ -116,6 +150,12 @@ function CustomersIndex() {
                 isConfigured: hasCustomerPatientsConfigured,
                 icon: PawPrint,
             }),
+            buildTabledataConfiguredStatusColumn<Customer>({
+                key: 'portal_user_status',
+                label: 'Usuario',
+                isConfigured: hasCustomerPortalUserConfigured,
+                icon: UserRound,
+            }),
             {
                 key: 'actions',
                 label: '',
@@ -124,12 +164,18 @@ function CustomersIndex() {
                 headerClassName: 'w-0 text-right',
                 render: (row) => {
                     const patientsConfigured = hasCustomerPatientsConfigured(row);
+                    const portalUserConfigured =
+                        hasCustomerPortalUserConfigured(row);
 
                     return (
                         <div className="flex justify-end gap-1">
                             {can.patients.update ? (
                                 <Button
-                                    variant={patientsConfigured ? 'outline' : 'destructive'}
+                                    variant={
+                                        patientsConfigured
+                                            ? 'outline'
+                                            : 'destructive'
+                                    }
                                     size="icon"
                                     type="button"
                                     title={
@@ -140,6 +186,25 @@ function CustomersIndex() {
                                     onClick={() => openPatients(row)}
                                 >
                                     <PawPrint className="size-3" />
+                                </Button>
+                            ) : null}
+                            {can.update ? (
+                                <Button
+                                    variant={
+                                        portalUserConfigured
+                                            ? 'outline'
+                                            : 'destructive'
+                                    }
+                                    size="icon"
+                                    type="button"
+                                    title={
+                                        portalUserConfigured
+                                            ? 'Configurar usuario del portal'
+                                            : 'Sin usuario del portal'
+                                    }
+                                    onClick={() => openPortalUser(row)}
+                                >
+                                    <UserRound className="size-3" />
                                 </Button>
                             ) : null}
                             {can.update ? (
@@ -170,7 +235,15 @@ function CustomersIndex() {
                 },
             },
         ],
-        [can.delete, can.patients.update, can.update, deleteRow, openEdit, openPatients],
+        [
+            can.delete,
+            can.patients.update,
+            can.update,
+            deleteRow,
+            openEdit,
+            openPatients,
+            openPortalUser,
+        ],
     );
 
     return (
@@ -192,7 +265,17 @@ function CustomersIndex() {
                 can={can.patients}
             />
 
-            <TabledataProvider<Customer, CustomerListFilters, CustomersIndexFiltersDraftFull>
+            <CustomerPortalUserForm
+                open={portalUserFormOpen}
+                onOpenChange={handlePortalUserFormOpenChange}
+                customer={portalUserCustomer}
+            />
+
+            <TabledataProvider<
+                Customer,
+                CustomerListFilters,
+                CustomersIndexFiltersDraftFull
+            >
                 listConfig={pickTabledataListShellConfig(CONFIG_TABLEDATA)}
                 listInertia={CONFIG_TABLEDATA.listInertia}
                 columns={columns}

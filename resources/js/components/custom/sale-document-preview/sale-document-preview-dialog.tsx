@@ -29,6 +29,7 @@ export function SaleDocumentPreviewDialog({
     open,
     onOpenChange,
     saleDocumentId,
+    previewUrl,
     onDeleted,
 }: SaleDocumentPreviewDialogProps) {
     const http = useHttp({});
@@ -51,15 +52,16 @@ export function SaleDocumentPreviewDialog({
         }
 
         let cancelled = false;
+        const url =
+            previewUrl?.(saleDocumentId) ??
+            saleDocumentsShow.url(saleDocumentId);
 
         void (async () => {
             setLoading(true);
             setDocument(null);
 
             try {
-                const response = (await http.get(
-                    saleDocumentsShow.url(saleDocumentId),
-                )) as PreviewResponse;
+                const response = (await http.get(url)) as PreviewResponse;
 
                 if (!cancelled) {
                     setDocument(response.data);
@@ -83,7 +85,7 @@ export function SaleDocumentPreviewDialog({
         };
         // Solo recargar al abrir o cambiar el documento.
         // eslint-disable-next-line react-hooks/exhaustive-deps -- http identity is unstable
-    }, [open, saleDocumentId]);
+    }, [open, saleDocumentId, previewUrl]);
 
     async function handleConfirmDelete(): Promise<void> {
         if (!document || deleting) {

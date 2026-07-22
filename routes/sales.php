@@ -19,6 +19,12 @@ Route::get('sii-certification-tickets/{certificationSiiTicket}/download/{kind}',
     ->name('sii-certification-tickets.download');
 
 Route::resource('customers', CustomersController::class)->except(['show']);
+Route::put('customers/{customer}/portal-user', [CustomersController::class, 'upsertPortalUser'])
+    ->whereUuid('customer')
+    ->name('customers.portal-user.upsert');
+Route::delete('customers/{customer}/portal-user', [CustomersController::class, 'destroyPortalUser'])
+    ->whereUuid('customer')
+    ->name('customers.portal-user.destroy');
 
 Route::get('sale-documents', [SaleDocumentsController::class, 'index'])
     ->name('sale-documents.index');

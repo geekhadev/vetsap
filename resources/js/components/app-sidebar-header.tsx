@@ -1,6 +1,7 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { CompanySwitcher } from '@/components/custom/company-switcher';
 import { OpenCashRegister } from '@/components/custom/open-cash-register';
+import { RequestAppointment } from '@/components/custom/request-appointment';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
@@ -18,6 +19,7 @@ export function AppSidebarHeader({
                 </div>
             </div>
             <div className="flex shrink-0 items-center gap-1">
+                <RequestAppointment />
                 <OpenCashRegister />
                 <CompanySwitcher />
             </div>

@@ -43,6 +43,7 @@ class ListUsersAction
     {
         $query = User::query()
             ->where('type', '!=', UserType::Root)
+            ->where('type', '!=', UserType::Customer)
             ->where('id', '!=', $actor->id)
             ->searchNameOrEmail($filters['search'] ?? null)
             ->orderByColumn($sort, $direction);
@@ -83,6 +84,7 @@ class ListUsersAction
     ): LengthAwarePaginator {
         $query = User::query()
             ->where('type', '!=', UserType::Root)
+            ->where('type', '!=', UserType::Customer)
             ->where('id', '!=', $actor->id)
             ->whereHas('companyRoles', fn ($q) => $q->where('company_id', $companyId))
             ->with([

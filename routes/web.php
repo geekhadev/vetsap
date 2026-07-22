@@ -6,6 +6,8 @@ use App\Http\Controllers\CompanySelectionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Web\ClinicSettingController;
 use App\Http\Middleware\EnsureCompanySelected;
+use App\Http\Middleware\EnsureUserIsCustomer;
+use App\Http\Middleware\EnsureUserIsNotCustomer;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/public.php';
@@ -21,51 +23,57 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', EnsureCompanySelected::class])->group(function () {
-    Route::get('dashboard', DashboardController::class)->name('dashboard');
-
-    Route::prefix('administration')->name('administration.')->group(function () {
-        require __DIR__.'/administration.php';
+    Route::middleware([EnsureUserIsCustomer::class])->prefix('customer')->name('customer.')->group(function () {
+        require __DIR__.'/customer.php';
     });
 
-    Route::prefix('configuration')->name('configuration.')->group(function () {
-        require __DIR__.'/configuration.php';
-    });
+    Route::middleware([EnsureUserIsNotCustomer::class])->group(function () {
+        Route::get('dashboard', DashboardController::class)->name('dashboard');
 
-    Route::prefix('sale')->name('sale.')->group(function () {
-        require __DIR__.'/sales.php';
-    });
+        Route::prefix('administration')->name('administration.')->group(function () {
+            require __DIR__.'/administration.php';
+        });
 
-    Route::prefix('purchase')->name('purchase.')->group(function () {
-        require __DIR__.'/purchases.php';
-    });
+        Route::prefix('configuration')->name('configuration.')->group(function () {
+            require __DIR__.'/configuration.php';
+        });
 
-    Route::prefix('medic')->name('medic.')->group(function () {
-        require __DIR__.'/medic.php';
-    });
+        Route::prefix('sale')->name('sale.')->group(function () {
+            require __DIR__.'/sales.php';
+        });
 
-    Route::prefix('store')->name('store.')->group(function () {
-        require __DIR__.'/store.php';
-    });
+        Route::prefix('purchase')->name('purchase.')->group(function () {
+            require __DIR__.'/purchases.php';
+        });
 
-    Route::prefix('agenda')->name('agenda.')->group(function () {
-        require __DIR__.'/agenda.php';
-    });
+        Route::prefix('medic')->name('medic.')->group(function () {
+            require __DIR__.'/medic.php';
+        });
 
-    Route::prefix('shared')->name('shared.')->group(function () {
-        require __DIR__.'/shared.php';
-    });
+        Route::prefix('store')->name('store.')->group(function () {
+            require __DIR__.'/store.php';
+        });
 
-    Route::prefix('api')->name('api.')->group(function () {
-        Route::get('companies/{company}/roles', CompanyAssignableRolesController::class)
-            ->name('companies.roles.index');
+        Route::prefix('agenda')->name('agenda.')->group(function () {
+            require __DIR__.'/agenda.php';
+        });
 
-        Route::get('users/{user}/company-role-assignments', [UserCompanyRoleAssignmentsController::class, 'index'])
-            ->name('users.company-role-assignments.index');
-        Route::post('users/{user}/company-role-assignments', [UserCompanyRoleAssignmentsController::class, 'store'])
-            ->name('users.company-role-assignments.store');
-        Route::delete('users/{user}/company-role-assignments/{assignment}', [UserCompanyRoleAssignmentsController::class, 'destroy'])
-            ->whereNumber('assignment')
-            ->name('users.company-role-assignments.destroy');
+        Route::prefix('shared')->name('shared.')->group(function () {
+            require __DIR__.'/shared.php';
+        });
+
+        Route::prefix('api')->name('api.')->group(function () {
+            Route::get('companies/{company}/roles', CompanyAssignableRolesController::class)
+                ->name('companies.roles.index');
+
+            Route::get('users/{user}/company-role-assignments', [UserCompanyRoleAssignmentsController::class, 'index'])
+                ->name('users.company-role-assignments.index');
+            Route::post('users/{user}/company-role-assignments', [UserCompanyRoleAssignmentsController::class, 'store'])
+                ->name('users.company-role-assignments.store');
+            Route::delete('users/{user}/company-role-assignments/{assignment}', [UserCompanyRoleAssignmentsController::class, 'destroy'])
+                ->whereNumber('assignment')
+                ->name('users.company-role-assignments.destroy');
+        });
     });
 });
 

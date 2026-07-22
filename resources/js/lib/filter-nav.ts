@@ -4,7 +4,16 @@ import type { User } from '@/types/auth';
 
 const ROOT_ONLY_SCOPES = new Set(['Administración', 'Compartido']);
 
-export function filterNavByUser(items: NavItem[], user: User, permissions: string[]): NavItem[] {
+export function filterNavByUser(
+    items: NavItem[],
+    user: User,
+    permissions: string[],
+    customerItems: NavItem[] = [],
+): NavItem[] {
+    if (user.type === 'customer') {
+        return customerItems;
+    }
+
     if (user.type === 'root') {
         return items;
     }

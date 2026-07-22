@@ -81,5 +81,7 @@ export type SaleDocumentPreviewDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     saleDocumentId: string | null;
+    /** URL del endpoint JSON de vista previa. Por defecto: sale.sale-documents.show */
+    previewUrl?: (saleDocumentId: string) => string;
     onDeleted?: (saleDocumentId: string) => void;
 };

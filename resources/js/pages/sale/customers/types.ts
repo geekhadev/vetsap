@@ -4,15 +4,23 @@ import type { PaginatedListFilters } from '@/types/list-filters';
 
 export type CustomerDocumentTypeValue = 'rut' | 'pasaporte';
 
+export type CustomerPortalUser = {
+    id: string;
+    name: string;
+    email: string;
+};
+
 export type Customer = {
     id: string;
     company_id: string;
+    user_id?: string | null;
     name: string;
     document_type: CustomerDocumentTypeValue;
     document_number: string;
     email: string | null;
     phone: string | null;
     address: string | null;
+    user?: CustomerPortalUser | null;
     patients?: Patient[];
     patients_count?: number;
     created_at: string;
@@ -66,4 +74,10 @@ export function formatDocumentType(value: CustomerDocumentTypeValue): string {
     }
 
     return 'Pasaporte';
+}
+
+export function hasCustomerPortalUserConfigured(
+    customer: Pick<Customer, 'user' | 'user_id'>,
+): boolean {
+    return customer.user != null || Boolean(customer.user_id);
 }
