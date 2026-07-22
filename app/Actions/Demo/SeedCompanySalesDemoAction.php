@@ -21,7 +21,6 @@ use App\Models\Medic\Specialty;
 use App\Models\Store\MovementCategory;
 use App\Models\Store\Product;
 use App\Models\Store\ProductCategory;
-use App\Models\Store\ProductType;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -309,7 +308,6 @@ final class SeedCompanySalesDemoAction
      */
     private function seedProducts(Company $company, array $categories): array
     {
-        $productTypeByCategory = $this->resolveProductTypes($company);
         $products = [];
 
         foreach (self::PRODUCTS as $row) {
@@ -318,8 +316,6 @@ final class SeedCompanySalesDemoAction
             if (! $category instanceof ProductCategory) {
                 throw new InvalidArgumentException("Categoría de producto «{$row['category']}» no encontrada.");
             }
-
-            $productType = $productTypeByCategory[$row['category']];
 
             $product = Product::query()
                 ->where('company_id', $company->id)
@@ -330,7 +326,6 @@ final class SeedCompanySalesDemoAction
                 $product = $this->createProduct->execute([
                     'company_id' => $company->id,
                     'product_category_id' => $category->id,
-                    'product_type_id' => $productType->id,
                     'name' => $row['name'],
                     'barcode' => null,
                     'description' => null,
@@ -343,48 +338,6 @@ final class SeedCompanySalesDemoAction
         }
 
         return $products;
-    }
-
-    /**
-     * @return array<string, ProductType>
-     */
-    private function resolveProductTypes(Company $company): array
-    {
-        $medicamentos = ProductType::query()
-            ->onlyGlobal()
-            ->where('name', 'Medicamentos')
-            ->where('is_active', true)
-            ->first();
-
-        if (! $medicamentos instanceof ProductType) {
-            throw new RuntimeException('No se encontró el tipo de producto global «Medicamentos».');
-        }
-
-        $perecedero = ProductType::query()->firstOrCreate(
-            [
-                'company_id' => $company->id,
-                'name' => 'Perecedero',
-            ],
-            [
-                'is_active' => true,
-            ],
-        );
-
-        $kit = ProductType::query()->firstOrCreate(
-            [
-                'company_id' => $company->id,
-                'name' => 'Kit',
-            ],
-            [
-                'is_active' => true,
-            ],
-        );
-
-        return [
-            'Alimentos' => $perecedero,
-            'Medicamentos' => $medicamentos,
-            'Juguetes' => $kit,
-        ];
     }
 
     /**

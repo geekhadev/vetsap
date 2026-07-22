@@ -4,7 +4,7 @@ namespace App\Support\Validation;
 
 use App\Enums\Medic\VaccinationScheduleType;
 use App\Models\Medic\VaccinationProtocol;
-use App\Models\Store\ProductType;
+use App\Models\Store\ProductCategory;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -85,11 +85,11 @@ final class VaccinationProtocolPayloadValidationRules
                 Rule::exists('store_products', 'id')->where(function ($query) use ($companyId): void {
                     $query->where('company_id', $companyId)
                         ->where('is_active', true)
-                        ->whereIn('product_type_id', function ($sub): void {
+                        ->whereIn('product_category_id', function ($sub): void {
                             $sub->select('id')
-                                ->from('store_product_types')
+                                ->from('store_product_categories')
                                 ->whereNull('company_id')
-                                ->where('name', ProductType::GLOBAL_VACCINES_NAME);
+                                ->where('name', ProductCategory::GLOBAL_VACCINES_NAME);
                         });
                 }),
             ],

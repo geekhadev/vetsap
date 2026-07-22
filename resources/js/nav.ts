@@ -34,7 +34,6 @@ import {
     ShoppingCart,
     Stethoscope,
     Syringe,
-    Tag,
     Tags,
     Truck,
     UserRound,
@@ -81,12 +80,10 @@ import { index as paymentMethodsIndex } from '@/routes/shared/payment-methods';
 import { index as paymentTypesIndex } from '@/routes/shared/payment-types';
 import { index as siiEconomicActivitiesIndex } from '@/routes/shared/sii-economic-activities';
 import { index as siiTaxDocumentTypesIndex } from '@/routes/shared/sii-tax-document-types';
-import { index as statesIndex } from '@/routes/shared/states';
 import { index as inventoryMovementsIndex } from '@/routes/store/inventory-movements';
 import { index as movementCategoriesIndex } from '@/routes/store/movement-categories';
 import { index as productCategoriesIndex } from '@/routes/store/product-categories';
 import { index as productMovementsIndex } from '@/routes/store/product-movements';
-import { index as productTypesIndex } from '@/routes/store/product-types';
 import { index as productsIndex } from '@/routes/store/products';
 import type { NavItem } from '@/types';
 
@@ -309,12 +306,6 @@ export const mainNavItems: NavItem[] = [
                 icon: Tags,
                 permission: 'store.product-categories.list',
             },
-            {
-                title: 'Tipos de productos',
-                href: productTypesIndex(),
-                icon: Tag,
-                permission: 'store.product-types.list',
-            },
         ],
     },
     {
@@ -369,12 +360,6 @@ export const mainNavItems: NavItem[] = [
                 title: 'Países',
                 href: countriesIndex(),
                 icon: Globe,
-            },
-            {
-                title: 'Estados',
-                href: statesIndex(),
-                icon: MapPin,
-                permission: 'shared.states.list',
             },
             {
                 title: 'Tipos de pago',

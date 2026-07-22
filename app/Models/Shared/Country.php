@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
@@ -65,13 +64,5 @@ class Country extends Model
     protected static function newFactory(): CountryFactory
     {
         return CountryFactory::new();
-    }
-
-    /**
-     * @return HasMany<State, $this>
-     */
-    public function states(): HasMany
-    {
-        return $this->hasMany(State::class);
     }
 }

@@ -10,15 +10,17 @@ class ProductCategoriesSeeder extends Seeder
 {
     public function run(): void
     {
-        ProductCategory::query()->firstOrCreate(
-            [
-                'company_id' => null,
-                'name' => 'General',
-            ],
-            [
-                'is_active' => true,
-            ],
-        );
+        foreach (['General', ProductCategory::GLOBAL_VACCINES_NAME] as $name) {
+            ProductCategory::query()->firstOrCreate(
+                [
+                    'company_id' => null,
+                    'name' => $name,
+                ],
+                [
+                    'is_active' => true,
+                ],
+            );
+        }
 
         $companyCategories = ['Alimentos', 'Accesorios', 'Insumos clínicos'];
 

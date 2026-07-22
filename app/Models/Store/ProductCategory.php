@@ -22,6 +22,11 @@ class ProductCategory extends Model
 
     protected $table = 'store_product_categories';
 
+    /**
+     * Categoría global para productos vacuna (planes de vacunación / inventario).
+     */
+    public const GLOBAL_VACCINES_NAME = 'Vacunas';
+
     public const SORTABLE_COLUMNS = [
         'name',
         'is_active',

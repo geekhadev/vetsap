@@ -22,8 +22,7 @@ import { useProductsIndex } from '@/pages/store/products/hooks/use-index';
 import type { Product, ProductListFilters, ProductsIndexFiltersDraftFull } from '@/pages/store/products/types';
 
 function ProductsIndex() {
-    const { can, productCategories, productTypes } =
-        usePage<ProductsIndexPageProps>().props;
+    const { can, productCategories } = usePage<ProductsIndexPageProps>().props;
     const { deleteRow, deleteConfirmDialog } = useProductsIndex();
     const { formOpen, editingEntity, openCreate, openEdit, handleFormOpenChange } =
         useEntityFormDialogState<Product>();
@@ -47,12 +46,6 @@ function ProductsIndex() {
                 label: 'Categoría',
                 sortable: false,
                 render: (row) => row.product_category?.name ?? '—',
-            },
-            {
-                key: 'product_type',
-                label: 'Tipo',
-                sortable: false,
-                render: (row) => row.product_type?.name ?? '—',
             },
             {
                 key: 'price',
@@ -86,7 +79,6 @@ function ProductsIndex() {
                 onOpenChange={handleFormOpenChange}
                 entity={editingEntity}
                 productCategories={productCategories}
-                productTypes={productTypes}
             />
 
             <TabledataProvider<Product, ProductListFilters, ProductsIndexFiltersDraftFull>
@@ -101,7 +93,6 @@ function ProductsIndex() {
                             applyFilters={list.applyFilters}
                             resetFilters={list.resetFilters}
                             productCategories={productCategories}
-                            productTypes={productTypes}
                         />
                         {can.create ? (
                             <Button type="button" onClick={openCreate}>

@@ -19,7 +19,6 @@ use App\Models\Purchase\PurchaseOrder;
 use App\Models\Store\InventoryMovement;
 use App\Models\Store\Product;
 use App\Models\Store\ProductCategory;
-use App\Models\Store\ProductType;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -53,9 +52,6 @@ class ProductsController extends Controller
             'filters' => $request->filtersForFrontend(),
             'productCategories' => $company instanceof Company
                 ? $this->masterOptions(ProductCategory::class, $company->id)
-                : [],
-            'productTypes' => $company instanceof Company
-                ? $this->masterOptions(ProductType::class, $company->id)
                 : [],
             'can' => [
                 'create' => $user?->can('create', Product::class) ?? false,
@@ -173,7 +169,7 @@ class ProductsController extends Controller
     }
 
     /**
-     * @param  class-string<ProductCategory|ProductType>  $modelClass
+     * @param  class-string<ProductCategory>  $modelClass
      * @return list<array{id: string, name: string, is_active: bool, is_global: bool}>
      */
     private function masterOptions(string $modelClass, string $companyId): array

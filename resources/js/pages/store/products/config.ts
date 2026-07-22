@@ -17,7 +17,6 @@ export type ProductsIndexPageProps = {
     data: Paginated<Product>;
     filters: ProductsIndexFiltersDraftFull;
     productCategories: MasterOption[];
-    productTypes: MasterOption[];
     can: ProductsIndexCan;
 };
 

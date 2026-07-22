@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $exists = DB::table('store_product_types')
+        $exists = DB::table('store_product_categories')
             ->whereNull('company_id')
             ->where('name', 'Vacunas')
             ->exists();
@@ -17,7 +17,7 @@ return new class extends Migration
             return;
         }
 
-        DB::table('store_product_types')->insert([
+        DB::table('store_product_categories')->insert([
             'id' => (string) Str::uuid(),
             'company_id' => null,
             'name' => 'Vacunas',
@@ -29,7 +29,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::table('store_product_types')
+        DB::table('store_product_categories')
             ->whereNull('company_id')
             ->where('name', 'Vacunas')
             ->delete();

@@ -11,7 +11,6 @@ type ProductsIndexFiltersProps = Pick<
     'filters' | 'setFilter' | 'applyFilters' | 'resetFilters'
 > & {
     productCategories: MasterOption[];
-    productTypes: MasterOption[];
 };
 
 export function ProductsIndexFilters({
@@ -20,16 +19,10 @@ export function ProductsIndexFilters({
     applyFilters,
     resetFilters,
     productCategories,
-    productTypes,
 }: ProductsIndexFiltersProps) {
     const categoryOptions = productCategories.map((c) => ({
         id: c.id,
         label: c.name,
-    }));
-
-    const typeOptions = productTypes.map((t) => ({
-        id: t.id,
-        label: t.name,
     }));
 
     return (
@@ -56,24 +49,6 @@ export function ProductsIndexFilters({
                         value: filters.product_category_id,
                         onChange: (e) =>
                             setFilter('product_category_id', e.target.value),
-                    }}
-                />
-            </FilterRowWithClear>
-
-            <FilterRowWithClear
-                canClear={filters.product_type_id.trim() !== ''}
-                onClear={() => setFilter('product_type_id', '')}
-                clearLabel="Limpiar filtro de tipo"
-            >
-                <FormSelect
-                    label="Tipo"
-                    placeholder="Todos"
-                    options={typeOptions}
-                    selectProps={{
-                        id: 'filter-product_type_id',
-                        name: 'product_type_id',
-                        value: filters.product_type_id,
-                        onChange: (e) => setFilter('product_type_id', e.target.value),
                     }}
                 />
             </FilterRowWithClear>

@@ -14,7 +14,7 @@ use App\Models\Company;
 use App\Models\Medic\Species;
 use App\Models\Medic\VaccinationProtocol;
 use App\Models\Store\Product;
-use App\Models\Store\ProductType;
+use App\Models\Store\ProductCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
@@ -143,18 +143,18 @@ class VaccinationProtocolsController extends Controller
             return [];
         }
 
-        $typeId = ProductType::query()
+        $categoryId = ProductCategory::query()
             ->whereNull('company_id')
-            ->where('name', ProductType::GLOBAL_VACCINES_NAME)
+            ->where('name', ProductCategory::GLOBAL_VACCINES_NAME)
             ->value('id');
 
-        if (! is_string($typeId) || $typeId === '') {
+        if (! is_string($categoryId) || $categoryId === '') {
             return [];
         }
 
         return Product::query()
             ->forCompany($company->id)
-            ->where('product_type_id', $typeId)
+            ->where('product_category_id', $categoryId)
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name'])

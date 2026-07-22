@@ -6,7 +6,6 @@ use App\Enums\UserType;
 use App\Models\Company;
 use App\Models\Store\MovementCategory;
 use App\Models\Store\ProductCategory;
-use App\Models\Store\ProductType;
 use App\Models\User;
 use App\Models\UserCompanyRole;
 
@@ -25,7 +24,7 @@ trait AuthorizesStoreMasterRecord
         return $this->canList($user);
     }
 
-    public function view(User $user, ProductType|ProductCategory|MovementCategory $record): bool
+    public function view(User $user, ProductCategory|MovementCategory $record): bool
     {
         return $this->canList($user);
     }
@@ -45,17 +44,17 @@ trait AuthorizesStoreMasterRecord
         return $this->canDelete($user);
     }
 
-    public function update(User $user, ProductType|ProductCategory|MovementCategory $record): bool
+    public function update(User $user, ProductCategory|MovementCategory $record): bool
     {
         return $this->canModifyRecord($user, $record, $this->canUpdate($user));
     }
 
-    public function delete(User $user, ProductType|ProductCategory|MovementCategory $record): bool
+    public function delete(User $user, ProductCategory|MovementCategory $record): bool
     {
         return $this->canModifyRecord($user, $record, $this->canDelete($user));
     }
 
-    protected function canModifyRecord(User $user, ProductType|ProductCategory|MovementCategory $record, bool $hasAbility): bool
+    protected function canModifyRecord(User $user, ProductCategory|MovementCategory $record, bool $hasAbility): bool
     {
         if (! $hasAbility) {
             return false;

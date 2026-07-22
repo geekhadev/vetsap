@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'company_id',
     'product_category_id',
-    'product_type_id',
     'name',
     'barcode',
     'description',
@@ -56,14 +55,6 @@ class Product extends Model
     }
 
     /**
-     * @return BelongsTo<ProductType, $this>
-     */
-    public function productType(): BelongsTo
-    {
-        return $this->belongsTo(ProductType::class, 'product_type_id');
-    }
-
-    /**
      * @return HasMany<InventoryMovementDetail, $this>
      */
     public function inventoryMovementDetails(): HasMany
@@ -82,19 +73,6 @@ class Product extends Model
         }
 
         return $query->where('product_category_id', $categoryId);
-    }
-
-    /**
-     * @param  Builder<$this>  $query
-     * @return Builder<$this>
-     */
-    public function scopeFilterProductTypeId(Builder $query, ?string $typeId): Builder
-    {
-        if ($typeId === null || $typeId === '') {
-            return $query;
-        }
-
-        return $query->where('product_type_id', $typeId);
     }
 
     /**

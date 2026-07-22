@@ -18,17 +18,10 @@ export type ProductCategoryRef = {
     company_id: string | null;
 };
 
-export type ProductTypeRef = {
-    id: string;
-    name: string;
-    company_id: string | null;
-};
-
 export type Product = {
     id: string;
     company_id: string;
     product_category_id: string;
-    product_type_id: string;
     name: string;
     barcode: string | null;
     description: string | null;
@@ -37,7 +30,6 @@ export type Product = {
     stock: number;
     is_active: boolean;
     product_category?: ProductCategoryRef;
-    product_type?: ProductTypeRef;
     created_at: string;
     updated_at: string;
 };
@@ -45,7 +37,6 @@ export type Product = {
 export const PRODUCTS_INDEX_MODULE_FILTER_KEYS = [
     'is_active',
     'product_category_id',
-    'product_type_id',
 ] as const;
 
 export type ProductsIndexModuleFilterKey =
@@ -74,13 +65,7 @@ export function formatIsActive(value: boolean): string {
     return formatIsActiveBase(value, 'm');
 }
 
-/** Tipo global reservado: los servicios se gestionan en Medicina, no como productos. */
-export const GLOBAL_SERVICES_PRODUCT_TYPE_NAME = 'Servicios';
-export const GLOBAL_VACCINES_PRODUCT_TYPE_NAME = 'Vacunas';
-
-export function isGlobalServicesProductType(option: MasterOption): boolean {
-    return option.is_global && option.name === GLOBAL_SERVICES_PRODUCT_TYPE_NAME;
-}
+export const GLOBAL_VACCINES_PRODUCT_CATEGORY_NAME = 'Vacunas';
 
 export function formatMasterLabel(option: MasterOption, selectedId?: string): string {
     const inactive = !option.is_active && option.id !== selectedId;

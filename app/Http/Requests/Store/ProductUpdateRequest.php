@@ -40,7 +40,6 @@ class ProductUpdateRequest extends FormRequest
     /**
      * @return array{
      *     product_category_id: string,
-     *     product_type_id: string,
      *     name: string,
      *     barcode: string|null,
      *     description: string|null,

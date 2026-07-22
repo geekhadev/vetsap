@@ -22,11 +22,9 @@ final class ListProductsForCompanyAction
             ->forCompany($companyId)
             ->with([
                 'productCategory:id,name,company_id',
-                'productType:id,name,company_id',
             ])
             ->search($filters['search'] ?? null)
             ->filterProductCategoryId($filters['product_category_id'] ?? null)
-            ->filterProductTypeId($filters['product_type_id'] ?? null)
             ->filterIsActive($filters['is_active'] ?? null)
             ->orderByColumn($sort, $direction)
             ->paginate($perPage)

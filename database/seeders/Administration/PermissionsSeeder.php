@@ -139,11 +139,6 @@ class PermissionsSeeder extends Seeder
                 'system_slug' => 'store',
                 'modules' => [
                     [
-                        'module_name' => 'Tipos de productos',
-                        'module_slug' => 'product-types',
-                        'permissions' => $permissions_crud,
-                    ],
-                    [
                         'module_name' => 'Categorías de productos',
                         'module_slug' => 'product-categories',
                         'permissions' => $permissions_crud,
@@ -227,22 +222,6 @@ class PermissionsSeeder extends Seeder
                         'module_name' => 'Estados de cita',
                         'module_slug' => 'appointment-statuses',
                         'permissions' => $permissions_crud,
-                    ],
-                ],
-            ],
-            [
-                'system_name' => 'Compartido',
-                'system_slug' => 'shared',
-                'modules' => [
-                    [
-                        'module_name' => 'Estados',
-                        'module_slug' => 'states',
-                        'permissions' => [
-                            ['permission_name' => 'Listar estados', 'permission_slug' => 'list'],
-                            ['permission_name' => 'Crear estados', 'permission_slug' => 'create'],
-                            ['permission_name' => 'Editar estados', 'permission_slug' => 'edit'],
-                            ['permission_name' => 'Eliminar estados', 'permission_slug' => 'delete'],
-                        ],
                     ],
                 ],
             ],

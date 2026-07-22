@@ -8,10 +8,7 @@ import { FormTextarea } from '@/components/custom/form-textarea';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
 import { useBarcodeAvailability } from '@/pages/store/products/hooks/use-barcode-availability';
 import { useProductForm } from '@/pages/store/products/hooks/use-form';
-import {
-    formatMasterLabel,
-    isGlobalServicesProductType,
-} from '@/pages/store/products/types';
+import { formatMasterLabel } from '@/pages/store/products/types';
 import type { MasterOption, Product } from '@/pages/store/products/types';
 
 type ProductFormProps = {
@@ -19,13 +16,11 @@ type ProductFormProps = {
     onOpenChange: (open: boolean) => void;
     entity: Product | null;
     productCategories: MasterOption[];
-    productTypes: MasterOption[];
 };
 
 type ProductFormFields = Pick<
     Product,
     | 'product_category_id'
-    | 'product_type_id'
     | 'name'
     | 'barcode'
     | 'description'
@@ -37,7 +32,6 @@ type ProductFormFields = Pick<
 type ProductFormFieldsProps = {
     entity: Product | null;
     productCategories: MasterOption[];
-    productTypes: MasterOption[];
     processing: boolean;
     errors: Partial<Record<keyof ProductFormFields, string>>;
     onCancel: () => void;
@@ -46,7 +40,6 @@ type ProductFormFieldsProps = {
 function ProductFormFields({
     entity,
     productCategories,
-    productTypes,
     processing,
     errors,
     onCancel,
@@ -65,21 +58,6 @@ function ProductFormFields({
                     label: formatMasterLabel(c, entity?.product_category_id),
                 })),
         [productCategories, entity?.product_category_id],
-    );
-
-    const typeOptions = useMemo(
-        () =>
-            productTypes
-                .filter(
-                    (t) =>
-                        !isGlobalServicesProductType(t) &&
-                        (t.is_active || t.id === entity?.product_type_id),
-                )
-                .map((t) => ({
-                    id: t.id,
-                    label: formatMasterLabel(t, entity?.product_type_id),
-                })),
-        [productTypes, entity?.product_type_id],
     );
 
     return (
@@ -113,33 +91,18 @@ function ProductFormFields({
                 }}
             />
 
-            <div className="grid gap-4 sm:grid-cols-2">
-                <FormSelect
-                    label="Categoría de producto"
-                    required
-                    placeholder="Selecciona…"
-                    options={categoryOptions}
-                    error={errors.product_category_id}
-                    selectProps={{
-                        id: 'product-product_category_id',
-                        name: 'product_category_id',
-                        defaultValue: entity?.product_category_id ?? '',
-                    }}
-                />
-
-                <FormSelect
-                    label="Tipo de producto"
-                    required
-                    placeholder="Selecciona…"
-                    options={typeOptions}
-                    error={errors.product_type_id}
-                    selectProps={{
-                        id: 'product-product_type_id',
-                        name: 'product_type_id',
-                        defaultValue: entity?.product_type_id ?? '',
-                    }}
-                />
-            </div>
+            <FormSelect
+                label="Categoría de producto"
+                required
+                placeholder="Selecciona…"
+                options={categoryOptions}
+                error={errors.product_category_id}
+                selectProps={{
+                    id: 'product-product_category_id',
+                    name: 'product_category_id',
+                    defaultValue: entity?.product_category_id ?? '',
+                }}
+            />
 
             <FormTextInput
                 label="Precio"
@@ -205,7 +168,6 @@ export function ProductForm({
     onOpenChange,
     entity,
     productCategories,
-    productTypes,
 }: ProductFormProps) {
     const { formProps, headTitle, description } = useProductForm(entity);
 
@@ -222,7 +184,6 @@ export function ProductForm({
                 <ProductFormFields
                     entity={entity}
                     productCategories={productCategories}
-                    productTypes={productTypes}
                     processing={processing}
                     errors={errors}
                     onCancel={() => onOpenChange(false)}

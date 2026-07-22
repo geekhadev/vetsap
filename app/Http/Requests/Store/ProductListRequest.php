@@ -31,7 +31,6 @@ class ProductListRequest extends FormRequest
             'per_page' => ['nullable', 'integer', Rule::in([20, 50, 100])],
             ...$this->isActiveListFilterRules(),
             'product_category_id' => ['nullable', 'string', 'uuid'],
-            'product_type_id' => ['nullable', 'string', 'uuid'],
         ];
     }
 
@@ -41,10 +40,8 @@ class ProductListRequest extends FormRequest
         $this->prepareStandardListQuery();
         $this->prepareIsActiveListFilter();
 
-        foreach (['product_category_id', 'product_type_id'] as $key) {
-            if ($this->input($key) === '') {
-                $this->merge([$key => null]);
-            }
+        if ($this->input('product_category_id') === '') {
+            $this->merge(['product_category_id' => null]);
         }
     }
 
@@ -60,7 +57,6 @@ class ProductListRequest extends FormRequest
             ...$this->standardListFiltersForAction($validated),
             ...$this->isActiveListFilterForAction($validated),
             'product_category_id' => $validated['product_category_id'] ?? null,
-            'product_type_id' => $validated['product_type_id'] ?? null,
         ];
     }
 
@@ -73,7 +69,6 @@ class ProductListRequest extends FormRequest
             ...$this->standardListFiltersForFrontend(),
             ...$this->isActiveListFilterForFrontend(),
             'product_category_id' => $this->input('product_category_id') ?? '',
-            'product_type_id' => $this->input('product_type_id') ?? '',
         ];
     }
 }
