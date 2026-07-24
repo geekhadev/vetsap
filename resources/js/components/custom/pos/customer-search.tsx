@@ -142,7 +142,7 @@ export function PosCustomerSearch({
                         </div>
                     ) : results.length === 0 ? (
                         <p className="text-muted-foreground px-3 py-3 text-sm">
-                            No hay clientes con ventas abiertas.
+                            No se encontraron clientes.
                         </p>
                     ) : (
                         <ul className="py-1">

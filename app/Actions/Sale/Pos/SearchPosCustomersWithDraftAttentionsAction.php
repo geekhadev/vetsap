@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 final class SearchPosCustomersWithDraftAttentionsAction
 {
     /**
-     * Clientes de la empresa que tienen al menos una venta abierta (documento en borrador).
+     * Clientes de la empresa para el PTV (con o sin ventas abiertas).
      *
      * @return Collection<int, array{
      *     id: string,
@@ -41,12 +41,6 @@ final class SearchPosCustomersWithDraftAttentionsAction
 
         return Customer::query()
             ->forCompany($companyId)
-            ->whereHas('saleDocuments', function ($documentQuery) use ($companyId): void {
-                $documentQuery
-                    ->where('company_id', $companyId)
-                    ->where('status', SaleDocumentStatus::Draft)
-                    ->whereHas('details');
-            })
             ->where(function ($customerQuery) use ($term): void {
                 $customerQuery
                     ->where('name', 'like', $term)

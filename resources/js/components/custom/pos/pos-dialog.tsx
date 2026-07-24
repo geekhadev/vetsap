@@ -13,6 +13,11 @@ import { toast } from 'sonner';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
 import { PosAddProductButton } from '@/components/custom/pos/add-product-button';
 import {
+    PosAddServiceButton
+    
+} from '@/components/custom/pos/add-service-button';
+import type {PosServiceOption} from '@/components/custom/pos/add-service-button';
+import {
     PosChargePaymentsDialog,
 } from '@/components/custom/pos/charge-payments-dialog';
 import type { PosChargeConfirmPayload } from '@/components/custom/pos/charge-payments-dialog';
@@ -54,12 +59,14 @@ import {
     draftAttentions as posCustomerDraftAttentions,
     draftGlobalDiscount as posDraftGlobalDiscount,
     draftProducts as posDraftProducts,
+    draftServices as posDraftServices,
     search as posCustomerSearch,
 } from '@/routes/sale/pos/customers';
 import {
     destroy as posDraftDetailDestroy,
     update as posDraftDetailUpdate,
 } from '@/routes/sale/pos/customers/draft-details';
+import { search as posServiceSearch } from '@/routes/sale/pos/services';
 import { search as productAutocompleteSearch } from '@/routes/store/products';
 import { formatIdentityDocument } from '@/types';
 import type { CashRegisterSharedProps } from '@/types/cash-register';
@@ -220,7 +227,7 @@ export function PosDialog({
 
             if (response.data.attentions.length === 0) {
                 toast.message(
-                    'El cliente no tiene ventas abiertas. Puedes agregar productos.',
+                    'El cliente no tiene ventas abiertas. Puedes agregar productos o servicios.',
                 );
             } else if (serviceCount === 0) {
                 toast.message(
@@ -264,6 +271,35 @@ export function PosDialog({
             cart.loadCustomerAttentions(response.data);
         } catch {
             toast.error('No se pudo guardar el producto en el documento.');
+        } finally {
+            setSavingDraft(false);
+        }
+    }
+
+    async function handleAddService(
+        service: PosServiceOption,
+    ): Promise<void> {
+        if (!cart.customer) {
+            toast.error('Selecciona un cliente antes de agregar servicios.');
+
+            return;
+        }
+
+        setSavingDraft(true);
+
+        try {
+            draftHttp.transform(() => ({
+                service_id: service.id,
+                quantity_delta: 1,
+            }));
+
+            const response = (await draftHttp.post(
+                posDraftServices.url(cart.customer.id),
+            )) as DraftAttentionsResponse;
+
+            cart.loadCustomerAttentions(response.data);
+        } catch {
+            toast.error('No se pudo guardar el servicio en el documento.');
         } finally {
             setSavingDraft(false);
         }
@@ -801,13 +837,18 @@ export function PosDialog({
                                             {cart.attentions.length === 1
                                                 ? ''
                                                 : 's'}{' '}
-                                            sin ítems. Agrega productos para
-                                            cobrarlas.
+                                            sin ítems. Agrega productos o
+                                            servicios para cobrarlas.
+                                        </p>
+                                    ) : cart.customer ? (
+                                        <p>
+                                            Agrega productos o servicios para
+                                            cobrar.
                                         </p>
                                     ) : (
                                         <p>
-                                            Selecciona un cliente o agrega
-                                            productos.
+                                            Selecciona un cliente y agrega
+                                            productos o servicios.
                                         </p>
                                     )}
                                 </div>
@@ -926,12 +967,19 @@ export function PosDialog({
                             )}
                         </div>
 
-                        <div className="shrink-0 border-t px-4 py-3">
+                        <div className="flex shrink-0 flex-wrap items-center gap-1 border-t px-4 py-3">
                             <PosAddProductButton
                                 searchUrl={productAutocompleteSearch.url()}
                                 disabled={savingDraft}
                                 onSelect={(product) => {
                                     void handleAddProduct(product);
+                                }}
+                            />
+                            <PosAddServiceButton
+                                searchUrl={posServiceSearch.url()}
+                                disabled={savingDraft}
+                                onSelect={(service) => {
+                                    void handleAddService(service);
                                 }}
                             />
                         </div>

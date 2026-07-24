@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Sale;
 use App\Actions\Sale\Pos\DeletePosDraftDetailAction;
 use App\Actions\Sale\Pos\LoadCustomerDraftAttentionsForPosAction;
 use App\Actions\Sale\Pos\SearchPosCustomersWithDraftAttentionsAction;
+use App\Actions\Sale\Pos\SearchServicesForPosAction;
 use App\Actions\Sale\Pos\UpdatePosDraftDetailAction;
 use App\Actions\Sale\Pos\UpdatePosDraftGlobalDiscountAction;
 use App\Actions\Sale\Pos\UpsertPosDraftProductAction;
+use App\Actions\Sale\Pos\UpsertPosDraftServiceAction;
 use App\Actions\Sale\SaleDocuments\ChargePosSaleAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sale\PosChargeRequest;
@@ -15,6 +17,8 @@ use App\Http\Requests\Sale\PosCustomerSearchRequest;
 use App\Http\Requests\Sale\PosDraftDetailUpdateRequest;
 use App\Http\Requests\Sale\PosDraftGlobalDiscountRequest;
 use App\Http\Requests\Sale\PosDraftProductUpsertRequest;
+use App\Http\Requests\Sale\PosDraftServiceUpsertRequest;
+use App\Http\Requests\Sale\PosServiceSearchRequest;
 use App\Models\Company;
 use App\Models\Sale\CashRegister;
 use App\Models\Sale\Customer;
@@ -34,6 +38,25 @@ class PosController extends Controller
     public function searchCustomers(
         PosCustomerSearchRequest $request,
         SearchPosCustomersWithDraftAttentionsAction $search,
+    ): JsonResponse {
+        $this->authorizePos($request->user());
+
+        $company = $request->selectedCompany();
+        if (! $company instanceof Company) {
+            return response()->json(['data' => []]);
+        }
+
+        $results = $search->execute(
+            $company->id,
+            (string) $request->validated('q'),
+        );
+
+        return response()->json(['data' => $results]);
+    }
+
+    public function searchServices(
+        PosServiceSearchRequest $request,
+        SearchServicesForPosAction $search,
     ): JsonResponse {
         $this->authorizePos($request->user());
 
@@ -151,6 +174,25 @@ class PosController extends Controller
         $payload = $action->execute(
             $customer,
             (string) $request->validated('product_id'),
+            (string) $request->user()?->id,
+            (int) ($request->validated('quantity_delta') ?? 1),
+        );
+
+        return response()->json(['data' => $payload]);
+    }
+
+    public function upsertDraftService(
+        PosDraftServiceUpsertRequest $request,
+        Customer $customer,
+        UpsertPosDraftServiceAction $action,
+    ): JsonResponse {
+        $this->authorizePos($request->user());
+        $this->authorize('view', $customer);
+        $this->authorize('create', SaleDocument::class);
+
+        $payload = $action->execute(
+            $customer,
+            (string) $request->validated('service_id'),
             (string) $request->user()?->id,
             (int) ($request->validated('quantity_delta') ?? 1),
         );

@@ -40,12 +40,17 @@ Route::delete('sale-documents/{sale_document}', [SaleDocumentsController::class,
 
 Route::get('pos/customers/search', [PosController::class, 'searchCustomers'])
     ->name('pos.customers.search');
+Route::get('pos/services/search', [PosController::class, 'searchServices'])
+    ->name('pos.services.search');
 Route::get('pos/customers/{customer}/draft-attentions', [PosController::class, 'customerDraftAttentions'])
     ->whereUuid('customer')
     ->name('pos.customers.draft-attentions');
 Route::post('pos/customers/{customer}/draft-products', [PosController::class, 'upsertDraftProduct'])
     ->whereUuid('customer')
     ->name('pos.customers.draft-products');
+Route::post('pos/customers/{customer}/draft-services', [PosController::class, 'upsertDraftService'])
+    ->whereUuid('customer')
+    ->name('pos.customers.draft-services');
 Route::patch('pos/customers/{customer}/draft-details/{detail}', [PosController::class, 'updateDraftDetailQuantity'])
     ->whereUuid('customer')
     ->whereUuid('detail')
