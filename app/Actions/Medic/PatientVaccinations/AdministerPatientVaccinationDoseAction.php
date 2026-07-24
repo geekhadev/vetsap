@@ -2,11 +2,13 @@
 
 namespace App\Actions\Medic\PatientVaccinations;
 
+use App\Actions\Store\InventoryMovements\DeductInventoryForVaccinationDoseAction;
 use App\Enums\Medic\VaccinationAdministeredOrigin;
 use App\Enums\Medic\VaccinationDoseStatus;
 use App\Models\Medic\PatientVaccinationDose;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final class AdministerPatientVaccinationDoseAction
 {
@@ -14,6 +16,7 @@ final class AdministerPatientVaccinationDoseAction
         private ShiftSubsequentVaccinationSeriesDosesAction $shiftSubsequentSeriesDoses,
         private SyncVaccinationDoseToDraftSaleAction $syncVaccinationDoseToDraftSale,
         private CompleteAppointmentForVaccinationDoseAction $completeLinkedAppointment,
+        private DeductInventoryForVaccinationDoseAction $deductInventoryForVaccinationDose,
     ) {}
 
     public function execute(
@@ -51,6 +54,13 @@ final class AdministerPatientVaccinationDoseAction
                 $this->shiftSubsequentSeriesDoses->execute($fresh, $deltaDays);
 
                 if ($origin === VaccinationAdministeredOrigin::Clinic) {
+                    if (! is_string($recordedByUserId) || $recordedByUserId === '') {
+                        throw ValidationException::withMessages([
+                            'dose' => 'Se requiere un usuario autenticado para descontar inventario al aplicar la vacuna.',
+                        ]);
+                    }
+
+                    $this->deductInventoryForVaccinationDose->execute($fresh, $recordedByUserId);
                     $this->syncVaccinationDoseToDraftSale->execute($fresh, $recordedByUserId);
                 }
 

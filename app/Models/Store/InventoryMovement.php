@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'company_id',
@@ -20,6 +21,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'moved_at',
     'movement_category_id',
     'user_id',
+    'origin_type',
+    'origin_id',
+    'reversed_movement_id',
 ])]
 class InventoryMovement extends Model
 {
@@ -65,6 +69,26 @@ class InventoryMovement extends Model
     public function details(): HasMany
     {
         return $this->hasMany(InventoryMovementDetail::class, 'inventory_movement_id');
+    }
+
+    /**
+     * Movimiento de salida que esta entrada está revirtiendo.
+     *
+     * @return BelongsTo<InventoryMovement, $this>
+     */
+    public function reversedMovement(): BelongsTo
+    {
+        return $this->belongsTo(InventoryMovement::class, 'reversed_movement_id');
+    }
+
+    /**
+     * Entrada compensatoria que revierte esta salida.
+     *
+     * @return HasOne<InventoryMovement, $this>
+     */
+    public function reversalMovement(): HasOne
+    {
+        return $this->hasOne(InventoryMovement::class, 'reversed_movement_id');
     }
 
     /**

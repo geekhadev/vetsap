@@ -73,13 +73,20 @@ class SaleDocumentsController extends Controller
     }
 
     public function destroy(
+        Request $request,
         SaleDocument $saleDocument,
         DeleteSaleDocumentAction $action,
     ): JsonResponse {
         $this->authorize('delete', $saleDocument);
 
         $id = $saleDocument->id;
-        $action->execute($saleDocument);
+        $userId = $request->user()?->id;
+
+        if (! is_string($userId) || $userId === '') {
+            abort(403);
+        }
+
+        $action->execute($saleDocument, $userId);
 
         Inertia::flash('toast', [
             'type' => 'success',

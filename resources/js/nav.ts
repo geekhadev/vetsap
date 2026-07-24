@@ -52,6 +52,7 @@ import { index as calendarSettingsIndex } from '@/routes/configuration/calendar-
 import { index as companiesIndex } from '@/routes/configuration/companies';
 import { index as companyOfficesIndex } from '@/routes/configuration/company-offices';
 import { index as integrationSettingsIndex } from '@/routes/configuration/integration-settings';
+import { index as inventorySettingsIndex } from '@/routes/configuration/inventory-settings';
 import { index as rolesIndex } from '@/routes/configuration/roles';
 import { index as usersIndex } from '@/routes/configuration/users';
 import { index as websiteSettingsIndex } from '@/routes/configuration/website-settings';
@@ -348,6 +349,11 @@ export const mainNavItems: NavItem[] = [
                 title: 'Calendario',
                 href: calendarSettingsIndex(),
                 icon: CalendarCog,
+            },
+            {
+                title: 'Inventario',
+                href: inventorySettingsIndex(),
+                icon: Warehouse,
             },
             {
                 title: 'Integraciones',

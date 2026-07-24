@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Store;
 
+use App\Actions\Configuration\InventorySettings\ResolveInventoryValidateStockAction;
 use App\Actions\Store\InventoryMovements\CreateInventoryMovementAction;
 use App\Actions\Store\InventoryMovements\ListInventoryMovementsForCompanyAction;
 use App\Enums\Store\InventoryMovementType;
@@ -60,6 +61,7 @@ class InventoryMovementsController extends Controller
     public function store(
         InventoryMovementStoreRequest $request,
         CreateInventoryMovementAction $action,
+        ResolveInventoryValidateStockAction $resolveValidateStock,
     ): RedirectResponse {
         $this->authorize('create', InventoryMovement::class);
 
@@ -72,7 +74,10 @@ class InventoryMovementsController extends Controller
             return back()->withErrors(['type' => 'El tipo de movimiento es obligatorio.']);
         }
 
-        $action->execute($request->inventoryMovementPayload());
+        $payload = $request->inventoryMovementPayload();
+        $payload['validate_stock'] = $resolveValidateStock->execute($company);
+
+        $action->execute($payload);
 
         $label = $request->movementType()?->label() ?? 'Movimiento';
 

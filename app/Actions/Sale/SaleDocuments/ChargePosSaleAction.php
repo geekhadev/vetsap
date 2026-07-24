@@ -2,6 +2,7 @@
 
 namespace App\Actions\Sale\SaleDocuments;
 
+use App\Actions\Store\InventoryMovements\DeductInventoryForSaleDocumentAction;
 use App\Enums\Sale\SaleDocumentDetailType;
 use App\Enums\Sale\SaleDocumentPaymentStatus;
 use App\Enums\Sale\SaleDocumentStatus;
@@ -25,6 +26,7 @@ final class ChargePosSaleAction
     public function __construct(
         private SaleDocumentTotalsCalculator $calculator,
         private AllocateInternalSaleDocumentNumberAction $allocateInternalDocumentNumber,
+        private DeductInventoryForSaleDocumentAction $deductInventoryForSaleDocument,
     ) {}
 
     /**
@@ -267,7 +269,10 @@ final class ChargePosSaleAction
                     'service_id' => $source->service_id,
                     'product_id' => $source->product_id,
                     'clinical_attention_id' => $source->clinical_attention_id,
+                    'patient_vaccination_dose_id' => $source->patient_vaccination_dose_id,
+                    'appointment_id' => $source->appointment_id,
                     'description' => $source->description,
+                    'notes' => $source->notes,
                     'quantity' => $source->quantity,
                     'unit_price' => $source->unit_price,
                     'discount_percent' => $source->discount_percent,
@@ -365,6 +370,9 @@ final class ChargePosSaleAction
                     $draft->delete();
                 }
             }
+
+            $paidDocument = $paidDocument->refresh()->load(['details', 'payments.paymentMethod']);
+            $this->deductInventoryForSaleDocument->execute($paidDocument, $userId);
 
             return $paidDocument->refresh()->load(['details', 'payments.paymentMethod']);
         });

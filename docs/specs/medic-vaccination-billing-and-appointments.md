@@ -263,7 +263,7 @@ Igual que 1 sin appointment_id en la atención.
 ### Fase C — Pulido / deuda
 
 1. **Reconciliar clear ↔ venta** (ver TODO): quitar de borrador; política si ya cobrado.
-2. Stock/lote al cobrar o al aplicar (spec aparte).
+2. Stock/lote al cobrar o al aplicar — ver [`store-inventory-on-sales-and-vaccines.md`](./store-inventory-on-sales-and-vaccines.md).
 3. Reportes: vacunas aplicadas vs cobradas.
 4. Recordatorios de citas de vacuna.
 

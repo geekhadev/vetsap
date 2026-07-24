@@ -2,12 +2,15 @@
 
 namespace App\Actions\Medic\PatientVaccinations;
 
+use App\Actions\Store\InventoryMovements\DeductInventoryForVaccinationDoseAction;
+use App\Actions\Store\InventoryMovements\ReverseInventoryMovementsForOriginAction;
 use App\Enums\Medic\VaccinationAdministeredOrigin;
 use App\Enums\Medic\VaccinationDoseStatus;
 use App\Models\Medic\PatientVaccinationDose;
 use App\Support\Medic\VaccinationDoseSchedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 final class UpdatePatientVaccinationDoseAction
@@ -15,6 +18,8 @@ final class UpdatePatientVaccinationDoseAction
     public function __construct(
         private ShiftSubsequentVaccinationSeriesDosesAction $shiftSubsequentSeriesDoses,
         private SyncVaccinationDoseToDraftSaleAction $syncVaccinationDoseToDraftSale,
+        private DeductInventoryForVaccinationDoseAction $deductInventoryForVaccinationDose,
+        private ReverseInventoryMovementsForOriginAction $reverseInventoryMovementsForOrigin,
     ) {}
 
     public function execute(
@@ -33,6 +38,8 @@ final class UpdatePatientVaccinationDoseAction
             $notes,
             $recordedByUserId,
         ): PatientVaccinationDose {
+            $previousOrigin = $dose->administered_origin;
+
             $payload = [
                 'scheduled_on' => $scheduledOn->toDateString(),
                 'notes' => $notes !== null && $notes !== '' ? $notes : null,
@@ -89,6 +96,14 @@ final class UpdatePatientVaccinationDoseAction
                 $this->shiftSubsequentSeriesDoses->execute($fresh, $seriesDeltaDays);
             }
 
+            if ($fresh instanceof PatientVaccinationDose) {
+                $this->syncInventoryForOriginChange(
+                    $fresh,
+                    $previousOrigin,
+                    $recordedByUserId,
+                );
+            }
+
             if (
                 $fresh instanceof PatientVaccinationDose
                 && $fresh->status === VaccinationDoseStatus::Administered
@@ -99,5 +114,47 @@ final class UpdatePatientVaccinationDoseAction
 
             return $dose->refresh()->load(['product:id,name', 'appointment:id,starts_at']);
         });
+    }
+
+    private function syncInventoryForOriginChange(
+        PatientVaccinationDose $dose,
+        ?VaccinationAdministeredOrigin $previousOrigin,
+        ?string $recordedByUserId,
+    ): void {
+        $becameClinic = $previousOrigin !== VaccinationAdministeredOrigin::Clinic
+            && $dose->administered_origin === VaccinationAdministeredOrigin::Clinic
+            && $dose->status === VaccinationDoseStatus::Administered;
+
+        $leftClinic = $previousOrigin === VaccinationAdministeredOrigin::Clinic
+            && $dose->administered_origin !== VaccinationAdministeredOrigin::Clinic;
+
+        if (! $becameClinic && ! $leftClinic) {
+            return;
+        }
+
+        if (! is_string($recordedByUserId) || $recordedByUserId === '') {
+            throw ValidationException::withMessages([
+                'dose' => 'Se requiere un usuario autenticado para actualizar el inventario de la vacuna.',
+            ]);
+        }
+
+        if ($becameClinic) {
+            $this->deductInventoryForVaccinationDose->execute($dose, $recordedByUserId);
+
+            return;
+        }
+
+        $dose->loadMissing(['plan:id,company_id']);
+        $companyId = $dose->plan?->company_id;
+
+        if (! is_string($companyId) || $companyId === '') {
+            return;
+        }
+
+        $this->reverseInventoryMovementsForOrigin->forVaccinationDose(
+            $companyId,
+            $dose->id,
+            $recordedByUserId,
+        );
     }
 }

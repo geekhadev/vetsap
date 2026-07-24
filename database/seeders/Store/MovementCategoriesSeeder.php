@@ -14,11 +14,14 @@ class MovementCategoriesSeeder extends Seeder
             InventoryMovementType::Entry->value => [
                 'Compra',
                 'Ajuste de entrada',
+                'Anulación de venta',
+                'Anulación de vacunación',
             ],
             InventoryMovementType::Exit->value => [
                 'Venta',
                 'Uso interno',
                 'Ajuste de salida',
+                'Vacunación',
             ],
         ];
 

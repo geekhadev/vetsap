@@ -5,6 +5,7 @@ use App\Http\Controllers\Configuration\CompaniesController;
 use App\Http\Controllers\Configuration\CompanyOfficesController;
 use App\Http\Controllers\Configuration\CompanySiiIntegrationController;
 use App\Http\Controllers\Configuration\IntegrationsSettingsController;
+use App\Http\Controllers\Configuration\InventorySettingsController;
 use App\Http\Controllers\Configuration\RolesController;
 use App\Http\Controllers\Configuration\UserController;
 use App\Http\Controllers\Configuration\WebsiteSettingsController;
@@ -14,6 +15,11 @@ Route::get('calendar-settings', [CalendarSettingsController::class, 'index'])
     ->name('calendar-settings.index');
 Route::put('calendar-settings', [CalendarSettingsController::class, 'update'])
     ->name('calendar-settings.update');
+
+Route::get('inventory-settings', [InventorySettingsController::class, 'index'])
+    ->name('inventory-settings.index');
+Route::put('inventory-settings', [InventorySettingsController::class, 'update'])
+    ->name('inventory-settings.update');
 
 Route::get('integration-settings', [IntegrationsSettingsController::class, 'index'])
     ->name('integration-settings.index');

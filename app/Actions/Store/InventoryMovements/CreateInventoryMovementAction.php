@@ -18,14 +18,19 @@ final class CreateInventoryMovementAction
      *     moved_at: string,
      *     movement_category_id: string,
      *     user_id: string,
-     *     details: list<array{product_id: string, quantity: int}>
+     *     details: list<array{product_id: string, quantity: int}>,
+     *     origin_type?: string|null,
+     *     origin_id?: string|null,
+     *     reversed_movement_id?: string|null,
+     *     validate_stock?: bool,
      * }  $data
      */
     public function execute(array $data): InventoryMovement
     {
         $type = InventoryMovementType::from($data['type']);
+        $validateStock = $data['validate_stock'] ?? true;
 
-        return DB::transaction(function () use ($data, $type): InventoryMovement {
+        return DB::transaction(function () use ($data, $type, $validateStock): InventoryMovement {
             $movement = InventoryMovement::query()->create([
                 'company_id' => $data['company_id'],
                 'type' => $type,
@@ -33,6 +38,9 @@ final class CreateInventoryMovementAction
                 'moved_at' => $data['moved_at'],
                 'movement_category_id' => $data['movement_category_id'],
                 'user_id' => $data['user_id'],
+                'origin_type' => $data['origin_type'] ?? null,
+                'origin_id' => $data['origin_id'] ?? null,
+                'reversed_movement_id' => $data['reversed_movement_id'] ?? null,
             ]);
 
             foreach ($data['details'] as $detail) {
@@ -45,7 +53,9 @@ final class CreateInventoryMovementAction
                 $quantity = (int) $detail['quantity'];
 
                 if ($type === InventoryMovementType::Exit) {
-                    $this->assertSufficientStock($product, $quantity);
+                    if ($validateStock) {
+                        $this->assertSufficientStock($product, $quantity);
+                    }
                     $product->decrement('stock', $quantity);
                 } else {
                     $product->increment('stock', $quantity);
