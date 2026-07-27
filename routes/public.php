@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Public\ClinicalPdfShareController;
+use App\Http\Controllers\SalesOnboardingController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\Web\ClinicBookingController;
 use App\Http\Controllers\Web\ClinicController;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 Route::get('/equipo', TeamController::class)->name('team');
+Route::get('/onboarding-ventas', SalesOnboardingController::class)->name('sales-onboarding');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/clinica/{slug}', ClinicController::class)->name('clinic.show');
 
