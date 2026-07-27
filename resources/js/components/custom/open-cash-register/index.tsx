@@ -64,9 +64,9 @@ export function OpenCashRegister() {
                     <TooltipTrigger asChild>
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive h-9 shrink-0 gap-1.5 px-2.5"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-9 shrink-0 cursor-pointer gap-1.5 px-2.5"
                             onClick={() => setCloseDialogOpen(true)}
                             aria-label="Cerrar caja"
                         >
@@ -89,7 +89,7 @@ export function OpenCashRegister() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="text-muted-foreground h-9 shrink-0 gap-1.5 px-2.5"
+                            className="text-muted-foreground h-9 shrink-0 cursor-pointer gap-1.5 px-2.5"
                             onClick={openPosFromHeader}
                             aria-label="Caja"
                         >
@@ -109,9 +109,9 @@ export function OpenCashRegister() {
                     <TooltipTrigger asChild>
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            className="border-sidebar-border/70 text-muted-foreground h-9 shrink-0 gap-1.5 px-2.5"
+                            className="text-muted-foreground h-9 shrink-0 cursor-pointer gap-1.5 px-2.5"
                             onClick={() => setOpenDialogOpen(true)}
                             aria-label="Abrir caja"
                             disabled={cashRegister.offices.length === 0}
