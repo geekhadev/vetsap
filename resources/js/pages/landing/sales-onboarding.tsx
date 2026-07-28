@@ -18,6 +18,8 @@ import {
     setupProtocol,
 } from '@/pages/landing/sales-onboarding-data';
 
+const pageContainerClassName = 'mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8';
+
 function planBadgeClass(plan: string): string {
     if (plan === 'PRO') {
         return 'bg-cyan-700 text-white';
@@ -88,7 +90,7 @@ export default function SalesOnboardingPage() {
                 className="flex min-h-screen flex-col bg-white text-gray-900 [&_[id]]:scroll-mt-28"
             >
                 <header className="sticky top-0 z-50 border-b border-cyan-100/80 bg-white/90 backdrop-blur-sm">
-                    <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
+                    <div className={cn(pageContainerClassName, 'flex items-center justify-between gap-4 py-3')}>
                         <a href="#top" className="flex shrink-0 items-center">
                             <img
                                 src="/logo.png"
@@ -139,7 +141,7 @@ export default function SalesOnboardingPage() {
 
                     {isMenuOpen ? (
                         <nav
-                            className="border-t border-gray-100 px-4 py-3 md:hidden"
+                            className="border-t border-gray-100 px-5 py-3 sm:px-6 md:hidden"
                             aria-label="Secciones móvil"
                         >
                             <ul className="flex flex-col gap-2">
@@ -161,7 +163,7 @@ export default function SalesOnboardingPage() {
 
                 <main className="flex-1">
                     <section className="border-b border-cyan-50 bg-linear-to-b from-cyan-50/80 to-white py-16">
-                        <div className="mx-auto max-w-7xl">
+                        <div className={pageContainerClassName}>
                             <p className="mb-3 text-sm font-semibold tracking-widest text-cyan-700 uppercase">
                                 Guía interna de ventas
                             </p>
@@ -190,8 +192,8 @@ export default function SalesOnboardingPage() {
                         </div>
                     </section>
 
-                    <section id="producto" className="px-4 py-16 lg:px-6">
-                        <div className="mx-auto max-w-7xl">
+                    <section id="producto" className="py-16">
+                        <div className={pageContainerClassName}>
                             <SectionHeading
                                 eyebrow="Producto"
                                 title="Qué es Vetsap"
@@ -215,8 +217,8 @@ export default function SalesOnboardingPage() {
                         </div>
                     </section>
 
-                    <section id="planes" className="bg-neutral-50/90 px-4 py-16 lg:px-6">
-                        <div className="mx-auto max-w-7xl">
+                    <section id="planes" className="bg-neutral-50/90 py-16">
+                        <div className={pageContainerClassName}>
                             <SectionHeading
                                 eyebrow="Planes"
                                 title="Free vs PRO"
@@ -260,8 +262,8 @@ export default function SalesOnboardingPage() {
                         </div>
                     </section>
 
-                    <section id="modulos" className="px-4 py-16 lg:px-6">
-                        <div className="mx-auto max-w-7xl">
+                    <section id="modulos" className="py-16">
+                        <div className={pageContainerClassName}>
                             <SectionHeading
                                 eyebrow="Módulos"
                                 title="Mapa del sistema"
@@ -305,8 +307,8 @@ export default function SalesOnboardingPage() {
                         </div>
                     </section>
 
-                    <section id="protocolo" className="bg-neutral-50/90 px-4 py-16 lg:px-6">
-                        <div className="mx-auto max-w-7xl">
+                    <section id="protocolo" className="bg-neutral-50/90 py-16">
+                        <div className={pageContainerClassName}>
                             <SectionHeading
                                 eyebrow="Protocolo"
                                 title="Orden de configuración"
@@ -360,8 +362,8 @@ export default function SalesOnboardingPage() {
                         </div>
                     </section>
 
-                    <section id="pitch" className="px-4 py-16 lg:px-6">
-                        <div className="mx-auto max-w-7xl">
+                    <section id="pitch" className="py-16">
+                        <div className={pageContainerClassName}>
                             <SectionHeading
                                 eyebrow="Pitch"
                                 title="Guiones y objeciones"
@@ -385,8 +387,8 @@ export default function SalesOnboardingPage() {
                         </div>
                     </section>
 
-                    <section id="faq" className="bg-neutral-50/90 px-4 py-16 lg:px-6">
-                        <div className="mx-auto max-w-7xl">
+                    <section id="faq" className="bg-neutral-50/90 py-16">
+                        <div className={pageContainerClassName}>
                             <SectionHeading
                                 eyebrow="FAQ"
                                 title="Preguntas frecuentes"
@@ -422,8 +424,13 @@ export default function SalesOnboardingPage() {
                     </section>
                 </main>
 
-                <footer className="border-t border-gray-100 px-4 py-8 lg:px-6">
-                    <div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+                <footer className="border-t border-gray-100 py-8">
+                    <div
+                        className={cn(
+                            pageContainerClassName,
+                            'flex flex-col gap-3 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between',
+                        )}
+                    >
                         <p>Guía de ventas Vetsap · solo referencia, sin formularios ni acciones.</p>
                         <Link href="/" className={landingNavLinkClassName}>
                             Volver al inicio →
