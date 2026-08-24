@@ -22,7 +22,7 @@ final class CreateServiceAction
      *     duration_minutes: int|null,
      *     is_active: bool,
      *     use_web: bool,
-     *     is_default: bool
+     *     is_default?: bool
      * }  $data
      */
     public function execute(array $data): Service
@@ -32,9 +32,7 @@ final class CreateServiceAction
                 ->forCompany($data['company_id'])
                 ->exists();
 
-            if ($isFirstService) {
-                $data['is_default'] = true;
-            }
+            $data['is_default'] = $isFirstService || ($data['is_default'] ?? false);
 
             if ($data['is_default']) {
                 Service::clearOtherDefaults($data['company_id']);

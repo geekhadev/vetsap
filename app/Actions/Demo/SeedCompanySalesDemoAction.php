@@ -159,6 +159,7 @@ final class SeedCompanySalesDemoAction
                     'duration_minutes' => $row['duration_minutes'],
                     'is_active' => true,
                     'use_web' => $row['use_web'],
+                    'is_default' => false,
                 ]);
             } else {
                 $service->update([
