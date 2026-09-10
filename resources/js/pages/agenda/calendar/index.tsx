@@ -64,6 +64,7 @@ export default function CalendarIndex({
                 formOptions={formOptions}
                 defaults={formDefaults}
                 holidays={holidays}
+                canCreatePatient={can.create_patient}
             />
 
             <AppointmentDetailModal

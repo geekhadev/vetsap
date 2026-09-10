@@ -7,6 +7,7 @@ use App\Models\CompanyOffice;
 use App\Models\Medic\Doctor;
 use App\Models\Medic\Patient;
 use App\Models\Medic\Service;
+use App\Models\Medic\Species;
 
 final class BuildAppointmentFormOptionsAction
 {
@@ -21,6 +22,7 @@ final class BuildAppointmentFormOptionsAction
      *     services: list<array{id: string, label: string, duration_minutes: int|null, price: string|null}>,
      *     patients: list<array{id: string, label: string, customer_id: string, search_text: string}>,
      *     offices: list<array{id: string, label: string}>,
+     *     species: list<array{id: string, label: string}>,
      * }
      */
     public function execute(string $companyId): array
@@ -79,30 +81,7 @@ final class BuildAppointmentFormOptionsAction
             ->with(['customer:id,name,document_number,phone'])
             ->orderBy('name')
             ->get(['id', 'name', 'record_number', 'customer_id'])
-            ->map(static function (Patient $patient): array {
-                $customer = $patient->customer;
-                $customerName = $customer?->name ?? 'Sin cliente';
-                $documentNumber = $customer?->document_number ?? '';
-                $phone = $customer?->phone ?? '';
-
-                return [
-                    'id' => $patient->id,
-                    'customer_id' => (string) $patient->customer_id,
-                    'label' => sprintf(
-                        '%s · %s — %s',
-                        $patient->name,
-                        $patient->record_number,
-                        $customerName,
-                    ),
-                    'search_text' => implode(' ', array_filter([
-                        $patient->name,
-                        $patient->record_number,
-                        $customerName,
-                        $documentNumber,
-                        $phone,
-                    ])),
-                ];
-            })
+            ->map(fn (Patient $patient): array => $this->mapPatientOption($patient))
             ->values()
             ->all();
 
@@ -118,11 +97,55 @@ final class BuildAppointmentFormOptionsAction
             ->values()
             ->all();
 
+        $species = Species::query()
+            ->forCompanyOrGlobal($companyId)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(static fn (Species $row): array => [
+                'id' => $row->id,
+                'label' => $row->name,
+            ])
+            ->values()
+            ->all();
+
         return [
             'doctors' => $doctors,
             'services' => $services,
             'patients' => $patients,
             'offices' => $offices,
+            'species' => $species,
+        ];
+    }
+
+    /**
+     * @return array{id: string, label: string, customer_id: string, search_text: string}
+     */
+    public function mapPatientOption(Patient $patient): array
+    {
+        $patient->loadMissing(['customer:id,name,document_number,phone']);
+
+        $customer = $patient->customer;
+        $customerName = $customer?->name ?? 'Sin cliente';
+        $documentNumber = $customer?->document_number ?? '';
+        $phone = $customer?->phone ?? '';
+
+        return [
+            'id' => $patient->id,
+            'customer_id' => (string) $patient->customer_id,
+            'label' => sprintf(
+                '%s · %s — %s',
+                $patient->name,
+                $patient->record_number,
+                $customerName,
+            ),
+            'search_text' => implode(' ', array_filter([
+                $patient->name,
+                $patient->record_number,
+                $customerName,
+                $documentNumber,
+                $phone,
+            ])),
         ];
     }
 }

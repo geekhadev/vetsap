@@ -6,6 +6,7 @@ import { FormTextarea } from '@/components/custom/form-textarea';
 import type { CalendarHoliday } from '@/components/custom/full-calendar/types';
 import { InertiaFormDialog } from '@/components/custom/inertia-form-dialog';
 import { InfoBadge } from '@/components/custom/info-badge';
+import { AppointmentCreatePatientDialog } from '@/pages/agenda/calendar/appointment-create-patient-dialog';
 import { AppointmentScheduleField } from '@/pages/agenda/calendar/appointment-schedule-field';
 import { useAppointmentForm } from '@/pages/agenda/calendar/hooks/use-appointment-form';
 import {
@@ -18,6 +19,7 @@ import type {
     AppointmentFormDefaults,
     AppointmentFormFields,
     AppointmentFormOptions,
+    AppointmentFormPatientOption,
 } from '@/pages/agenda/calendar/types';
 
 type AppointmentFormProps = {
@@ -26,6 +28,7 @@ type AppointmentFormProps = {
     formOptions: AppointmentFormOptions;
     defaults: AppointmentFormDefaults;
     holidays: CalendarHoliday[];
+    canCreatePatient?: boolean;
     /** Si se define, tras crear la cita se vuelve al paciente en lugar del calendario. */
     redirectPatientId?: string;
 };
@@ -36,6 +39,7 @@ export function AppointmentForm({
     formOptions,
     defaults,
     holidays,
+    canCreatePatient = false,
     redirectPatientId,
 }: AppointmentFormProps) {
     const { formProps, headTitle, description } = useAppointmentForm();
@@ -43,17 +47,26 @@ export function AppointmentForm({
     const [formState, setFormState] = useState(() =>
         buildInitialAppointmentFormState(formOptions, defaults),
     );
+    const [createdPatients, setCreatedPatients] = useState<
+        AppointmentFormPatientOption[]
+    >([]);
+    const [createPatientOpen, setCreatePatientOpen] = useState(false);
 
     const vaccinationDoseId = defaults.vaccinationDoseId ?? '';
 
+    const availablePatients = useMemo(
+        () => [...formOptions.patients, ...createdPatients],
+        [formOptions.patients, createdPatients],
+    );
+
     const patientSubjectOptions = useMemo(
         () =>
-            formOptions.patients.map((option) => ({
+            availablePatients.map((option) => ({
                 value: option.id,
                 label: option.label,
                 searchText: option.search_text,
             })),
-        [formOptions.patients],
+        [availablePatients],
     );
 
     const serviceOptions = useMemo(
@@ -128,17 +141,31 @@ export function AppointmentForm({
         selectedService?.duration_minutes !== null &&
         selectedService?.duration_minutes !== undefined;
 
+    const handleAppointmentOpenChange = (nextOpen: boolean) => {
+        if (!nextOpen && createPatientOpen) {
+            return;
+        }
+
+        if (!nextOpen) {
+            setCreatePatientOpen(false);
+            setCreatedPatients([]);
+        }
+
+        onOpenChange(nextOpen);
+    };
+
     return (
-        <InertiaFormDialog<AppointmentFormFields>
-            open={open}
-            onOpenChange={onOpenChange}
-            title={headTitle}
-            description={description}
-            formKey={`create-${defaults.appointmentDate}-${defaults.startsAtTime}`}
-            inertiaForm={{ ...formProps }}
-            contentClassName="sm:max-w-lg"
-            formClassName="space-y-4"
-        >
+        <>
+            <InertiaFormDialog<AppointmentFormFields>
+                open={open && !createPatientOpen}
+                onOpenChange={handleAppointmentOpenChange}
+                title={headTitle}
+                description={description}
+                formKey={`create-${defaults.appointmentDate}-${defaults.startsAtTime}`}
+                inertiaForm={{ ...formProps }}
+                contentClassName="sm:max-w-lg"
+                formClassName="space-y-4"
+            >
             {({ processing, errors }) => (
                 <>
                     <input
@@ -188,11 +215,24 @@ export function AppointmentForm({
                         required
                         placeholder="Buscar por teléfono, documento, cliente o paciente…"
                         searchPlaceholder="Teléfono, documento, nombre o ficha…"
-                        emptyMessage="No hay pacientes activos registrados."
+                        emptyMessage={
+                            canCreatePatient
+                                ? 'Sin coincidencias. Puedes registrar un paciente nuevo.'
+                                : 'No hay pacientes activos registrados.'
+                        }
+                        emptyAction={
+                            canCreatePatient
+                                ? {
+                                      label: 'Nuevo paciente',
+                                      onSelect: () =>
+                                          setCreatePatientOpen(true),
+                                  }
+                                : undefined
+                        }
                         options={patientSubjectOptions}
                         value={resolvedPatientId}
                         onValueChange={(patientId) => {
-                            const subject = formOptions.patients.find(
+                            const subject = availablePatients.find(
                                 (patient) => patient.id === patientId,
                             );
 
@@ -336,6 +376,28 @@ export function AppointmentForm({
                     />
                 </>
             )}
-        </InertiaFormDialog>
+            </InertiaFormDialog>
+
+            <AppointmentCreatePatientDialog
+                open={createPatientOpen}
+                onOpenChange={setCreatePatientOpen}
+                speciesOptions={formOptions.species ?? []}
+                onCreated={(patient) => {
+                    setCreatedPatients((current) => {
+                        if (current.some((row) => row.id === patient.id)) {
+                            return current;
+                        }
+
+                        return [...current, patient];
+                    });
+                    setFormState((current) => ({
+                        ...current,
+                        patientId: patient.id,
+                        customerId: patient.customer_id,
+                    }));
+                    setCreatePatientOpen(false);
+                }}
+            />
+        </>
     );
 }

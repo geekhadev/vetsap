@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Agenda\AppointmentPatientsController;
 use App\Http\Controllers\Agenda\AppointmentsController;
 use App\Http\Controllers\Agenda\AppointmentStatusesController;
 use App\Http\Controllers\Agenda\CalendarController;
@@ -7,6 +8,10 @@ use App\Http\Controllers\Agenda\HolidaysController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('calendar', [CalendarController::class, 'index'])->name('calendar.index');
+Route::get('customers/lookup-by-document', [AppointmentPatientsController::class, 'lookupCustomer'])
+    ->name('customers.lookup-by-document');
+Route::post('appointment-patients', [AppointmentPatientsController::class, 'store'])
+    ->name('appointment-patients.store');
 Route::get('appointments/{appointment}', [AppointmentsController::class, 'show'])->name('appointments.show');
 Route::patch('appointments/{appointment}/status', [AppointmentsController::class, 'updateStatus'])->name('appointments.update-status');
 Route::patch('appointments/{appointment}/schedule', [AppointmentsController::class, 'updateSchedule'])->name('appointments.update-schedule');

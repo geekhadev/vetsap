@@ -13,6 +13,7 @@ use App\Models\Agenda\Appointment;
 use App\Models\Agenda\Calendar;
 use App\Models\Company;
 use App\Models\Medic\ClinicalAttention;
+use App\Models\Medic\Patient;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -53,6 +54,7 @@ class CalendarController extends Controller
                     'services' => [],
                     'patients' => [],
                     'offices' => [],
+                    'species' => [],
                 ],
             'appointmentStatuses' => $company instanceof Company
                 ? $listAppointmentStatuses->execute($company->id)
@@ -63,6 +65,7 @@ class CalendarController extends Controller
                 'update' => $user?->can('updateAny', Appointment::class) ?? false,
                 'delete' => $user?->can('deleteAny', Appointment::class) ?? false,
                 'start_attention' => $user?->can('create', ClinicalAttention::class) ?? false,
+                'create_patient' => $user?->can('create', Patient::class) ?? false,
             ],
         ]);
     }

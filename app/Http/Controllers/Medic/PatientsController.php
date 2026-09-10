@@ -207,6 +207,7 @@ class PatientsController extends Controller
                 'services' => [],
                 'patients' => [],
                 'offices' => [],
+                'species' => [],
             ];
 
         $appointmentFormOptions['patients'] = collect($appointmentFormOptions['patients'])

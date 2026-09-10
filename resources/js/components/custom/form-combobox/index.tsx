@@ -1,4 +1,4 @@
-import { Check, ChevronDownIcon } from 'lucide-react';
+import { Check, ChevronDownIcon, CirclePlus } from 'lucide-react';
 import { useId, useMemo, useState } from 'react';
 
 import InputError from '@/components/input-error';
@@ -30,6 +30,7 @@ export function FormCombobox({
     placeholder = 'Seleccionar…',
     searchPlaceholder = 'Buscar…',
     emptyMessage = 'Sin resultados.',
+    emptyAction,
     id: idProp,
     containerClassName,
     labelClassName,
@@ -148,8 +149,27 @@ export function FormCombobox({
                         className="max-h-60 overflow-y-auto p-1"
                     >
                         {filteredOptions.length === 0 ? (
-                            <li className="px-2 py-6 text-center text-sm text-muted-foreground">
-                                {emptyMessage}
+                            <li className="px-2 py-4">
+                                <p className="text-center text-sm text-muted-foreground">
+                                    {emptyMessage}
+                                </p>
+                                {emptyAction ? (
+                                    <div className="mt-3 flex justify-center">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                emptyAction.onSelect();
+                                                setOpen(false);
+                                                setSearchQuery('');
+                                            }}
+                                        >
+                                            <CirclePlus />
+                                            {emptyAction.label}
+                                        </Button>
+                                    </div>
+                                ) : null}
                             </li>
                         ) : (
                             filteredOptions.map((option) => {

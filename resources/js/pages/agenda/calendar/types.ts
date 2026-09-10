@@ -34,6 +34,56 @@ export type AppointmentFormPatientOption = {
     search_text: string;
 };
 
+export type AppointmentFormSpeciesOption = {
+    id: string;
+    label: string;
+};
+
+export type AppointmentLookupCustomer = {
+    id: string;
+    name: string;
+    document_type: 'rut' | 'pasaporte';
+    document_number: string;
+    phone: string | null;
+    email: string | null;
+};
+
+export type AppointmentCreatePatientFormState = {
+    customerId: string;
+    customerName: string;
+    documentType: 'rut' | 'pasaporte';
+    documentNumber: string;
+    phone: string;
+    patientName: string;
+    recordNumber: string;
+    speciesId: string;
+    sex: 'male' | 'female' | 'unknown' | '';
+};
+
+export type AppointmentCustomerLookupStatus =
+    | 'idle'
+    | 'looking'
+    | 'found'
+    | 'not_found';
+
+export function buildEmptyAppointmentCreatePatientFormState(): AppointmentCreatePatientFormState {
+    return {
+        customerId: '',
+        customerName: '',
+        documentType: 'rut',
+        documentNumber: '',
+        phone: '',
+        patientName: '',
+        recordNumber: '',
+        speciesId: '',
+        sex: '',
+    };
+}
+
+export function normalizeAppointmentDocumentNumber(value: string): string {
+    return value.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+}
+
 export type AppointmentFormOfficeOption = {
     id: string;
     label: string;
@@ -44,6 +94,7 @@ export type AppointmentFormOptions = {
     services: AppointmentFormServiceOption[];
     patients: AppointmentFormPatientOption[];
     offices: AppointmentFormOfficeOption[];
+    species: AppointmentFormSpeciesOption[];
 };
 
 export type CalendarIndexCan = {
@@ -52,6 +103,7 @@ export type CalendarIndexCan = {
     update: boolean;
     delete: boolean;
     start_attention: boolean;
+    create_patient: boolean;
 };
 
 export type AppointmentStatusOption = {

@@ -17,6 +17,11 @@ export type FormComboboxProps = {
     /** Placeholder del campo de búsqueda dentro del popover. */
     searchPlaceholder?: string;
     emptyMessage?: string;
+    /** Acción opcional cuando no hay resultados (p. ej. crear nuevo). */
+    emptyAction?: {
+        label: string;
+        onSelect: () => void;
+    };
     id?: string;
     containerClassName?: string;
     labelClassName?: string;
