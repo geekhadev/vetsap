@@ -22,7 +22,7 @@ export type PermissionsIndexPageProps = {
 const PAGE = {
     storageKey: 'permissions-index',
     title: 'Permisos',
-    description: 'Permisos asociados a cada módulo del sistema.',
+    description: 'Permisos por módulo. Seleccioná filas y usá Acción Owner para el rol titular.',
     searchPlaceholder: 'Nombre o slug…',
 } as const;
 

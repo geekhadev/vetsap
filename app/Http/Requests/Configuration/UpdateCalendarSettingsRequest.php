@@ -4,6 +4,9 @@ namespace App\Http\Requests\Configuration;
 
 use App\Http\Requests\Concerns\InteractsWithSelectedCompanyRequest;
 use App\Models\Medic\Service;
+use App\Models\User;
+use App\Support\Administration\ModulePermissionSlugs;
+use App\Support\Administration\UserHasCompanyPermission;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -14,7 +17,13 @@ class UpdateCalendarSettingsRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user instanceof User
+            && UserHasCompanyPermission::check(
+                $user,
+                ModulePermissionSlugs::for('configuration.calendar-settings')->update(),
+            );
     }
 
     protected function prepareForValidation(): void

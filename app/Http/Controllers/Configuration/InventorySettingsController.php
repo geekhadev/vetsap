@@ -7,6 +7,9 @@ use App\Actions\Configuration\InventorySettings\SyncInventorySettingsAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Configuration\UpdateInventorySettingsRequest;
 use App\Models\Company;
+use App\Models\User;
+use App\Support\Administration\ModulePermissionSlugs;
+use App\Support\Administration\UserHasCompanyPermission;
 use App\Support\SelectedCompanySession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +22,16 @@ class InventorySettingsController extends Controller
         Request $request,
         BuildInventorySettingsPageDataAction $buildPageData,
     ): Response {
+        $user = $request->user();
+        abort_unless(
+            $user instanceof User
+            && UserHasCompanyPermission::check(
+                $user,
+                ModulePermissionSlugs::for('configuration.inventory-settings')->list(),
+            ),
+            403,
+        );
+
         $companyId = SelectedCompanySession::selectedCompanyId($request);
         $company = $companyId !== null
             ? Company::query()->find($companyId)

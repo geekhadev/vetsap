@@ -22,9 +22,27 @@ export type Permission = {
         system_id: string;
         system?: ModuleSystemRef;
     };
+    /** Si el permiso está asignado al rol público Owner. */
+    owner_enabled?: boolean;
     created_at: string;
     updated_at: string;
 };
+
+/** Sistemas cuyos permisos nunca se asignan al rol Owner. */
+export const OWNER_EXCLUDED_SYSTEM_SLUGS = new Set([
+    'administration',
+    'shared',
+]);
+
+export function isPermissionAssignableToOwner(permission: Permission): boolean {
+    const systemSlug = permission.module?.system?.slug;
+
+    return (
+        typeof systemSlug === 'string' &&
+        systemSlug !== '' &&
+        !OWNER_EXCLUDED_SYSTEM_SLUGS.has(systemSlug)
+    );
+}
 
 /**
  * Claves de filtros propios del índice (serialización a query y merges de tabledata).

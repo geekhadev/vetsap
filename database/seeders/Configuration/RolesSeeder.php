@@ -12,6 +12,6 @@ class RolesSeeder extends Seeder
      */
     public function run(): void
     {
-        app(SyncOwnerRolePermissionsAction::class)->execute();
+        app(SyncOwnerRolePermissionsAction::class)->grantAllAssignablePermissions();
     }
 }

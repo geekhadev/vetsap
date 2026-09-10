@@ -27,7 +27,14 @@ export function filterNavByUser(
             }
 
             const visibleChildren = item.items.filter((child) => {
-                return child.permission === undefined || userPermissions.has(child.permission);
+                if (child.disabled) {
+                    return false;
+                }
+
+                return (
+                    child.permission === undefined ||
+                    userPermissions.has(child.permission)
+                );
             });
 
             if (visibleChildren.length === 0) {
@@ -39,6 +46,10 @@ export function filterNavByUser(
                 items: visibleChildren,
             });
 
+            return acc;
+        }
+
+        if (item.disabled) {
             return acc;
         }
 

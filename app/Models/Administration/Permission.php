@@ -2,6 +2,7 @@
 
 namespace App\Models\Administration;
 
+use App\Models\Configuration\Role;
 use Database\Factories\Administration\PermissionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['name', 'slug', 'module_id'])]
 class Permission extends Model
@@ -50,6 +52,19 @@ class Permission extends Model
     public function module(): BelongsTo
     {
         return $this->belongsTo(Module::class);
+    }
+
+    /**
+     * @return BelongsToMany<Role, $this>
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Role::class,
+            'configuration_role_permission',
+            'permission_id',
+            'configuration_role_id',
+        )->withTimestamps();
     }
 
     /**

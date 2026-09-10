@@ -3,6 +3,9 @@
 namespace App\Http\Requests\Configuration;
 
 use App\Http\Requests\Concerns\InteractsWithSelectedCompanyRequest;
+use App\Models\User;
+use App\Support\Administration\ModulePermissionSlugs;
+use App\Support\Administration\UserHasCompanyPermission;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,7 +15,13 @@ class UpdateInventorySettingsRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user instanceof User
+            && UserHasCompanyPermission::check(
+                $user,
+                ModulePermissionSlugs::for('configuration.inventory-settings')->update(),
+            );
     }
 
     /**

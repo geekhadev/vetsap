@@ -5,7 +5,7 @@ export type TabledataSortDirection = 'asc' | 'desc';
 export type TabledataDensity = 'normal' | 'compact';
 
 export type TabledataColumn<T> = {
-    label: string;
+    label: ReactNode;
     /**
      * Nombre del campo en la fila y, si `sortable`, parámetro de ordenación en la query.
      */

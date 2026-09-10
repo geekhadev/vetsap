@@ -10,6 +10,9 @@ use App\Http\Requests\Configuration\StoreWebsiteLogoRequest;
 use App\Http\Requests\Configuration\StoreWebsiteOgImageRequest;
 use App\Http\Requests\Configuration\UpdateWebsiteSettingsRequest;
 use App\Models\Company;
+use App\Models\User;
+use App\Support\Administration\ModulePermissionSlugs;
+use App\Support\Administration\UserHasCompanyPermission;
 use App\Support\SelectedCompanySession;
 use App\Support\Web\ClinicWebSettingKeys;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +27,16 @@ class WebsiteSettingsController extends Controller
         Request $request,
         BuildWebsiteSettingsPageDataAction $buildPageData,
     ): Response {
+        $user = $request->user();
+        abort_unless(
+            $user instanceof User
+            && UserHasCompanyPermission::check(
+                $user,
+                ModulePermissionSlugs::for('configuration.website-settings')->list(),
+            ),
+            403,
+        );
+
         $companyId = SelectedCompanySession::selectedCompanyId($request);
         $company = $companyId !== null
             ? Company::query()->find($companyId)

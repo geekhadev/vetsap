@@ -4,6 +4,8 @@ namespace App\Policies;
 
 use App\Enums\UserType;
 use App\Models\User;
+use App\Support\Administration\ModulePermissionSlugs;
+use App\Support\Administration\UserHasCompanyPermission;
 use App\Support\SelectedCompanySession;
 
 /**
@@ -17,7 +19,14 @@ class UserPolicy
 {
     public function viewAny(User $actor): bool
     {
-        return in_array($actor->type, [UserType::Root, UserType::Owner], true);
+        if ($actor->type === UserType::Root) {
+            return true;
+        }
+
+        return UserHasCompanyPermission::check(
+            $actor,
+            ModulePermissionSlugs::for('configuration.users')->list(),
+        );
     }
 
     /**
@@ -41,7 +50,10 @@ class UserPolicy
             return true;
         }
 
-        if ($actor->type !== UserType::Owner) {
+        if (! UserHasCompanyPermission::check(
+            $actor,
+            ModulePermissionSlugs::for('configuration.users')->update(),
+        )) {
             return false;
         }
 
@@ -74,7 +86,10 @@ class UserPolicy
             return true;
         }
 
-        if ($actor->type !== UserType::Owner) {
+        if (! UserHasCompanyPermission::check(
+            $actor,
+            ModulePermissionSlugs::for('configuration.users')->delete(),
+        )) {
             return false;
         }
 
@@ -103,7 +118,10 @@ class UserPolicy
             return true;
         }
 
-        if ($actor->type !== UserType::Owner) {
+        if (! UserHasCompanyPermission::check(
+            $actor,
+            ModulePermissionSlugs::for('configuration.users')->update(),
+        )) {
             return false;
         }
 

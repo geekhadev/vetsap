@@ -9,6 +9,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Configuration\CompanySiiIntegrationRequest;
 use App\Models\Company;
 use App\Models\CompanyIntegrationSetting;
+use App\Models\User;
+use App\Support\Administration\ModulePermissionSlugs;
+use App\Support\Administration\UserHasCompanyPermission;
 use App\Support\Configuration\CompanyEditRedirect;
 use App\Support\Integration\CompanySiiIntegrationSettingKeys;
 use App\Support\Validation\CompanySiiIntegrationValidationRules;
@@ -22,7 +25,16 @@ class CompanySiiIntegrationController extends Controller
         Company $company,
         ResolveManagedCompanySiiCertificateDiskPathAction $resolvePath,
     ): BinaryFileResponse {
-        $this->authorize('update', $company);
+        $user = request()->user();
+        abort_unless(
+            $user instanceof User
+            && UserHasCompanyPermission::check(
+                $user,
+                ModulePermissionSlugs::for('configuration.integration-settings')->list(),
+                (string) $company->id,
+            ),
+            403,
+        );
 
         $path = $resolvePath->execute($company);
         if ($path === null) {

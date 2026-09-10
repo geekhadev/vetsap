@@ -344,21 +344,25 @@ export const mainNavItems: NavItem[] = [
                 title: 'Sitio web',
                 href: websiteSettingsIndex(),
                 icon: Globe,
+                permission: 'configuration.website-settings.list',
             },
             {
                 title: 'Calendario',
                 href: calendarSettingsIndex(),
                 icon: CalendarCog,
+                permission: 'configuration.calendar-settings.list',
             },
             {
                 title: 'Inventario',
                 href: inventorySettingsIndex(),
                 icon: Warehouse,
+                permission: 'configuration.inventory-settings.list',
             },
             {
                 title: 'Integraciones',
                 href: integrationSettingsIndex(),
                 icon: Plug2,
+                permission: 'configuration.integration-settings.list',
             },
             {
                 title: 'Roles',
@@ -370,6 +374,7 @@ export const mainNavItems: NavItem[] = [
                 title: 'Usuarios',
                 href: usersIndex(),
                 icon: Users,
+                permission: 'configuration.users.list',
             },
         ],
     },

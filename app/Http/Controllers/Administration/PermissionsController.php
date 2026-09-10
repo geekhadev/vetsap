@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\Administration;
 
+use App\Actions\Administration\Permissions\BulkSetPermissionsOwnerAccessAction;
 use App\Actions\Administration\Permissions\CreatePermissionAction;
 use App\Actions\Administration\Permissions\DeletePermissionAction;
 use App\Actions\Administration\Permissions\ListPermissionsAction;
+use App\Actions\Administration\Permissions\SetPermissionOwnerAccessAction;
 use App\Actions\Administration\Permissions\UpdatePermissionAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Administration\BulkSetPermissionsOwnerAccessRequest;
 use App\Http\Requests\Administration\PermissionListRequest;
 use App\Http\Requests\Administration\PermissionsRequest;
+use App\Http\Requests\Administration\SetPermissionOwnerAccessRequest;
 use App\Models\Administration\Module;
 use App\Models\Administration\Permission;
 use App\Models\Administration\System;
@@ -65,6 +69,36 @@ class PermissionsController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Permission updated.')]);
 
         return to_route('administration.permissions.index');
+    }
+
+    public function updateOwnerAccess(
+        SetPermissionOwnerAccessRequest $request,
+        Permission $permission,
+        SetPermissionOwnerAccessAction $action,
+    ): RedirectResponse {
+        $this->authorize('update', $permission);
+
+        $action->execute($permission, $request->enabled());
+
+        return back();
+    }
+
+    public function bulkUpdateOwnerAccess(
+        BulkSetPermissionsOwnerAccessRequest $request,
+        BulkSetPermissionsOwnerAccessAction $action,
+    ): RedirectResponse {
+        $this->authorize('viewAny', Permission::class);
+
+        $result = $action->execute($request->permissionIds(), $request->enabled());
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => $request->enabled()
+                ? sprintf('Owner habilitado en %d permiso(s) seleccionado(s).', $result['affected'])
+                : sprintf('Owner deshabilitado en %d permiso(s) seleccionado(s).', $result['affected']),
+        ]);
+
+        return back();
     }
 
     public function destroy(Permission $permission, DeletePermissionAction $action): RedirectResponse

@@ -5,6 +5,7 @@ namespace Database\Seeders\Administration;
 use App\Models\Administration\Module;
 use App\Models\Administration\Permission;
 use App\Models\Administration\System;
+use App\Support\Administration\OwnerRolePermissions;
 use Illuminate\Database\Seeder;
 
 class PermissionsSeeder extends Seeder
@@ -57,6 +58,43 @@ class PermissionsSeeder extends Seeder
                     [
                         'module_name' => 'Sucursales',
                         'module_slug' => 'company-offices',
+                        'permissions' => $permissions_crud,
+                    ],
+                    [
+                        'module_name' => 'Sitio web',
+                        'module_slug' => 'website-settings',
+                        'permissions' => [
+                            ['permission_name' => 'Listar', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Actualizar', 'permission_slug' => 'update'],
+                        ],
+                    ],
+                    [
+                        'module_name' => 'Calendario',
+                        'module_slug' => 'calendar-settings',
+                        'permissions' => [
+                            ['permission_name' => 'Listar', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Actualizar', 'permission_slug' => 'update'],
+                        ],
+                    ],
+                    [
+                        'module_name' => 'Inventario',
+                        'module_slug' => 'inventory-settings',
+                        'permissions' => [
+                            ['permission_name' => 'Listar', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Actualizar', 'permission_slug' => 'update'],
+                        ],
+                    ],
+                    [
+                        'module_name' => 'Integraciones',
+                        'module_slug' => 'integration-settings',
+                        'permissions' => [
+                            ['permission_name' => 'Listar', 'permission_slug' => 'list'],
+                            ['permission_name' => 'Actualizar', 'permission_slug' => 'update'],
+                        ],
+                    ],
+                    [
+                        'module_name' => 'Usuarios',
+                        'module_slug' => 'users',
                         'permissions' => $permissions_crud,
                     ],
                 ],
@@ -227,6 +265,9 @@ class PermissionsSeeder extends Seeder
             ],
         ];
 
+        /** @var list<string> $newlyCreatedPermissionIds */
+        $newlyCreatedPermissionIds = [];
+
         foreach ($structure as $systemRow) {
             $system = System::firstOrCreate(
                 ['slug' => $systemRow['system_slug']],
@@ -250,15 +291,34 @@ class PermissionsSeeder extends Seeder
                         $permissionRow['permission_slug'],
                     );
 
-                    Permission::firstOrCreate(
+                    $permission = Permission::firstOrCreate(
                         ['slug' => $permissionStoredSlug],
                         [
                             'name' => $permissionRow['permission_name'],
                             'module_id' => $module->id,
                         ],
                     );
+
+                    if ($permission->wasRecentlyCreated) {
+                        $newlyCreatedPermissionIds[] = $permission->id;
+                    }
                 }
             }
+        }
+
+        if ($newlyCreatedPermissionIds === []) {
+            return;
+        }
+
+        $assignableIds = OwnerRolePermissions::assignablePermissionsQuery()
+            ->whereIn('id', $newlyCreatedPermissionIds)
+            ->pluck('id')
+            ->all();
+
+        if ($assignableIds !== []) {
+            OwnerRolePermissions::ensureOwnerRole()
+                ->permissions()
+                ->syncWithoutDetaching($assignableIds);
         }
     }
 }

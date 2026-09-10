@@ -2,8 +2,8 @@
 
 namespace App\Actions\Configuration\Roles;
 
-use App\Models\Administration\Permission;
 use App\Models\Configuration\Role;
+use App\Support\Administration\OwnerRolePermissions;
 use Illuminate\Support\Facades\DB;
 
 class SyncOwnerRolePermissionsAction
@@ -13,39 +13,41 @@ class SyncOwnerRolePermissionsAction
      *
      * @var list<string>
      */
-    public const EXCLUDED_SYSTEM_SLUGS = [
-        'administration',
-        'shared',
-    ];
+    public const EXCLUDED_SYSTEM_SLUGS = OwnerRolePermissions::EXCLUDED_SYSTEM_SLUGS;
 
     /**
-     * Ensures the public Owner role exists and syncs every permission
-     * except those belonging to Administración and Compartido.
+     * Ensures the public Owner role exists. Does not overwrite permission toggles.
      *
      * @return array{role: Role, permission_count: int}
      */
     public function execute(): array
     {
-        return DB::transaction(function (): array {
-            $ownerRole = Role::query()->firstOrCreate(
-                [
-                    'name' => Role::OWNER_SYSTEM_NAME,
-                    'is_public' => true,
-                    'company_id' => null,
-                ],
-            );
+        $ownerRole = OwnerRolePermissions::ensureOwnerRole();
 
-            $permissionIds = Permission::query()
-                ->whereHas('module.system', function ($query): void {
-                    $query->whereNotIn('slug', self::EXCLUDED_SYSTEM_SLUGS);
-                })
+        return [
+            'role' => $ownerRole->fresh() ?? $ownerRole,
+            'permission_count' => $ownerRole->permissions()->count(),
+        ];
+    }
+
+    /**
+     * Seed / reset helper: assigns every assignable permission to Owner.
+     *
+     * @return array{role: Role, permission_count: int}
+     */
+    public function grantAllAssignablePermissions(): array
+    {
+        return DB::transaction(function (): array {
+            $ownerRole = OwnerRolePermissions::ensureOwnerRole();
+
+            $permissionIds = OwnerRolePermissions::assignablePermissionsQuery()
                 ->pluck('id')
                 ->all();
 
             $ownerRole->permissions()->sync($permissionIds);
 
             return [
-                'role' => $ownerRole->fresh(),
+                'role' => $ownerRole->fresh() ?? $ownerRole,
                 'permission_count' => count($permissionIds),
             ];
         });

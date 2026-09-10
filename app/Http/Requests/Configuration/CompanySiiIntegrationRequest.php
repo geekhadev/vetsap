@@ -3,6 +3,9 @@
 namespace App\Http\Requests\Configuration;
 
 use App\Models\Company;
+use App\Models\User;
+use App\Support\Administration\ModulePermissionSlugs;
+use App\Support\Administration\UserHasCompanyPermission;
 use App\Support\Integration\CompanySiiIntegrationSettingKeys;
 use App\Support\Validation\CompanySiiIntegrationValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -39,7 +42,7 @@ class CompanySiiIntegrationRequest extends FormRequest
     public function authorize(): bool
     {
         $user = $this->user();
-        if ($user === null) {
+        if (! $user instanceof User) {
             return false;
         }
 
@@ -48,7 +51,11 @@ class CompanySiiIntegrationRequest extends FormRequest
             return false;
         }
 
-        return $user->can('update', $company);
+        return UserHasCompanyPermission::check(
+            $user,
+            ModulePermissionSlugs::for('configuration.integration-settings')->update(),
+            (string) $company->id,
+        );
     }
 
     /**

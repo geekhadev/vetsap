@@ -3,6 +3,7 @@
 namespace App\Actions\Administration\Permissions;
 
 use App\Models\Administration\Permission;
+use App\Models\Configuration\Role;
 use App\Support\Pagination\ListFilterPagination;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -20,6 +21,8 @@ class ListPermissionsAction
             'desc',
         );
 
+        $ownerRoleId = Role::query()->systemOwner()->value('id');
+
         $query = Permission::query()
             ->with([
                 'module:id,name,slug,system_id',
@@ -27,6 +30,14 @@ class ListPermissionsAction
             ])
             ->searchNameOrSlug($filters['search'] ?? null)
             ->orderByColumn($sort, $direction);
+
+        if (is_string($ownerRoleId) && $ownerRoleId !== '') {
+            $query->withExists([
+                'roles as owner_enabled' => function ($rolesQuery) use ($ownerRoleId): void {
+                    $rolesQuery->where('configuration_roles.id', $ownerRoleId);
+                },
+            ]);
+        }
 
         $moduleId = $filters['module_id'] ?? null;
         if ($moduleId !== null && $moduleId !== '') {
@@ -40,8 +51,27 @@ class ListPermissionsAction
             }
         }
 
-        return $query
+        $paginator = $query
             ->paginate($perPage)
             ->withQueryString();
+
+        if (is_string($ownerRoleId) && $ownerRoleId !== '') {
+            $paginator->getCollection()->transform(function (Permission $permission): Permission {
+                $permission->setAttribute(
+                    'owner_enabled',
+                    (bool) $permission->getAttribute('owner_enabled'),
+                );
+
+                return $permission;
+            });
+        } else {
+            $paginator->getCollection()->transform(function (Permission $permission): Permission {
+                $permission->setAttribute('owner_enabled', false);
+
+                return $permission;
+            });
+        }
+
+        return $paginator;
     }
 }
