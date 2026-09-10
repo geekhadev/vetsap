@@ -6,11 +6,14 @@ export type LandingFaqItem = {
 export type LandingFaqGroup = {
     label: string;
     items: readonly LandingFaqItem[];
+    /** When true, only shown if landing pricing is visible. */
+    pricingRelated?: boolean;
 };
 
 export const landingFaqGroups: readonly LandingFaqGroup[] = [
     {
         label: 'El plan gratuito',
+        pricingRelated: true,
         items: [
             {
                 question: '¿El plan gratis es realmente gratis para siempre?',

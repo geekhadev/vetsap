@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import {
     Accordion,
     AccordionContent,
@@ -11,6 +12,12 @@ function faqItemValue(groupIndex: number, itemIndex: number): string {
 }
 
 export function LandingFaq() {
+    const { vetsap } = usePage().props;
+    const showPricing = vetsap.landing.show_pricing;
+    const visibleGroups = landingFaqGroups.filter(
+        (group) => showPricing || group.pricingRelated !== true,
+    );
+
     return (
         <div id="faq" className="mx-auto w-full max-w-3xl px-6 md:px-0">
             <div className="text-center">
@@ -18,13 +25,14 @@ export function LandingFaq() {
                     Preguntas frecuentes
                 </h2>
                 <p className="mt-4 text-balance text-gray-600 md:text-lg">
-                    Respuestas claras sobre planes, tu web pública, facturación y tus datos antes de
-                    registrarte.
+                    {showPricing
+                        ? 'Respuestas claras sobre planes, tu web pública, facturación y tus datos antes de registrarte.'
+                        : 'Respuestas claras sobre tu web pública, facturación y tus datos antes de registrarte.'}
                 </p>
             </div>
 
             <div className="mt-12 w-full space-y-10">
-                {landingFaqGroups.map((group, groupIndex) => (
+                {visibleGroups.map((group, groupIndex) => (
                     <div key={group.label}>
                         <p className="mb-2 text-xs font-semibold tracking-wide text-cyan-700 uppercase">
                             {group.label}

@@ -3,6 +3,11 @@ export type VetsapClinicalAttentionShared = {
     start_from_appointment_minutes_after: number;
 };
 
+export type VetsapLandingShared = {
+    show_pricing: boolean;
+};
+
 export type VetsapSharedProps = {
     clinical_attention: VetsapClinicalAttentionShared;
+    landing: VetsapLandingShared;
 };

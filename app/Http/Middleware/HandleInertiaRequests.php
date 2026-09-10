@@ -100,6 +100,9 @@ class HandleInertiaRequests extends Middleware
                     'start_from_appointment_minutes_before' => StartAttentionFromAppointmentWindow::minutesBefore(),
                     'start_from_appointment_minutes_after' => StartAttentionFromAppointmentWindow::minutesAfter(),
                 ],
+                'landing' => [
+                    'show_pricing' => (bool) config('vetsap.landing.show_pricing', false),
+                ],
             ],
         ];
     }

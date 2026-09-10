@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { LandingCta } from '@/pages/landing/landing-cta';
 import { LandingFaq } from '@/pages/landing/landing-faq';
@@ -14,6 +15,9 @@ export default function LandingIndex({
 }: {
     canRegister?: boolean;
 }) {
+    const { vetsap } = usePage().props;
+    const showPricing = vetsap.landing.show_pricing;
+
     useEffect(() => {
         const html = document.documentElement;
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -37,10 +41,12 @@ export default function LandingIndex({
                 <LandingSection tone="white" className="overflow-x-clip">
                     <LandingFeatures />
                 </LandingSection>
-                <LandingSection tone="muted">
-                    <LandingPricing canRegister={canRegister} />
-                </LandingSection>
-                <LandingSection tone="white">
+                {showPricing ? (
+                    <LandingSection tone="muted">
+                        <LandingPricing canRegister={canRegister} />
+                    </LandingSection>
+                ) : null}
+                <LandingSection tone={showPricing ? 'white' : 'muted'}>
                     <LandingFaq />
                 </LandingSection>
                 <LandingSection tone="white">

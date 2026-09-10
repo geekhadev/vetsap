@@ -11,14 +11,25 @@ import {
 import type { LandingSectionProps } from '@/pages/landing/types';
 import { dashboard, login, register } from '@/routes';
 
-const navLinks = [
-    { title: 'Producto', href: '#producto', id: 'producto' },
-    { title: 'Funcionalidades', href: '#modulos', id: 'modulos' },
-    { title: 'Precios', href: '#precios', id: 'precios' },
-    { title: 'FAQ', href: '#faq', id: 'faq' },
-] as const;
+type NavLink = {
+    title: string;
+    href: string;
+    id: string;
+};
+
+function buildNavLinks(showPricing: boolean): NavLink[] {
+    return [
+        { title: 'Producto', href: '#producto', id: 'producto' },
+        { title: 'Funcionalidades', href: '#modulos', id: 'modulos' },
+        ...(showPricing ? [{ title: 'Precios', href: '#precios', id: 'precios' }] : []),
+        { title: 'FAQ', href: '#faq', id: 'faq' },
+    ];
+}
 
 export function LandingHeader({ canRegister }: LandingSectionProps) {
+    const { vetsap } = usePage().props;
+    const showPricing = vetsap.landing.show_pricing;
+    const navLinks = buildNavLinks(showPricing);
     const [isAtTop, setIsAtTop] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [activeSectionId, setActiveSectionId] = useState<string>('producto');
@@ -32,7 +43,8 @@ export function LandingHeader({ canRegister }: LandingSectionProps) {
     }, []);
 
     useEffect(() => {
-        const sectionElements = navLinks
+        const links = buildNavLinks(showPricing);
+        const sectionElements = links
             .map((link) => document.getElementById(link.id))
             .filter((element): element is HTMLElement => element !== null);
 
@@ -61,7 +73,7 @@ export function LandingHeader({ canRegister }: LandingSectionProps) {
         sectionElements.forEach((element) => observer.observe(element));
 
         return () => observer.disconnect();
-    }, []);
+    }, [showPricing]);
 
     return (
         <header

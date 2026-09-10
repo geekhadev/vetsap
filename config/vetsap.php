@@ -41,4 +41,18 @@ return [
         'start_from_appointment_minutes_after' => 240,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Landing pública
+    |--------------------------------------------------------------------------
+    |
+    | Controles de la web principal (vetsap.app). show_pricing oculta la sección
+    | de planes/precios y los enlaces asociados sin eliminar el código.
+    |
+    */
+
+    'landing' => [
+        'show_pricing' => false,
+    ],
+
 ];

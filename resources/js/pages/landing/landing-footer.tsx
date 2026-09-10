@@ -1,16 +1,24 @@
 import { usePage } from '@inertiajs/react';
 
-const navLinks = [
-    { title: 'Producto', href: '#producto' },
-    { title: 'Funcionalidades', href: '#modulos' },
-    { title: 'Precios', href: '#precios' },
-    { title: 'FAQ', href: '#faq' },
-    { title: 'Equipo', href: '/equipo' },
-];
+type FooterNavLink = {
+    title: string;
+    href: string;
+};
+
+function buildNavLinks(showPricing: boolean): FooterNavLink[] {
+    return [
+        { title: 'Producto', href: '#producto' },
+        { title: 'Funcionalidades', href: '#modulos' },
+        ...(showPricing ? [{ title: 'Precios', href: '#precios' }] : []),
+        { title: 'FAQ', href: '#faq' },
+        { title: 'Equipo', href: '/equipo' },
+    ];
+}
 
 export function LandingFooter() {
-    const { name } = usePage().props;
+    const { name, vetsap } = usePage().props;
     const year = new Date().getFullYear();
+    const navLinks = buildNavLinks(vetsap.landing.show_pricing);
 
     return (
         <footer className="mx-auto w-full max-w-7xl rounded-t-lg bg-cyan-900 shadow">

@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +9,9 @@ import { defaultLandingFeatureId, landingFeatures } from '@/pages/landing/landin
 import { landingOutlineButtonClassName } from '@/pages/landing/landing-theme';
 
 export function LandingFeatures() {
+    const { vetsap } = usePage().props;
+    const showPricing = vetsap.landing.show_pricing;
+
     return (
         <div id="modulos" className="relative mx-auto w-full max-w-7xl overflow-x-clip px-6 md:px-0">
             <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
@@ -42,10 +45,17 @@ export function LandingFeatures() {
                             className={cn('order-5 mt-8 max-lg:hidden lg:order-none', landingOutlineButtonClassName)}
                             asChild
                         >
-                            <Link href="#precios">
-                                Ver planes y precios
-                                <ArrowUpRight className="size-4" aria-hidden />
-                            </Link>
+                            {showPricing ? (
+                                <Link href="#precios">
+                                    Ver planes y precios
+                                    <ArrowUpRight className="size-4" aria-hidden />
+                                </Link>
+                            ) : (
+                                <a href="#faq">
+                                    Preguntas frecuentes
+                                    <ArrowUpRight className="size-4" aria-hidden />
+                                </a>
+                            )}
                         </Button>
                     </div>
 
