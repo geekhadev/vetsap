@@ -119,7 +119,7 @@ class ClinicalAttentionsController extends Controller
     ): RedirectResponse {
         $this->authorize('delete', $clinicalAttention);
 
-        $action->execute($clinicalAttention);
+        $action->execute($clinicalAttention, $request->user()?->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Atención eliminada.']);
 

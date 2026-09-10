@@ -8,10 +8,16 @@ use Illuminate\Support\Facades\Storage;
 
 final class DeleteClinicalAttentionAction
 {
-    public function execute(ClinicalAttention $attention): void
+    public function __construct(
+        private RevertAppointmentStatusAfterClinicalAttentionDeletedAction $revertLinkedAppointmentStatus,
+    ) {}
+
+    public function execute(ClinicalAttention $attention, ?string $userId = null): void
     {
-        DB::transaction(function () use ($attention): void {
+        DB::transaction(function () use ($attention, $userId): void {
             $attention->loadMissing('requestedServices');
+
+            $this->revertLinkedAppointmentStatus->execute($attention, $userId);
 
             foreach ($attention->requestedServices as $service) {
                 $path = $service->pivot->result_path;

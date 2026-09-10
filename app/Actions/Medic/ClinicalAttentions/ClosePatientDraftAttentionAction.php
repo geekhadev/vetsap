@@ -11,6 +11,7 @@ final class ClosePatientDraftAttentionAction
 {
     public function __construct(
         private EnsureDraftSaleDocumentForAttentionAction $ensureDraftSaleDocument,
+        private CompleteAppointmentForClinicalAttentionAction $completeLinkedAppointment,
     ) {}
 
     /**
@@ -68,7 +69,13 @@ final class ClosePatientDraftAttentionAction
                 'requestedServices:id,name,price,tax_treatment',
                 'documentTemplates:id,title',
                 'appointment.service:id,name,price,tax_treatment',
+                'appointment.appointmentStatus:id,is_terminal',
             ]);
+
+            $this->completeLinkedAppointment->execute(
+                $attention,
+                $data['updated_by_user_id'] ?? null,
+            );
 
             // Actualiza la venta abierta con los servicios finales antes de salir.
             try {
