@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Sale;
 
+use App\Actions\Sale\SaleDocuments\BuildSaleDocumentChargeContextAction;
 use App\Actions\Sale\SaleDocuments\BuildSaleDocumentPaymentsAction;
 use App\Actions\Sale\SaleDocuments\BuildSaleDocumentPreviewAction;
+use App\Actions\Sale\SaleDocuments\ChargeSaleDocumentFromListAction;
 use App\Actions\Sale\SaleDocuments\DeleteSaleDocumentAction;
 use App\Actions\Sale\SaleDocuments\ListSaleDocumentsForCompanyAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sale\SaleDocumentChargeRequest;
 use App\Http\Requests\Sale\SaleDocumentListRequest;
 use App\Models\Company;
 use App\Models\Sale\SaleDocument;
@@ -62,13 +65,65 @@ class SaleDocumentsController extends Controller
     }
 
     public function payments(
+        Request $request,
         SaleDocument $saleDocument,
         BuildSaleDocumentPaymentsAction $buildPayments,
     ): JsonResponse {
         $this->authorize('view', $saleDocument);
 
+        $canCreate = $request->user()?->can('create', SaleDocument::class) ?? false;
+
         return response()->json([
-            'data' => $buildPayments->execute($saleDocument),
+            'data' => $buildPayments->execute($saleDocument, $canCreate),
+        ]);
+    }
+
+    public function chargeContext(
+        Request $request,
+        SaleDocument $saleDocument,
+        BuildSaleDocumentChargeContextAction $buildContext,
+    ): JsonResponse {
+        $this->authorize('view', $saleDocument);
+        $this->authorize('create', SaleDocument::class);
+
+        $canCreate = $request->user()?->can('create', SaleDocument::class) ?? false;
+
+        return response()->json([
+            'data' => $buildContext->execute($saleDocument, $canCreate),
+        ]);
+    }
+
+    public function charge(
+        SaleDocumentChargeRequest $request,
+        SaleDocument $saleDocument,
+        ChargeSaleDocumentFromListAction $action,
+    ): JsonResponse {
+        $this->authorize('view', $saleDocument);
+        $this->authorize('create', SaleDocument::class);
+
+        $company = $request->selectedCompany();
+        if (! $company instanceof Company) {
+            return response()->json(['message' => 'Debes seleccionar una empresa.'], 422);
+        }
+
+        $userId = $request->user()?->id;
+        if (! is_string($userId) || $userId === '') {
+            abort(403);
+        }
+
+        $document = $action->execute(
+            $saleDocument,
+            $company->id,
+            $userId,
+            $request->chargePayload(),
+        );
+
+        return response()->json([
+            'data' => [
+                'id' => $document->id,
+                'total_amount' => (int) $document->total_amount,
+                'paid_amount' => (int) $document->paid_amount,
+            ],
         ]);
     }
 

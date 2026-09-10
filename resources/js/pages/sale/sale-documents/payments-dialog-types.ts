@@ -15,9 +15,14 @@ export type SaleDocumentPaymentDetail = {
 
 export type SaleDocumentPaymentsPayload = {
     id: string;
+    status: 'draft' | 'issued' | 'voided' | 'merged';
+    payment_status: 'pending' | 'partial' | 'paid';
     total_amount: number;
     paid_amount: number;
     balance_amount: number;
+    can: {
+        charge: boolean;
+    };
     payments: SaleDocumentPaymentDetail[];
 };
 
@@ -25,4 +30,5 @@ export type SaleDocumentPaymentsDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     saleDocumentId: string | null;
+    onRequestCharge?: (saleDocumentId: string) => void;
 };

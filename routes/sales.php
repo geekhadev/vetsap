@@ -34,6 +34,12 @@ Route::get('sale-documents/{sale_document}', [SaleDocumentsController::class, 's
 Route::get('sale-documents/{sale_document}/payments', [SaleDocumentsController::class, 'payments'])
     ->whereUuid('sale_document')
     ->name('sale-documents.payments');
+Route::get('sale-documents/{sale_document}/charge-context', [SaleDocumentsController::class, 'chargeContext'])
+    ->whereUuid('sale_document')
+    ->name('sale-documents.charge-context');
+Route::post('sale-documents/{sale_document}/charge', [SaleDocumentsController::class, 'charge'])
+    ->whereUuid('sale_document')
+    ->name('sale-documents.charge');
 Route::delete('sale-documents/{sale_document}', [SaleDocumentsController::class, 'destroy'])
     ->whereUuid('sale_document')
     ->name('sale-documents.destroy');

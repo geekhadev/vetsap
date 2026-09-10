@@ -4,6 +4,7 @@ import { CurrencyDisplay } from '@/components/custom/currency-display';
 import type {
     PosPaymentMethodOption,
     PosPaymentTypeOption,
+    PosSiiTaxDocumentTypeOption,
 } from '@/components/custom/pos/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,6 +52,14 @@ type PosChargePaymentsDialogProps = {
     cashRoundTo: number;
     cashRoundThreshold: number;
     processing?: boolean;
+    /** Si viene, oculta el selector y fija el tipo de pago (p. ej. documento ya emitido). */
+    lockedPaymentTypeId?: string | null;
+    /** Etiqueta del monto a cubrir (Total / Saldo). */
+    amountLabel?: string;
+    /** Selector de tipo SII (cobro de borrador desde listado). */
+    siiTaxDocumentTypes?: PosSiiTaxDocumentTypeOption[];
+    siiTaxDocumentTypeId?: string;
+    onSiiTaxDocumentTypeIdChange?: (id: string) => void;
     onConfirm: (payload: PosChargeConfirmPayload) => void;
 };
 
@@ -119,9 +128,15 @@ export function PosChargePaymentsDialog({
     cashRoundTo,
     cashRoundThreshold,
     processing = false,
+    lockedPaymentTypeId = null,
+    amountLabel = 'Total',
+    siiTaxDocumentTypes,
+    siiTaxDocumentTypeId = '',
+    onSiiTaxDocumentTypeIdChange,
     onConfirm,
 }: PosChargePaymentsDialogProps) {
     const defaultPaymentTypeId =
+        lockedPaymentTypeId ??
         paymentTypes.find((type) => type.code === 'CO')?.id ??
         paymentTypes[0]?.id ??
         '';
@@ -129,9 +144,13 @@ export function PosChargePaymentsDialog({
     const [paymentTypeId, setPaymentTypeId] = useState(defaultPaymentTypeId);
     const [editedRows, setEditedRows] = useState<PaymentRow[] | null>(null);
 
+    const effectivePaymentTypeId = lockedPaymentTypeId ?? paymentTypeId;
+
     const selectedPaymentType =
-        paymentTypes.find((type) => type.id === paymentTypeId) ?? null;
+        paymentTypes.find((type) => type.id === effectivePaymentTypeId) ?? null;
     const isCredit = selectedPaymentType?.is_credit ?? false;
+    const paymentTypeLocked =
+        lockedPaymentTypeId !== null && lockedPaymentTypeId !== '';
 
     const defaultRows = useMemo(
         () =>
@@ -201,7 +220,7 @@ export function PosChargePaymentsDialog({
     const balanceDue = Math.max(0, totalAmount - paymentsTotal);
 
     const validationError = useMemo(() => {
-        if (paymentTypeId === '') {
+        if (effectivePaymentTypeId === '') {
             return 'Selecciona el tipo de pago (contado o crédito).';
         }
 
@@ -218,6 +237,10 @@ export function PosChargePaymentsDialog({
                 return cashDue === 0
                     ? 'Los pagos superan el total.'
                     : `El efectivo no puede superar ${cashDue.toLocaleString('es-CL')} (redondeo Chile).`;
+            }
+
+            if (paymentTypeLocked && paymentsTotal <= 0) {
+                return 'Debes registrar al menos un pago.';
             }
 
             return null;
@@ -239,16 +262,19 @@ export function PosChargePaymentsDialog({
     }, [
         cashDue,
         cashPaid,
+        effectivePaymentTypeId,
         isCredit,
         nonCashPaid,
-        paymentTypeId,
+        paymentTypeLocked,
         paymentsTotal,
         rows,
         totalAmount,
     ]);
 
     const canConfirm =
-        validationError === null && !processing && paymentTypeId !== '';
+        validationError === null &&
+        !processing &&
+        effectivePaymentTypeId !== '';
     const canAddRow = paymentMethods.length > 0 && !processing;
 
     function updateRows(updater: (previous: PaymentRow[]) => PaymentRow[]): void {
@@ -265,6 +291,10 @@ export function PosChargePaymentsDialog({
     }
 
     function handlePaymentTypeChange(nextTypeId: string): void {
+        if (paymentTypeLocked) {
+            return;
+        }
+
         setPaymentTypeId(nextTypeId);
         setEditedRows(null);
     }
@@ -291,7 +321,7 @@ export function PosChargePaymentsDialog({
     }
 
     function handleConfirm(): void {
-        if (!canConfirm || paymentTypeId === '') {
+        if (!canConfirm || effectivePaymentTypeId === '') {
             return;
         }
 
@@ -303,7 +333,7 @@ export function PosChargePaymentsDialog({
             }));
 
         onConfirm({
-            payment_type_id: paymentTypeId,
+            payment_type_id: effectivePaymentTypeId,
             payments,
         });
     }
@@ -313,42 +343,107 @@ export function PosChargePaymentsDialog({
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>
-                        {isCredit ? 'Emitir documento' : 'Cobrar'}
+                        {paymentTypeLocked
+                            ? 'Registrar pago'
+                            : isCredit
+                              ? 'Emitir documento'
+                              : 'Cobrar'}
                     </DialogTitle>
                     <DialogDescription>
-                        {isCredit
-                            ? 'En crédito puedes emitir sin pagos o con pagos parciales.'
-                            : 'En contado debes cubrir el total con métodos de pago.'}
+                        {paymentTypeLocked
+                            ? isCredit
+                                ? 'Puedes registrar un abono parcial o cubrir el saldo.'
+                                : 'Debes cubrir el saldo pendiente con métodos de pago.'
+                            : isCredit
+                              ? 'En crédito puedes emitir sin pagos o con pagos parciales.'
+                              : 'En contado debes cubrir el total con métodos de pago.'}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     <div className="bg-muted/40 flex items-center justify-between rounded-md border px-3 py-2 text-sm">
-                        <span className="text-muted-foreground">Total</span>
+                        <span className="text-muted-foreground">
+                            {amountLabel}
+                        </span>
                         <span className="font-semibold">
                             <CurrencyDisplay value={totalAmount} />
                         </span>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <Label htmlFor="pos-payment-type">Tipo de pago</Label>
-                        <Select
-                            value={paymentTypeId}
-                            disabled={processing || paymentTypes.length === 0}
-                            onValueChange={handlePaymentTypeChange}
-                        >
-                            <SelectTrigger id="pos-payment-type" className="w-full">
-                                <SelectValue placeholder="Selecciona…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {paymentTypes.map((type) => (
-                                    <SelectItem key={type.id} value={type.id}>
-                                        {type.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {siiTaxDocumentTypes &&
+                    siiTaxDocumentTypes.length > 0 &&
+                    onSiiTaxDocumentTypeIdChange ? (
+                        <div className="space-y-1.5">
+                            <Label htmlFor="pos-sii-tax-document-type">
+                                Tipo de documento
+                            </Label>
+                            <Select
+                                value={siiTaxDocumentTypeId}
+                                disabled={processing}
+                                onValueChange={onSiiTaxDocumentTypeIdChange}
+                            >
+                                <SelectTrigger
+                                    id="pos-sii-tax-document-type"
+                                    className="w-full"
+                                >
+                                    <SelectValue placeholder="Selecciona…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {siiTaxDocumentTypes.map((type) => (
+                                        <SelectItem
+                                            key={type.id}
+                                            value={type.id}
+                                        >
+                                            {type.abbreviation
+                                                ? `${type.abbreviation} · ${type.name}`
+                                                : type.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    ) : null}
+
+                    {paymentTypeLocked ? (
+                        selectedPaymentType ? (
+                            <div className="bg-muted/40 flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                                <span className="text-muted-foreground">
+                                    Tipo de pago
+                                </span>
+                                <span className="font-medium">
+                                    {selectedPaymentType.name}
+                                </span>
+                            </div>
+                        ) : null
+                    ) : (
+                        <div className="space-y-1.5">
+                            <Label htmlFor="pos-payment-type">Tipo de pago</Label>
+                            <Select
+                                value={paymentTypeId}
+                                disabled={
+                                    processing || paymentTypes.length === 0
+                                }
+                                onValueChange={handlePaymentTypeChange}
+                            >
+                                <SelectTrigger
+                                    id="pos-payment-type"
+                                    className="w-full"
+                                >
+                                    <SelectValue placeholder="Selecciona…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {paymentTypes.map((type) => (
+                                        <SelectItem
+                                            key={type.id}
+                                            value={type.id}
+                                        >
+                                            {type.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
 
                     <div className="space-y-3">
                         {rows.map((row, index) => (
@@ -521,12 +616,16 @@ export function PosChargePaymentsDialog({
                         onClick={handleConfirm}
                     >
                         {processing
-                            ? isCredit
-                                ? 'Emitiendo…'
-                                : 'Cobrando…'
-                            : isCredit
-                              ? 'Emitir documento'
-                              : 'Confirmar cobro'}
+                            ? paymentTypeLocked
+                                ? 'Registrando…'
+                                : isCredit
+                                  ? 'Emitiendo…'
+                                  : 'Cobrando…'
+                            : paymentTypeLocked
+                              ? 'Confirmar pago'
+                              : isCredit
+                                ? 'Emitir documento'
+                                : 'Confirmar cobro'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

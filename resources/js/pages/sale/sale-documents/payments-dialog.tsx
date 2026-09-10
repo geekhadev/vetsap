@@ -4,10 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
 import { DateDisplay } from '@/components/custom/date-display';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
@@ -25,6 +27,7 @@ export function SaleDocumentPaymentsDialog({
     open,
     onOpenChange,
     saleDocumentId,
+    onRequestCharge,
 }: SaleDocumentPaymentsDialogProps) {
     const http = useHttp({});
     const onOpenChangeRef = useRef(onOpenChange);
@@ -74,6 +77,8 @@ export function SaleDocumentPaymentsDialog({
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps -- load when dialog opens for a document
     }, [open, saleDocumentId]);
+
+    const canAddPayment = payload?.can.charge === true;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -177,6 +182,22 @@ export function SaleDocumentPaymentsDialog({
                             </div>
                         )}
                     </div>
+                ) : null}
+
+                {canAddPayment && saleDocumentId && onRequestCharge ? (
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                onOpenChange(false);
+                                onRequestCharge(saleDocumentId);
+                            }}
+                        >
+                            {payload?.status === 'draft'
+                                ? 'Cobrar'
+                                : 'Registrar pago'}
+                        </Button>
+                    </DialogFooter>
                 ) : null}
             </DialogContent>
         </Dialog>

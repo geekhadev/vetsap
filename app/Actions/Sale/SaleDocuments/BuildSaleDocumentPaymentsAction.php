@@ -2,6 +2,8 @@
 
 namespace App\Actions\Sale\SaleDocuments;
 
+use App\Enums\Sale\SaleDocumentPaymentStatus;
+use App\Enums\Sale\SaleDocumentStatus;
 use App\Models\Sale\SaleDocument;
 use App\Models\Sale\SaleDocumentPayment;
 
@@ -10,9 +12,12 @@ final class BuildSaleDocumentPaymentsAction
     /**
      * @return array{
      *     id: string,
+     *     status: string,
+     *     payment_status: string,
      *     total_amount: int,
      *     paid_amount: int,
      *     balance_amount: int,
+     *     can: array{charge: bool},
      *     payments: list<array{
      *         id: string,
      *         amount: int,
@@ -22,7 +27,7 @@ final class BuildSaleDocumentPaymentsAction
      *     }>
      * }
      */
-    public function execute(SaleDocument $document): array
+    public function execute(SaleDocument $document, bool $userCanCreate = false): array
     {
         $document->loadMissing([
             'payments' => static fn ($query) => $query->orderBy('paid_at')->orderBy('created_at'),
@@ -32,12 +37,25 @@ final class BuildSaleDocumentPaymentsAction
 
         $totalAmount = (int) $document->total_amount;
         $paidAmount = (int) $document->paid_amount;
+        $balanceAmount = max(0, $totalAmount - $paidAmount);
 
         return [
             'id' => $document->id,
+            'status' => $document->status->value,
+            'payment_status' => $document->payment_status->value,
             'total_amount' => $totalAmount,
             'paid_amount' => $paidAmount,
-            'balance_amount' => max(0, $totalAmount - $paidAmount),
+            'balance_amount' => $balanceAmount,
+            'can' => [
+                'charge' => $userCanCreate && (
+                    $document->status === SaleDocumentStatus::Draft
+                    || (
+                        $document->status === SaleDocumentStatus::Issued
+                        && $balanceAmount > 0
+                        && $document->payment_status !== SaleDocumentPaymentStatus::Paid
+                    )
+                ),
+            ],
             'payments' => $document->payments
                 ->map(static function (SaleDocumentPayment $payment): array {
                     $method = $payment->paymentMethod;

@@ -1,10 +1,11 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import {
     CircleCheck,
     CircleDot,
     CircleMinus,
     Eye,
     GitMerge,
+    Wallet,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { CurrencyDisplay } from '@/components/custom/currency-display';
@@ -21,6 +22,7 @@ import {
 import type { TabledataColumn } from '@/components/custom/tabledata';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { SaleDocumentChargeDialog } from '@/pages/sale/sale-documents/charge-dialog';
 import { CONFIG_TABLEDATA } from '@/pages/sale/sale-documents/config';
 import { SaleDocumentsIndexFilters } from '@/pages/sale/sale-documents/filters';
 import { SaleDocumentPaymentsDialog } from '@/pages/sale/sale-documents/payments-dialog';
@@ -28,6 +30,7 @@ import type {
     SaleDocument,
     SaleDocumentListFilters,
     SaleDocumentPaymentStatus,
+    SaleDocumentsIndexCan,
     SaleDocumentsIndexFiltersDraftFull,
     SaleDocumentStatus,
 } from '@/pages/sale/sale-documents/types';
@@ -55,13 +58,43 @@ const PAYMENT_STATUS_BADGE: Record<
     paid: { tone: 'positive', icon: CircleCheck },
 };
 
+function canChargeRow(
+    row: SaleDocument,
+    canCreate: boolean,
+): boolean {
+    if (!canCreate) {
+        return false;
+    }
+
+    if (row.status === 'draft') {
+        return true;
+    }
+
+    return (
+        row.status === 'issued' &&
+        row.payment_status !== 'paid' &&
+        row.paid_amount < row.total_amount
+    );
+}
+
 function SaleDocumentsIndex() {
+    const { can } = usePage<{ can: SaleDocumentsIndexCan }>().props;
     const [previewDocumentId, setPreviewDocumentId] = useState<string | null>(
         null,
     );
     const [paymentsDocumentId, setPaymentsDocumentId] = useState<string | null>(
         null,
     );
+    const [chargeDocumentId, setChargeDocumentId] = useState<string | null>(
+        null,
+    );
+
+    function reloadList(): void {
+        router.reload({
+            only: [...TABLEDATA_LIST_INERTIA_ONLY],
+            preserveScroll: true,
+        });
+    }
 
     const columns = useMemo<TabledataColumn<SaleDocument>[]>(
         () => [
@@ -176,23 +209,47 @@ function SaleDocumentsIndex() {
                 sortable: false,
                 hideable: false,
                 headerClassName: 'w-0 text-right',
-                render: (row) => (
-                    <div className="flex justify-end">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            title="Vista previa"
-                            onClick={() => setPreviewDocumentId(row.id)}
-                        >
-                            <Eye className="size-3" />
-                            <span className="sr-only">Vista previa</span>
-                        </Button>
-                    </div>
-                ),
+                render: (row) => {
+                    const showCharge = canChargeRow(row, can.create);
+
+                    return (
+                        <div className="flex justify-end gap-1">
+                            {showCharge ? (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    title={
+                                        row.status === 'draft'
+                                            ? 'Cobrar'
+                                            : 'Registrar pago'
+                                    }
+                                    onClick={() => setChargeDocumentId(row.id)}
+                                >
+                                    <Wallet className="size-3" />
+                                    <span className="sr-only">
+                                        {row.status === 'draft'
+                                            ? 'Cobrar'
+                                            : 'Registrar pago'}
+                                    </span>
+                                </Button>
+                            ) : null}
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                title="Vista previa"
+                                onClick={() => setPreviewDocumentId(row.id)}
+                            >
+                                <Eye className="size-3" />
+                                <span className="sr-only">Vista previa</span>
+                            </Button>
+                        </div>
+                    );
+                },
             },
         ],
-        [],
+        [can.create],
     );
 
     return (
@@ -228,12 +285,7 @@ function SaleDocumentsIndex() {
                         setPreviewDocumentId(null);
                     }
                 }}
-                onDeleted={() => {
-                    router.reload({
-                        only: [...TABLEDATA_LIST_INERTIA_ONLY],
-                        preserveScroll: true,
-                    });
-                }}
+                onDeleted={reloadList}
             />
 
             <SaleDocumentPaymentsDialog
@@ -244,6 +296,21 @@ function SaleDocumentsIndex() {
                         setPaymentsDocumentId(null);
                     }
                 }}
+                onRequestCharge={(id) => {
+                    setPaymentsDocumentId(null);
+                    setChargeDocumentId(id);
+                }}
+            />
+
+            <SaleDocumentChargeDialog
+                open={chargeDocumentId !== null}
+                saleDocumentId={chargeDocumentId}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) {
+                        setChargeDocumentId(null);
+                    }
+                }}
+                onCharged={reloadList}
             />
         </>
     );
