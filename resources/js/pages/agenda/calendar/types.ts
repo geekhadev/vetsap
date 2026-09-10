@@ -102,6 +102,12 @@ export type AppointmentDetailStatus = {
     is_terminal: boolean;
 };
 
+export type AppointmentDetailClinicalAttention = {
+    id: string;
+    status: 'draft' | 'closed';
+    is_paid: boolean;
+};
+
 export type AppointmentDetail = {
     id: string;
     starts_at: string;
@@ -120,6 +126,8 @@ export type AppointmentDetail = {
     office: { id: string; name: string } | null;
     /** Dosis del plan ligadas a esta cita (cobro por producto, sin atención). */
     linked_vaccination_dose_count: number;
+    /** Atención clínica ya vinculada a esta cita, si existe. */
+    clinical_attention: AppointmentDetailClinicalAttention | null;
 };
 
 export type CalendarIndexPageProps = {

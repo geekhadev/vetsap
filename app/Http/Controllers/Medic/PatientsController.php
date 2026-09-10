@@ -134,13 +134,26 @@ class PatientsController extends Controller
             ? $request->query('tab')
             : 'historial';
 
+        $requestedAttentionId = $request->query('attention');
+        $requestedAttentionId = is_string($requestedAttentionId) && $requestedAttentionId !== ''
+            ? $requestedAttentionId
+            : null;
+
+        if ($requestedAttentionId !== null) {
+            $activeTab = 'historial';
+        }
+
         $draftAttention = ClinicalAttention::query()
             ->where('patient_id', $patient->id)
             ->draft()
             ->with(['values', 'template.fields', 'requestedServices:id,name', 'documentTemplates:id,title'])
             ->first();
 
-        if (! $request->has('tab') && $draftAttention instanceof ClinicalAttention) {
+        if (
+            ! $request->has('tab')
+            && $requestedAttentionId === null
+            && $draftAttention instanceof ClinicalAttention
+        ) {
             $activeTab = 'nueva-atencion';
         }
 
@@ -287,6 +300,13 @@ class PatientsController extends Controller
                     ->values()
                     ->all(),
             ]),
+            'openAttentionId' => $requestedAttentionId !== null
+                && $attentions->contains(
+                    static fn (ClinicalAttention $attention): bool => $attention->id === $requestedAttentionId
+                        && $attention->status === ClinicalAttentionStatus::Closed,
+                )
+                    ? $requestedAttentionId
+                    : null,
             'appointments' => $appointments->map(static fn (Appointment $appointment): array => [
                 'id' => $appointment->id,
                 'service_name' => $appointment->service?->name,

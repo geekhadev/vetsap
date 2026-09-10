@@ -6,6 +6,7 @@ use App\Enums\Agenda\AppointmentSource;
 use App\Models\Agenda\Concerns\InteractsWithAgendaAppointment;
 use App\Models\Company;
 use App\Models\CompanyOffice;
+use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\Doctor;
 use App\Models\Medic\Patient;
 use App\Models\Medic\PatientVaccinationDose;
@@ -147,6 +148,14 @@ class Appointment extends Model
     public function vaccinationDoses(): HasMany
     {
         return $this->hasMany(PatientVaccinationDose::class, 'appointment_id');
+    }
+
+    /**
+     * @return HasMany<ClinicalAttention, $this>
+     */
+    public function clinicalAttentions(): HasMany
+    {
+        return $this->hasMany(ClinicalAttention::class, 'appointment_id');
     }
 
     /**

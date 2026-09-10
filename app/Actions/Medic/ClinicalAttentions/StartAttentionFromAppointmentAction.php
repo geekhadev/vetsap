@@ -42,6 +42,16 @@ final class StartAttentionFromAppointmentAction
             );
         }
 
+        if (ClinicalAttention::query()
+            ->where('appointment_id', $appointment->id)
+            ->where('status', ClinicalAttentionStatus::Closed)
+            ->exists()
+        ) {
+            throw new \RuntimeException(
+                'Esta cita ya tiene una atención cerrada. Ábrela desde el historial del paciente.',
+            );
+        }
+
         if (! StartAttentionFromAppointmentWindow::contains($appointment->starts_at)) {
             $bounds = StartAttentionFromAppointmentWindow::bounds($appointment->starts_at);
 

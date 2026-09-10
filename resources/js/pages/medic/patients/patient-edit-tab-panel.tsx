@@ -80,6 +80,7 @@ type PatientEditTabPanelProps = {
     examServices: ExamServiceOption[];
     documentTemplates: DocumentTemplateOption[];
     attentions: AttentionSummary[];
+    openAttentionId?: string | null;
     appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];
@@ -101,6 +102,7 @@ export function PatientEditTabPanel({
     examServices,
     documentTemplates,
     attentions,
+    openAttentionId = null,
     appointments,
     appointmentFormOptions,
     appointmentHolidays,
@@ -169,6 +171,20 @@ export function PatientEditTabPanel({
     useEffect(() => {
         setHasDraftAttention(draftAttention !== null);
     }, [draftAttention]);
+
+    useEffect(() => {
+        if (openAttentionId === null) {
+            return;
+        }
+
+        const attention = attentions.find(
+            (item) => item.id === openAttentionId && item.status === 'closed',
+        );
+
+        if (attention !== undefined) {
+            setViewAttention(attention);
+        }
+    }, [attentions, openAttentionId]);
 
     const handleTimelineFilterChange = useCallback((value: string) => {
         if (!value) {

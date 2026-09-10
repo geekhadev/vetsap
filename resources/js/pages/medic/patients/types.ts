@@ -226,6 +226,7 @@ export type PatientsEditPageProps = {
     examServices: ExamServiceOption[];
     documentTemplates: DocumentTemplateOption[];
     attentions: AttentionSummary[];
+    openAttentionId: string | null;
     appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];

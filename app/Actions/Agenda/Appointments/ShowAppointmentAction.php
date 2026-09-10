@@ -2,9 +2,14 @@
 
 namespace App\Actions\Agenda\Appointments;
 
+use App\Enums\Medic\ClinicalAttentionStatus;
 use App\Enums\Medic\DoctorScheduleDayOfWeek;
+use App\Enums\Sale\SaleDocumentPaymentStatus;
+use App\Enums\Sale\SaleDocumentStatus;
 use App\Models\Agenda\Appointment;
+use App\Models\Medic\ClinicalAttention;
 use App\Models\Medic\PatientVaccinationDose;
+use App\Models\Sale\SaleDocument;
 use App\Models\Web\ClinicWebSetting;
 use App\Support\Web\ClinicWebSettingKeys;
 use Carbon\CarbonInterface;
@@ -102,7 +107,51 @@ final class ShowAppointmentAction
             'linked_vaccination_dose_count' => PatientVaccinationDose::query()
                 ->where('appointment_id', $appointment->id)
                 ->count(),
+            'clinical_attention' => $this->resolveClinicalAttentionPayload($appointment),
         ];
+    }
+
+    /**
+     * @return array{id: string, status: string, is_paid: bool}|null
+     */
+    private function resolveClinicalAttentionPayload(Appointment $appointment): ?array
+    {
+        /** @var ClinicalAttention|null $attention */
+        $attention = ClinicalAttention::query()
+            ->where('appointment_id', $appointment->id)
+            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', [ClinicalAttentionStatus::Closed->value])
+            ->orderByDesc('closed_at')
+            ->orderByDesc('started_at')
+            ->first();
+
+        if (! $attention instanceof ClinicalAttention) {
+            return null;
+        }
+
+        $status = $attention->status instanceof ClinicalAttentionStatus
+            ? $attention->status->value
+            : (string) $attention->status;
+
+        return [
+            'id' => $attention->id,
+            'status' => $status,
+            'is_paid' => $this->attentionIsPaid($attention->id),
+        ];
+    }
+
+    private function attentionIsPaid(string $attentionId): bool
+    {
+        return SaleDocument::query()
+            ->where('status', SaleDocumentStatus::Issued)
+            ->where('payment_status', SaleDocumentPaymentStatus::Paid)
+            ->where(function ($query) use ($attentionId): void {
+                $query->where('clinical_attention_id', $attentionId)
+                    ->orWhereHas(
+                        'details',
+                        static fn ($details) => $details->where('clinical_attention_id', $attentionId),
+                    );
+            })
+            ->exists();
     }
 
     /**

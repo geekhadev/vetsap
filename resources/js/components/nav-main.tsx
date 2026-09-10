@@ -135,7 +135,7 @@ export function NavMain({
                                 tooltip={{ children: item.title }}
                                 className={cn(
                                     isCurrentUrl(item.href) &&
-                                        'bg-primary text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-primary hover:text-primary-foreground',
+                                        'bg-primary text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-primary hover:text-primary-foreground [&>svg]:text-primary-foreground',
                                 )}
                             >
                                 <Link href={item.href} prefetch>
@@ -185,7 +185,7 @@ function NavMainCollapsibleParent({
                             className={cn(
                                 'w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
                                 childActive &&
-                                    'bg-primary text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-primary hover:text-primary-foreground data-[state=open]:bg-primary data-[state=open]:text-primary-foreground',
+                                    'bg-primary text-primary-foreground data-[active=true]:bg-primary data-[active=true]:text-primary-foreground hover:bg-primary hover:text-primary-foreground data-[state=open]:bg-primary data-[state=open]:text-primary-foreground [&>svg]:text-primary-foreground data-[state=open]:[&>svg]:text-primary-foreground',
                             )}
                         >
                             {item.icon && <item.icon />}

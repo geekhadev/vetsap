@@ -4,6 +4,7 @@ import {
     ArrowRight,
     ChevronDown,
     Copy,
+    Eye,
     Mail,
     MapPin,
     Phone,
@@ -56,6 +57,7 @@ import type {
     AppointmentScheduleValue,
     AppointmentStatusOption,
 } from '@/pages/agenda/calendar/types';
+import { edit as patientsEdit } from '@/routes/medic/patients';
 
 type AppointmentDetailModalProps = {
     open: boolean;
@@ -120,6 +122,7 @@ function AppointmentDetailContent({
     onScheduleChange,
     onDelete,
     onStartAttention,
+    onViewAttention,
     scheduleFieldKey,
 }: {
     appointment: AppointmentDetail;
@@ -141,6 +144,7 @@ function AppointmentDetailContent({
     onScheduleChange: (schedule: AppointmentScheduleValue) => void;
     onDelete: () => void;
     onStartAttention: () => void;
+    onViewAttention: () => void;
 }) {
     const { company_selected: companySelected, vetsap } = usePage().props;
     const companyName = companySelected?.name?.trim() || 'nuestra clínica';
@@ -202,9 +206,14 @@ function AppointmentDetailContent({
     const isVaccinationAppointment =
         (appointment.linked_vaccination_dose_count ?? 0) > 0;
 
+    const linkedAttention = appointment.clinical_attention;
+    const canViewAttention =
+        linkedAttention !== null && linkedAttention.status === 'closed';
+
     const canStartAttentionNow =
         canStartAttention &&
         !isVaccinationAppointment &&
+        !canViewAttention &&
         isWithinStartAttentionWindow(
             appointment.starts_at,
             vetsap.clinical_attention.start_from_appointment_minutes_before,
@@ -389,7 +398,7 @@ function AppointmentDetailContent({
                 </p>
             ) : null}
 
-            {canDelete || canStartAttentionNow ? (
+            {canDelete || canStartAttentionNow || canViewAttention ? (
                 <div className="flex flex-row items-start gap-2 border-t pt-4 sm:justify-between">
                     {canDelete ? (
                         <div className="min-w-0 flex-1 space-y-1 sm:flex-none">
@@ -418,6 +427,18 @@ function AppointmentDetailContent({
                     ) : (
                         <span aria-hidden className="flex-1 sm:flex-none" />
                     )}
+                    {canViewAttention ? (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="min-w-0 flex-1 gap-2 sm:w-auto sm:flex-none"
+                            disabled={deleting}
+                            onClick={onViewAttention}
+                        >
+                            <Eye aria-hidden className="size-4 shrink-0" />
+                            Ver atención
+                        </Button>
+                    ) : null}
                     {canStartAttentionNow ? (
                         <Button
                             type="button"
@@ -580,6 +601,21 @@ export function AppointmentDetailPanel({
         });
     }, [appointmentId, startingAttention]);
 
+    const handleViewAttention = useCallback(() => {
+        if (appointment === null || appointment.clinical_attention === null) {
+            return;
+        }
+
+        router.get(
+            patientsEdit.url(appointment.patient.id, {
+                query: {
+                    tab: 'historial',
+                    attention: appointment.clinical_attention.id,
+                },
+            }),
+        );
+    }, [appointment]);
+
     useEffect(() => {
         if (!active) {
             return;
@@ -635,6 +671,7 @@ export function AppointmentDetailPanel({
                     onScheduleChange={handleScheduleChange}
                     onDelete={() => setConfirmDeleteOpen(true)}
                     onStartAttention={handleStartAttention}
+                    onViewAttention={handleViewAttention}
                 />
             ) : null}
 

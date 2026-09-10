@@ -43,6 +43,7 @@ type PatientFormPageProps = {
     examServices: ExamServiceOption[];
     documentTemplates: DocumentTemplateOption[];
     attentions: AttentionSummary[];
+    openAttentionId: string | null;
     appointments: PatientAppointmentSummary[];
     appointmentFormOptions: AppointmentFormOptions;
     appointmentHolidays: CalendarHoliday[];
@@ -66,6 +67,7 @@ export function PatientFormPage({
     examServices,
     documentTemplates,
     attentions,
+    openAttentionId,
     appointments,
     appointmentFormOptions,
     appointmentHolidays,
@@ -116,6 +118,7 @@ export function PatientFormPage({
                         examServices={examServices}
                         documentTemplates={documentTemplates}
                         attentions={attentions}
+                        openAttentionId={openAttentionId}
                         appointments={appointments}
                         appointmentFormOptions={appointmentFormOptions}
                         appointmentHolidays={appointmentHolidays}
